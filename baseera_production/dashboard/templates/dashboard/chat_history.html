@@ -1,0 +1,110 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}سجل المحادثات — بصيرة{% else %}Chat History — Baseera{% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen p-3 gap-3">
+    <!-- Sidebar -->
+    {% include 'dashboard/sidebar.html' with active_page='chat_history' %}
+
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        <!-- Topbar -->
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Content Area -->
+        <div class="space-y-4 animate-fade-up max-w-5xl mx-auto w-full">
+
+            <!-- Top Header Banner -->
+            <div class="glass p-6 rounded-3xl border border-[var(--nile)]/20 dark:border-[var(--nile)]/10 bg-gradient-to-br from-[var(--nile)]/10 to-[var(--lavender)]/10 dark:from-slate-900 dark:to-slate-950 shadow-xs flex flex-wrap items-center justify-between gap-4 relative overflow-hidden">
+                <div class="flex items-center gap-3.5 relative z-10">
+                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-sky-500/20 font-black text-lg">
+                        <i data-lucide="history" class="h-6 w-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black text-slate-800 dark:text-white tracking-tight">
+                            {% if trans.lang_code == 'ar' %}سجل المحادثات مع المساعد العام والوكلاء{% else %}Chat History & Conversations Log{% endif %}
+                        </h1>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                            {% if trans.lang_code == 'ar' %}استعرض كافة المحادثات والجلسات الاستشارية السابقة التي أجريتها مع بصيرة وقرارات غرفة الاجتماعات.{% else %}Browse all previous advisory chat sessions and boardroom debates with Baseera Executive AI.{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <a href="{% url 'ask_basira' %}" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs font-black shadow-md hover:brightness-110 active:scale-95 transition flex items-center gap-2 relative z-10">
+                    <i data-lucide="plus-circle" class="h-4 w-4"></i>
+                    <span>{% if trans.lang_code == 'ar' %}محادثة جديدة مع بصيرة{% else %}Start New Chat{% endif %}</span>
+                </a>
+            </div>
+
+            <!-- Chat Sessions List Card -->
+            <div class="glass p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-xs space-y-4">
+                
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <i data-lucide="message-square" class="h-5 w-5 text-[var(--glow)]"></i>
+                        <h3 class="text-sm font-black text-slate-800 dark:text-white">
+                            {% if trans.lang_code == 'ar' %}جلسات المحادثات الأخيرة{% else %}Recent Chat Sessions{% endif %}
+                        </h3>
+                    </div>
+                    <span class="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                        {{ ai_logs|length }} {% if trans.lang_code == 'ar' %}استفسار مسجل{% else %}logs{% endif %}
+                    </span>
+                </div>
+
+                <!-- Chat Items -->
+                <div class="space-y-2.5">
+                    {% if ai_logs %}
+                        {% for log in ai_logs %}
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 hover:border-[var(--glow)]/30 hover:bg-[var(--glow)]/5 transition flex items-center justify-between gap-4 group">
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <div class="h-9 w-9 rounded-xl bg-[var(--nile)]/10 text-[var(--nile)] dark:text-sky-400 flex items-center justify-center shrink-0 font-bold">
+                                    <i data-lucide="bot" class="h-4.5 w-4.5"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-xs font-extrabold text-slate-800 dark:text-slate-200 truncate group-hover:text-[var(--nile)] transition">
+                                        {{ log.query|truncatechars:80 }}
+                                    </h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+                                        <span><i data-lucide="clock" class="h-3 w-3 inline mr-1"></i>{{ log.timestamp|date:"Y-m-d H:i" }}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <a href="{% url 'ask_basira' %}" class="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-[var(--glow)] hover:border-[var(--glow)] hover:text-white dark:hover:bg-[var(--glow)] transition shrink-0 flex items-center gap-1.5 shadow-xs">
+                                <span>{% if trans.lang_code == 'ar' %}متابعة المحادثة{% else %}Open Chat{% endif %}</span>
+                                <i data-lucide="arrow-left" class="h-3.5 w-3.5 {% if trans.lang_code == 'en' %}rotate-180{% endif %}"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-12 space-y-3">
+                            <div class="h-16 w-16 mx-auto rounded-3xl bg-gradient-to-br from-[var(--nile)]/10 to-[var(--lavender)]/20 text-[var(--glow)] flex items-center justify-center">
+                                <i data-lucide="message-square-dashed" class="h-8 w-8"></i>
+                            </div>
+                            <h3 class="text-sm font-black text-slate-800 dark:text-white">
+                                {% if trans.lang_code == 'ar' %}لا يوجد محادثات محفوظة حتى الآن{% else %}No Saved Chat Sessions Yet{% endif %}
+                            </h3>
+                            <p class="text-xs text-slate-500 max-w-sm mx-auto">
+                                {% if trans.lang_code == 'ar' %}ابدأ محادثتك الأولى مع بصيرة للتحليل المالي والاستشارات الرقمية لمؤسستك.{% else %}Start your first conversation with Baseera AI Executive Assistant.{% endif %}
+                            </p>
+                            <a href="{% url 'ask_basira' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs font-bold shadow-md hover:opacity-90 transition">
+                                <i data-lucide="message-square" class="h-4 w-4"></i>
+                                <span>{% if trans.lang_code == 'ar' %}بدء المحادثة الآن{% else %}Start Chatting Now{% endif %}</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if(window.lucide) lucide.createIcons();
+});
+</script>
+{% endblock %}

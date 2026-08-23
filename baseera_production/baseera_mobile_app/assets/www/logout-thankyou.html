@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Signed Out</title>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var t=localStorage.getItem("baseera-theme")||"light";document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("baseera-lang")||"en";document.documentElement.setAttribute("lang",l);document.documentElement.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
+<script>
+ window.BASEERA_TRANSLATIONS = {
+  logoutHeading: { en: 'Thank You for Using Baseera!', ar: 'شكرًا لاستخدامك بصيرة!' },
+  logoutSubtitle: { en: 'We hope to see you again soon.', ar: 'نأمل أن نراك مجددًا قريبًا.' },
+  rateUsBtn: { en: '&#9733; Rate Us', ar: '&#9733; قيّم التطبيق' },
+  backHomeBtn: { en: 'Back to Home', ar: 'العودة للصفحة الرئيسية' }
+ };
+</script>
+</head>
+<body class="page-enter">
+
+<div class="page">
+ <div class="confirm-wrap">
+
+  <div class="simple-confirm-icon-outline">
+   <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 21s-7-4.35-9.33-9A5.5 5.5 0 0112 6.5 5.5 5.5 0 0121.33 12C19 16.65 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+   </svg>
+  </div>
+
+  <h1 class="confirm-heading" data-i18n="logoutHeading">Thank You for Using Baseera!</h1>
+  <p class="confirm-subtitle" data-i18n="logoutSubtitle">We hope to see you again soon.</p>
+
+  <div style="width: 100%; max-width: 280px; display: flex; flex-direction: column; gap: 10px;">
+   <button class="create-btn" type="button" style="background:#ffffff; color:var(--color-navy); border:1.5px solid var(--color-navy);" onclick="showRateToast()">
+    <span data-i18n="rateUsBtn">&#9733; Rate Us</span>
+   </button>
+   <button class="create-btn" type="button" onclick="window.location.href='login.html'">
+    <span data-i18n="backHomeBtn">Back to Home</span>
+   </button>
+  </div>
+
+  <p class="redirect-note" id="redirect-note">Signing you back to the login screen in <span id="countdown">6</span>s...</p>
+
+ </div>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+ function showRateToast() {
+  const msg = (document.documentElement.lang === 'ar') ? 'شكرًا! نقدّر ملاحظاتك.' : 'Thanks! We appreciate your feedback.';
+  showToast(msg);
+ }
+
+ function updateRedirectNote(seconds) {
+  const note = document.getElementById('redirect-note');
+  if (!note) return;
+  const isAr = document.documentElement.lang === 'ar';
+  note.innerHTML = isAr
+   ? `سيتم إعادتك إلى شاشة تسجيل الدخول خلال <span id="countdown">${seconds}</span> ثانية...`
+   : `Signing you back to the login screen in <span id="countdown">${seconds}</span>s...`;
+ }
+
+ let secondsLeft = 6;
+ updateRedirectNote(secondsLeft);
+ const timer = setInterval(() => {
+  secondsLeft -= 1;
+  updateRedirectNote(secondsLeft);
+  if (secondsLeft <= 0) {
+   clearInterval(timer);
+   window.location.href = 'login.html';
+  }
+ }, 1000);
+</script>
+
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+</body>
+</html>

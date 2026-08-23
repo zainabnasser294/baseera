@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Boardroom</title>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var t=localStorage.getItem("baseera-theme")||"light";document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("baseera-lang")||"en";document.documentElement.setAttribute("lang",l);document.documentElement.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
+<script>
+ window.BASEERA_TRANSLATIONS = {
+  boardroomTitle: { en: 'Executive Boardroom', ar: 'مجلس الإدارة (غرفة الاجتماعات)' },
+  boardroomDesc: { en: 'Pose any strategic decision, and 4 specialized AI agents will debate live.', ar: 'اطرح أي قرار تجاري، وسيدخل 4 وكلاء في مناظرة متكاملة.' },
+  debatePromptLabel: { en: 'Strategic decision to debate?', ar: 'ما القرار الاستراتيجي المراد مناقشته؟' },
+  debatePromptPlaceholder: { en: 'e.g. Should we increase prices by 10%...', ar: 'مثال: هل أرفع أسعار المنتجات بنسبة 10%...' },
+  startDebateBtn: { en: 'Convene Board Debate', ar: 'بدء جلسة المجلس الآن' },
+  cfoTitle: { en: 'CFO (Finance)', ar: 'CFO (المالية)' },
+  cmoTitle: { en: 'CMO (Marketing)', ar: 'CMO (التسويق)' },
+  cooTitle: { en: 'COO (Operations)', ar: 'COO (العمليات)' },
+  pricingTitle: { en: 'Pricing Strategist', ar: 'أخصائي التسعير' },
+  loadingText: { en: 'Convening Advisory Board...', ar: 'انعقاد مجلس الإدارة الاستشاري...' },
+  resolutionTitle: { en: 'BOARD RESOLUTION', ar: 'القرار الاستراتيجي المعتمد' }
+ };
+</script>
+<style>
+  .board-seat {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  }
+  .board-seat.active-speaker {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 2px #4F46E5, 0 10px 25px rgba(79,70,229,0.15);
+  }
+  .speaker-badge { display: none; margin-top: 0.5rem; font-size: 0.65rem; padding: 0.1rem 0.5rem; border-radius: 1rem; font-weight: bold; animation: pulse 1.5s infinite; }
+  .active-speaker .speaker-badge { display: inline-block; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .speech-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    display: flex;
+    gap: 0.75rem;
+    animation: fadeUp 0.5s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body class="page-enter">
+
+<div class="app-shell">
+ <div class="app-content">
+
+  <div class="dash-topbar" style="position: relative;">
+   <div>
+    <div class="dash-day" id="dash-day-label"></div>
+    <div class="dash-greeting" data-i18n="boardroomTitle" style="font-size: 1.25rem;">Executive Boardroom</div>
+   </div>
+   <div class="dash-icons">
+    <button class="dash-icon-btn theme-toggle-pill" title="Dark mode">
+     <span class="theme-toggle-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span>
+    </button>
+    <button class="dash-icon-btn lang-toggle-pill" title="Toggle language" style="height: 32px; padding: 0 10px; justify-content: center; font-size: 0.75rem; font-weight: bold; border-radius: 16px;">
+     <span class="lang-toggle-label">Eng/ع</span>
+    </button>
+    <button class="dash-icon-btn" onclick="window.history.back()" title="Back">
+     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+   </div>
+  </div>
+
+  <!-- Navigation Sub-Bar (Mobile) -->
+  <div style="padding: 1rem; margin-top: 1rem; display: flex; gap: 0.5rem; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+    <button style="padding: 0.5rem 1rem; border-radius: 1rem; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 0.25rem;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span data-i18n="boardroomTitle">Executive Boardroom</span>
+    </button>
+    <button onclick="window.location.href='reports.html'" style="padding: 0.5rem 1rem; border-radius: 1rem; background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 0.25rem;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <span>التقارير</span>
+    </button>
+  </div>
+
+  <div style="padding: 0 1rem 5rem 1rem;">
+   
+   <!-- Input Card -->
+   <div style="background: #FFFFFF; border-radius: 16px; padding: 1.25rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); margin-bottom: 1rem;">
+     <div data-i18n="boardroomDesc" style="font-size: 0.75rem; color: #4B5563; margin-bottom: 1rem; line-height: 1.4;">Pose any strategic decision, and 4 specialized AI agents will debate live.</div>
+     
+     <label style="font-size: 0.75rem; font-weight: bold; color: #1E293B; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.25rem;">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#4F46E5" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+       <span data-i18n="debatePromptLabel">Strategic decision to debate?</span>
+     </label>
+     <textarea id="topicInput" rows="3" style="width: 100%; border-radius: 12px; border: 1px solid #F3F4F6; background: #F8F9FB; padding: 0.75rem; font-size: 0.75rem; font-family: inherit; resize: none; margin-bottom: 1rem; outline: none; box-sizing: border-box;"></textarea>
+     
+     <button onclick="startDebate()" id="startBtn" style="width: 100%; padding: 0.8rem; border-radius: 12px; border: none; background: #1E293B; color: white; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(30,41,59,0.2);">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+       <span data-i18n="startDebateBtn">Convene Board Debate</span>
+     </button>
+   </div>
+
+   <!-- 2x2 Grid -->
+   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
+     <div class="board-seat" id="seat-financial">
+       <div style="width: 3rem; height: 3rem; background: #10b981; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; margin-bottom: 0.5rem;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+       <div data-i18n="cfoTitle" style="font-size: 0.7rem; font-weight: 700; color: #1E293B;">CFO (Finance)</div>
+       <div class="speaker-badge" style="background: rgba(16,185,129,0.1); color: #10b981;"> Speaking</div>
+     </div>
+     <div class="board-seat" id="seat-marketing">
+       <div style="width: 3rem; height: 3rem; background: #F59E0B; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; margin-bottom: 0.5rem;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div>
+       <div data-i18n="cmoTitle" style="font-size: 0.7rem; font-weight: 700; color: #1E293B;">CMO (Marketing)</div>
+       <div class="speaker-badge" style="background: rgba(245,158,11,0.1); color: #F59E0B;"> Speaking</div>
+     </div>
+     <div class="board-seat" id="seat-coo">
+       <div style="width: 3rem; height: 3rem; background: #4F46E5; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; margin-bottom: 0.5rem;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></div>
+       <div data-i18n="cooTitle" style="font-size: 0.7rem; font-weight: 700; color: #1E293B;">COO (Operations)</div>
+       <div class="speaker-badge" style="background: rgba(79,70,229,0.1); color: #4F46E5;"> Speaking</div>
+     </div>
+     <div class="board-seat" id="seat-pricing">
+       <div style="width: 3rem; height: 3rem; background: #EF4444; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; margin-bottom: 0.5rem;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></div>
+       <div data-i18n="pricingTitle" style="font-size: 0.7rem; font-weight: 700; color: #1E293B;">Pricing Strategist</div>
+       <div class="speaker-badge" style="background: rgba(239,68,68,0.1); color: #EF4444;"> Speaking</div>
+     </div>
+   </div>
+
+   <!-- Live Stream -->
+   <div id="loadingIndicator" style="display: none; text-align: center; padding: 2rem 0;">
+     <div style="display: inline-block; width: 2rem; height: 2rem; border: 3px solid #e0f2fe; border-top-color: #0284c7; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 0.5rem;"></div>
+     <div data-i18n="loadingText" style="font-size: 0.75rem; font-weight: bold; color: #475569;">Convening Advisory Board...</div>
+     <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+   </div>
+
+   <div id="speechesList"></div>
+
+   <!-- Resolution -->
+   <div id="resolutionCard" style="display: none; background: linear-gradient(135deg, rgba(224,242,254,0.9) 0%, rgba(239,246,255,0.9) 100%); border-radius: 1.5rem; padding: 1.25rem; border: 1px solid #7dd3fc; box-shadow: 0 4px 20px rgba(14,165,233,0.2); margin-top: 1rem;">
+     <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(14,165,233,0.2); padding-bottom: 0.75rem;">
+       <div style="width: 2.5rem; height: 2.5rem; background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; color: white;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></div>
+       <div>
+         <div style="font-size: 0.6rem; font-weight: 900; letter-spacing: 0.05em; color: #0369a1;">RESOLUTION</div>
+         <div data-i18n="resolutionTitle" style="font-size: 0.9rem; font-weight: 900; color: #0f172a;">Board Resolution</div>
+       </div>
+     </div>
+     <div id="resolutionText" style="font-size: 0.8rem; color: #1e293b; line-height: 1.5; font-weight: 600;"></div>
+   </div>
+
+  </div>
+
+ </div>
+ <nav class="bottom-nav">
+   <a href="dashboard.html" class="" title="الرئيسية">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+   </a>
+   <a href="insights.html" class="" title="التحليلات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+   </a>
+   <a href="chat.html" class="" title="اسأل بصيرة" style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z"/></svg>
+   </a>
+   <a href="datasets.html" class="" title="البيانات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+   </a>
+   <a href="reports.html" class="" title="التقارير">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+   </a>
+  </nav>
+</div>
+
+<script src="app.js"></script>
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+<script>
+ function renderDate() {
+  const isAr = (document.documentElement.getAttribute('lang') || 'en') === 'ar';
+  const dayEl = document.getElementById('dash-day-label');
+  if (dayEl) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dayEl.textContent = new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-US', options);
+  }
+  
+  document.getElementById('topicInput').placeholder = window.BASEERA_TRANSLATIONS['debatePromptPlaceholder'][isAr ? 'ar' : 'en'];
+ }
+
+ const SEAT_INFO = [
+   { id: 'financial', color: '#10b981', icon: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>' },
+   { id: 'marketing', color: '#f59e0b', icon: '<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle>' },
+   { id: 'coo', color: '#0ea5e9', icon: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>' },
+   { id: 'pricing', color: '#a855f7', icon: '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>' }
+ ];
+
+ async function startDebate() {
+   const topic = document.getElementById('topicInput').value.trim();
+   if (!topic) return;
+
+   document.getElementById('startBtn').disabled = true;
+   document.getElementById('speechesList').innerHTML = '';
+   document.getElementById('resolutionCard').style.display = 'none';
+   document.getElementById('loadingIndicator').style.display = 'block';
+
+   const isAr = (document.documentElement.getAttribute('lang') || 'en') === 'ar';
+
+   try {
+     const response = await fetch('http://127.0.0.1:8000/api/boardroom/debate/', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ topic: topic })
+     });
+
+     if (!response.ok) throw new Error('API Request Failed');
+     const result = await response.json();
+     const debateData = result.data || result; // Fallback in case format differs
+     
+     document.getElementById('loadingIndicator').style.display = 'none';
+
+     const messages = debateData.messages || [];
+     for (let i = 0; i < messages.length; i++) {
+       const msg = messages[i];
+       // Assign a seat visually
+       const seatIndex = i % SEAT_INFO.length;
+       const spk = SEAT_INFO[seatIndex];
+       
+       // Highlight active seat
+       document.querySelectorAll('.board-seat').forEach(el => el.classList.remove('active-speaker'));
+       const seatEl = document.getElementById(`seat-${spk.id}`);
+       if (seatEl) {
+         seatEl.classList.add('active-speaker');
+         seatEl.querySelector('div:nth-child(2)').textContent = msg.agentName || msg.role || "Agent";
+       }
+
+       const card = document.createElement('div');
+       card.className = 'speech-card';
+       card.innerHTML = `
+        <div style="width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; color: white; background: ${spk.color}; flex-shrink: 0;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">${spk.icon}</svg>
+        </div>
+        <div>
+          <div style="font-weight: 900; font-size: 0.75rem; color: #0f172a; margin-bottom: 0.25rem;">${msg.agentName || msg.role} <span style="color: #64748b; font-size: 0.65rem;">(${msg.role})</span></div>
+          <div style="font-size: 0.7rem; color: #475569; line-height: 1.4;">${msg.text}</div>
+        </div>
+       `;
+       document.getElementById('speechesList').appendChild(card);
+       card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+       await new Promise(r => setTimeout(r, 2000));
+     }
+
+     document.querySelectorAll('.board-seat').forEach(el => el.classList.remove('active-speaker'));
+     
+     let resolutionHtml = "";
+     if (debateData.consensusPlan) {
+       resolutionHtml = `<strong>${debateData.consensusPlan.title || 'Resolution'}</strong><br/>
+       ${debateData.consensusPlan.summary}<br/><br/>
+       <ul style="margin:0; padding-left:1rem;">
+         ${(debateData.consensusPlan.actionSteps || []).map(step => `<li>${step}</li>`).join('')}
+       </ul>`;
+     } else if (debateData.resolution && typeof debateData.resolution === 'object') {
+       resolutionHtml = `<strong>${isAr ? 'القرار:' : 'Decision:'}</strong> ${debateData.resolution.decision || ''}<br/><br/>
+       <strong>${isAr ? 'خطوات العمل:' : 'Action Items:'}</strong>
+       <ul style="margin:0; padding-left:1rem; margin-top: 0.25rem;">
+         ${(debateData.resolution.action_items || []).map(step => `<li style="margin-bottom: 0.25rem;">${step}</li>`).join('')}
+       </ul>`;
+     } else {
+       resolutionHtml = debateData.resolution || "تم التوصل إلى قرار.";
+     }
+     
+     document.getElementById('resolutionText').innerHTML = resolutionHtml;
+     document.getElementById('resolutionCard').style.display = 'block';
+     document.getElementById('resolutionCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+   } catch (error) {
+     console.error(error);
+     document.getElementById('loadingIndicator').style.display = 'none';
+     alert(isAr ? 'حدث خطأ أثناء الاتصال بالوكلاء. يرجى المحاولة مرة أخرى.' : 'Failed to connect to the agents. Please try again.');
+   }
+
+   document.getElementById('startBtn').disabled = false;
+ }
+
+ document.addEventListener('DOMContentLoaded', renderDate);
+ document.addEventListener('langChanged', renderDate);
+</script>
+</body>
+</html>

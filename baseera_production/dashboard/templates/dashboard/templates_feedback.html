@@ -1,0 +1,162 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}تقييمات — بصيرة{% else %}Feedback — Baseera{% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen p-3 gap-3">
+    <!-- 1. القائمة الجانبية -->
+    {% include 'dashboard/sidebar.html' with active_page='templates_feedback' %}
+
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        <!-- 2. الشريط العلوي -->
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Quick Navigation Sub-Bar (بار التنقل السريع) -->
+        <nav class="rounded-3xl glass px-5 py-3.5 flex items-center justify-between flex-wrap gap-3 border border-slate-200/80 dark:border-slate-800 shadow-xs animate-fade-up bg-white/90 dark:bg-slate-900">
+            <div class="flex items-center gap-2 flex-wrap text-xs font-bold">
+            </div>
+
+            <div class="flex items-center gap-2 text-xs font-extrabold text-slate-600 dark:text-slate-300">
+                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>{% if trans.lang_code == 'ar' %}مركز الملاحظات مباشر 24/7{% else %}Live Feedback Hub 24/7{% endif %}</span>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="space-y-4 animate-fade-up max-w-4xl mx-auto w-full">
+
+            <!-- 1. Top Header Banner -->
+            <div class="glass p-5 rounded-3xl border border-white/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900 shadow-xs flex flex-wrap items-center justify-between gap-4 relative overflow-hidden">
+                <div class="flex items-center gap-3.5 relative z-10">
+                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-[var(--nile)] to-[var(--glow)] text-white flex items-center justify-center shadow-md font-black text-lg">
+                        <i data-lucide="file-spreadsheet" class="h-6 w-6"></i>
+                    </div>
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[10px] font-black uppercase tracking-wider mb-1 border border-slate-200 dark:border-slate-700">
+                            {% if trans.lang_code == 'ar' %}مركز تقييم الخدمة{% else %}Platform Feedback{% endif %}
+                        </div>
+                        <h1 class="text-xl font-black text-slate-800 dark:text-white tracking-tight">
+                            {% if trans.lang_code == 'ar' %}تقييمات ومساهمة تطوير المنصة{% else %}Feedback & Customization{% endif %}
+                        </h1>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                            {% if trans.lang_code == 'ar' %}شاركنا تجربتك وتقييمك لمساعدة فريق بصيرة والذكاء الاصطناعي في تلبية احتياجاتك.{% else %}Share your feedback and ratings to empower AI models for your business.{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Clean Centered Feedback Form Card -->
+            <div class="glass p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900 shadow-xs space-y-5">
+                
+                <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div class="h-9 w-9 rounded-2xl bg-[var(--glow)]/15 text-[var(--glow)] flex items-center justify-center font-black">
+                        <i data-lucide="send" class="h-4.5 w-4.5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-black text-slate-800 dark:text-white">
+                            {% if trans.lang_code == 'ar' %}تقديم تقييم أو ملاحظة جديدة{% else %}Submit New Feedback{% endif %}
+                        </h3>
+                        <p class="text-[10px] text-muted-foreground">{% if trans.lang_code == 'ar' %}سيتم إرسال رسالتك ومراجعتها فوراً{% else %}Your message will be sent directly to product engineers{% endif %}</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{% url 'templates_feedback' %}" class="space-y-4">
+                    {% csrf_token %}
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Feedback Type -->
+                        <div>
+                            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
+                                <i data-lucide="tag" class="h-3.5 w-3.5 text-[var(--glow)]"></i>
+                                <span>{% if trans.lang_code == 'ar' %}نوع الملاحظة أو الطلب{% else %}Feedback Type{% endif %}</span>
+                            </label>
+                            <select name="feedback_type" required
+                                class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-xs font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition cursor-pointer">
+                                <option value="rating"> {% if trans.lang_code == 'ar' %}تقييم المنصة والنماذج{% else %}Platform & Template Rating{% endif %}</option>
+                                <option value="suggestion"> {% if trans.lang_code == 'ar' %}اقتراح ميزة أو نموذج جديد{% else %}Feature / Template Suggestion{% endif %}</option>
+                                <option value="complaint"> {% if trans.lang_code == 'ar' %}تقديم استفسار / ملاحظة خاصة{% else %}Inquiry / Special Note{% endif %}</option>
+                            </select>
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
+                                <i data-lucide="mail" class="h-3.5 w-3.5 text-[var(--glow)]"></i>
+                                <span>{% if trans.lang_code == 'ar' %}البريد الإلكتروني للتواصل{% else %}Email Address{% endif %}</span>
+                            </label>
+                            <input type="email" name="email" required placeholder="example@domain.com" value="{{ user.email|default:'' }}"
+                                   class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 px-3.5 text-xs font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition" />
+                        </div>
+                    </div>
+
+                    <!-- Rating Stars (Interactive selector) -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
+                            <i data-lucide="star" class="h-3.5 w-3.5 text-amber-500"></i>
+                            <span>{% if trans.lang_code == 'ar' %}درجة التقييم (من 1 إلى 5 نجوم){% else %}Rating (1 to 5 Stars){% endif %}</span>
+                        </label>
+
+                        <div class="flex items-center gap-2">
+                            <input type="number" name="rating" id="ratingInput" min="1" max="5" value="5" required class="hidden" />
+                            <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                {% for i in "12345" %}
+                                <button type="button" onclick="setRating(this.dataset.star)" class="star-btn p-1.5 hover:scale-125 transition-transform" data-star="{{ forloop.counter }}">
+                                    <i data-lucide="star" class="h-6 w-6 text-amber-400 fill-amber-400"></i>
+                                </button>
+                                {% endfor %}
+                                <span id="ratingValLabel" class="text-xs font-black text-amber-600 dark:text-amber-400 px-2 font-mono">5 / 5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5 flex items-center gap-1.5">
+                            <i data-lucide="message-square" class="h-3.5 w-3.5 text-[var(--glow)]"></i>
+                            <span>{% if trans.lang_code == 'ar' %}الرسالة أو تفاصيل الملاحظة{% else %}Message or Details{% endif %}</span>
+                        </label>
+                        <textarea name="message" rows="5" required 
+                                  placeholder="{% if trans.lang_code == 'ar' %}اكتب اقتراحاتك أو تجربتك في استخدام نماذج بصيرة المحاسبية والتسويقية هنا...{% else %}Type your feedback or template requests here...{% endif %}"
+                                  class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-3 px-3.5 text-xs font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition leading-relaxed"></textarea>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full py-3 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs font-black shadow-md hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2">
+                        <i data-lucide="send" class="h-4 w-4"></i>
+                        <span>{% if trans.lang_code == 'ar' %}إرسال التقييم والملاحظات{% else %}Submit Feedback{% endif %}</span>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+function setRating(val) {
+    const input = document.getElementById('ratingInput');
+    const label = document.getElementById('ratingValLabel');
+    if (input) input.value = val;
+    if (label) label.textContent = `${val} / 5`;
+
+    const btns = document.querySelectorAll('.star-btn');
+    btns.forEach(btn => {
+        const starIdx = parseInt(btn.getAttribute('data-star'));
+        const icon = btn.querySelector('svg');
+        if (icon) {
+            if (starIdx <= val) {
+                icon.classList.add('text-amber-400', 'fill-amber-400');
+                icon.classList.remove('text-slate-300', 'fill-none');
+            } else {
+                icon.classList.remove('text-amber-400', 'fill-amber-400');
+                icon.classList.add('text-slate-300', 'fill-none');
+            }
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', () => {
+    if(window.lucide) lucide.createIcons();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{{ trans.contact }} — {{ trans.brand }}{% endblock %}
+
+{% block content %}
+{% include 'dashboard/navbar.html' %}
+
+<main class="mx-auto w-[min(1100px,calc(100%-2rem))] pb-20 pt-32 text-{{ trans.align }}">
+
+    <!-- Title / Intro -->
+    <section class="animate-fade-up text-center mb-12">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/40 px-3 py-1 text-xs font-medium text-[var(--nile)]">
+            <i data-lucide="phone" class="h-3.5 w-3.5"></i> {{ trans.contact }}
+        </div>
+        <h1 class="mx-auto mt-3 max-w-2xl text-2xl font-extrabold leading-tight tracking-tight md:text-3xl lg:text-4xl">
+            {{ trans.contact_title }}
+        </h1>
+        <p class="mx-auto mt-5 max-w-2xl text-base md:text-lg text-muted-foreground leading-relaxed">
+            {{ trans.contact_desc }}
+        </p>
+    </section>
+
+    <!-- Grid Container -->
+    <div class="grid gap-6 md:grid-cols-[1.2fr_1fr] items-start animate-fade-up" style="animation-delay: 100ms;">
+        
+        <!-- Contact Form -->
+        <section class="glass-strong rounded-3xl p-6 md:p-8">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <div>
+
+                        <div class="relative">
+                            <i data-lucide="user" class="absolute {% if trans.lang_code == 'ar' %}right-4{% else %}left-4{% endif %} top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"></i>
+                            <input type="text" name="name" required placeholder="{{ trans.name_placeholder }}" 
+                                class="w-full rounded-2xl border border-white/60 bg-white/60 py-3 {% if trans.lang_code == 'ar' %}pr-11 pl-4{% else %}pl-11 pr-4{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-muted-foreground/60 focus:border-[var(--glow)] focus:ring-4 focus:ring-[var(--glow)]/20" />
+                        </div>
+                    </div>
+
+                    <div>
+
+                        <div class="relative">
+                            <i data-lucide="mail" class="absolute {% if trans.lang_code == 'ar' %}right-4{% else %}left-4{% endif %} top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"></i>
+                            <input type="text" name="contact_info" required placeholder="{{ trans.email_placeholder }}" 
+                                class="w-full rounded-2xl border border-white/60 bg-white/60 py-3 {% if trans.lang_code == 'ar' %}pr-11 pl-4{% else %}pl-11 pr-4{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-muted-foreground/60 focus:border-[var(--glow)] focus:ring-4 focus:ring-[var(--glow)]/20" />
+                        </div>
+                    </div>
+
+                    <div>
+
+                        <textarea name="message" rows="5" required placeholder="{{ trans.message_placeholder }}"
+                            class="w-full rounded-2xl border border-white/60 bg-white/60 py-3 px-4 text-sm outline-none backdrop-blur transition placeholder:text-muted-foreground/60 focus:border-[var(--glow)] focus:ring-4 focus:ring-[var(--glow)]/20"></textarea>
+                    </div>
+
+                    <button type="submit" 
+                        class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-indigo-500/30 hover:opacity-95 transition-all">
+                        {{ trans.submit_btn }}
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Sidebar Info -->
+        <div class="space-y-6">
+            <!-- Channels Card -->
+            <section class="glass rounded-3xl p-6">
+                <h3 class="font-bold text-lg mb-4 text-ink">{{ trans.channels_title }}</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-xl bg-emerald-100 grid place-items-center shrink-0">
+                            <i class="fa-brands fa-whatsapp text-emerald-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-sm">{{ trans.whatsapp_support }}</p>
+                            <p class="text-xs text-gray-400">+968 99323445</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-xl bg-[var(--nile)]/10 grid place-items-center shrink-0">
+                            <i data-lucide="map-pin" class="h-5 w-5 text-[var(--nile)]"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-sm">{{ trans.office_location }}</p>
+                            <p class="text-xs text-gray-400">{{ trans.seeb_muscat }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Why Contact Card -->
+            <section class="glass rounded-3xl p-6">
+                <h3 class="font-bold text-lg mb-2 text-ink">{{ trans.why_contact_title }}</h3>
+                <p class="text-sm text-muted-foreground leading-relaxed">
+                    {{ trans.why_contact_desc }}
+                </p>
+            </section>
+
+
+        </div>
+
+    </div>
+
+</main>
+
+{% include 'dashboard/footer.html' %}
+{% endblock %}

@@ -1,0 +1,266 @@
+<style>
+  .core-engine-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    font-family: inherit;
+    direction: ltr; /* Force LTR for absolute positioning math */
+  }
+
+  .core-node {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(124, 108, 240, 0.15), inset 0 0 20px rgba(255,255,255,0.8);
+    z-index: 10;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .core-node:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 40px rgba(124, 108, 240, 0.25), inset 0 0 20px rgba(255,255,255,1);
+  }
+
+  .core-dot {
+    width: 16px;
+    height: 16px;
+    background: #8b5cf6;
+    border-radius: 50%;
+    margin-bottom: 8px;
+    box-shadow: 0 0 15px #8b5cf6, 0 0 30px #8b5cf6;
+    animation: pulse-dot 2s infinite ease-in-out;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.7; }
+  }
+
+  .core-title {
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #1e293b;
+    margin-bottom: 2px;
+  }
+  .core-subtitle {
+    font-size: 0.65rem;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .peripheral-node {
+    position: absolute;
+    width: 140px;
+    height: 50px;
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #0f172a;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    z-index: 5;
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+  .peripheral-node:hover {
+    transform: translateY(-2px);
+    border-color: #8b5cf6;
+  }
+
+  .node-label {
+    position: absolute;
+    top: -20px;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+  .left-nodes .node-label { left: 15px; }
+  .right-nodes .node-label { right: 15px; }
+
+  /* Positions */
+  .right-nodes { right: 10%; }
+  .left-nodes { left: 10%; }
+  
+  .node-top { top: 15%; }
+  .node-mid { top: 43%; }
+  .node-bot { top: 72%; }
+
+  svg.connection-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .line-path {
+    fill: none;
+    stroke: #cbd5e1;
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke 0.3s;
+  }
+  
+  .particle {
+    fill: #8b5cf6;
+    filter: drop-shadow(0 0 5px #8b5cf6);
+  }
+
+</style>
+
+<div class="rounded-3xl p-6 glass flex flex-col mb-4 overflow-hidden relative shadow-sm border border-slate-200/50 dark:border-slate-700/50" dir="rtl">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    
+    <div class="flex items-center justify-between mb-2 relative z-10">
+        <div>
+            <h3 class="text-sm font-bold text-ink">{% if trans.lang_code == 'ar' %}هيكلية بصيرة الحية{% else %}Baseera Live Engine{% endif %}</h3>
+            <p class="text-xs text-muted-foreground">{% if trans.lang_code == 'ar' %}تدفق البيانات لحظة بلحظة{% else %}Real-time data flow{% endif %}</p>
+        </div>
+        <div class="flex items-center gap-2" dir="ltr">
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Live</span>
+        </div>
+    </div>
+
+    <div class="core-engine-container" id="coreEngineContainer">
+        <!-- Lines SVG -->
+        <svg class="connection-lines" id="connectionSvg"></svg>
+        
+        <!-- Center -->
+        <div class="core-node" id="coreNode">
+            <div class="core-dot"></div>
+            <div class="core-title">نُقطة</div>
+            <div class="core-subtitle">النواة</div>
+        </div>
+
+        <!-- Right side (Inputs) -->
+        <div class="peripheral-node right-nodes node-top" id="node-in-1">
+            <div class="node-label">مُدخَل</div>
+            واتساب
+        </div>
+        <div class="peripheral-node right-nodes node-mid" id="node-in-2">
+            <div class="node-label">مُدخَل</div>
+            صوت
+        </div>
+        <div class="peripheral-node right-nodes node-bot" id="node-in-3">
+            <div class="node-label">مُدخَل</div>
+            مستند
+        </div>
+
+        <!-- Left side (Outputs) -->
+        <div class="peripheral-node left-nodes node-top" id="node-out-1">
+            <div class="node-label">مُخرَج</div>
+            ردّ
+        </div>
+        <div class="peripheral-node left-nodes node-mid" id="node-out-2">
+            <div class="node-label">مُخرَج</div>
+            استخراج
+        </div>
+        <div class="peripheral-node left-nodes node-bot" id="node-out-3">
+            <div class="node-label">مُخرَج</div>
+            إجراء
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const svg = document.getElementById("connectionSvg");
+    const container = document.getElementById("coreEngineContainer");
+    
+    function getCenter(el) {
+        const rect = el.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        return {
+            x: rect.left - containerRect.left + rect.width / 2,
+            y: rect.top - containerRect.top + rect.height / 2
+        };
+    }
+
+    function drawLines() {
+        svg.innerHTML = '';
+        const core = getCenter(document.getElementById("coreNode"));
+        const nodes = [
+            'node-in-1', 'node-in-2', 'node-in-3',
+            'node-out-1', 'node-out-2', 'node-out-3'
+        ];
+
+        nodes.forEach(id => {
+            const el = document.getElementById(id);
+            if(!el) return;
+            const p = getCenter(el);
+            
+            // Create bezier curve
+            const isRight = p.x > core.x;
+            const cpx1 = isRight ? p.x - 100 : p.x + 100;
+            const cpx2 = isRight ? core.x + 100 : core.x - 100;
+
+            const pathData = `M ${p.x} ${p.y} C ${cpx1} ${p.y}, ${cpx2} ${core.y}, ${core.x} ${core.y}`;
+            
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", pathData);
+            path.setAttribute("class", "line-path");
+            path.setAttribute("id", `path-${id}`);
+            svg.appendChild(path);
+
+            // Add particle animation
+            createParticle(pathData, isRight, `path-${id}`);
+        });
+    }
+
+    function createParticle(pathData, isInput, pathId) {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("r", "4");
+        circle.setAttribute("class", "particle");
+        
+        const animate = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+        animate.setAttribute("dur", (2 + Math.random() * 2) + "s");
+        animate.setAttribute("repeatCount", "indefinite");
+        
+        // Flow logic:
+        // isInput (right side nodes) -> flow towards core. Path drawn right->core.
+        // !isInput (left side nodes) -> flow away from core. Path drawn left->core, so reverse it.
+        if (!isInput) {
+            animate.setAttribute("keyPoints", "1;0");
+            animate.setAttribute("keyTimes", "0;1");
+            animate.setAttribute("calcMode", "linear");
+        }
+        
+        const mpath = document.createElementNS("http://www.w3.org/2000/svg", "mpath");
+        mpath.setAttribute("href", `#${pathId}`);
+        
+        animate.appendChild(mpath);
+        circle.appendChild(animate);
+        svg.appendChild(circle);
+    }
+
+    // Initial draw
+    setTimeout(drawLines, 150);
+    
+    // Redraw on resize
+    window.addEventListener('resize', () => {
+        requestAnimationFrame(drawLines);
+    });
+});
+</script>

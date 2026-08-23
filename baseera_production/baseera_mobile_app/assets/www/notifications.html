@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Notifications</title>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var t=localStorage.getItem("baseera-theme")||"light";document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("baseera-lang")||"en";document.documentElement.setAttribute("lang",l);document.documentElement.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
+<script>
+ window.BASEERA_TRANSLATIONS = {
+  notifTitle: { en: 'Notifications & Messages', ar: 'التنبيهات والرسائل' },
+  notifDesc: { en: 'Track your latest alerts and analysis results from Baseera.', ar: 'تابع أحدث التنبيهات ونتائج التحليل من بصيرة.' },
+  markAllRead: { en: 'Mark all as read', ar: 'تحديد الكل كمقروء' },
+  goDash: { en: 'Go to Dashboard', ar: 'الذهاب للوحة التحكم' }
+ };
+</script>
+</head>
+<body class="page-enter">
+
+<div class="app-shell">
+ <div class="app-content">
+
+  <div class="dash-topbar" style="position: relative;">
+   <div>
+    <div class="dash-day" id="dash-day-label"></div>
+    <div class="dash-greeting" data-i18n="notifTitle" style="font-size: 1.25rem;">Notifications</div>
+   </div>
+   <div class="dash-icons">
+    <button class="dash-icon-btn theme-toggle-pill" title="Dark mode">
+     <span class="theme-toggle-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span>
+    </button>
+    <button class="dash-icon-btn lang-toggle-pill" title="Toggle language" style="height: 32px; padding: 0 10px; justify-content: center; font-size: 0.75rem; font-weight: bold; border-radius: 16px;">
+     <span class="lang-toggle-label">Eng/ع</span>
+    </button>
+    <button class="dash-icon-btn" onclick="window.history.back()" title="Back">
+     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+   </div>
+  </div>
+
+  <div style="padding: 1rem; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 5rem;">
+
+   <!-- Header Card -->
+   <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(24px); border-radius: 1.5rem; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 4px 15px rgba(27,20,75,0.05);">
+     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+       <div style="flex: 1;">
+         <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+           <div style="width: 2.5rem; height: 2.5rem; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white;">
+             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+           </div>
+           <div data-i18n="notifTitle" style="font-size: 1rem; font-weight: 900; color: #1e293b;">Notifications</div>
+         </div>
+         <div data-i18n="notifDesc" style="font-size: 0.65rem; color: #64748b; line-height: 1.4;">Track your latest alerts and analysis results from Baseera.</div>
+       </div>
+     </div>
+     <div style="text-align: right;">
+       <button onclick="markAllRead()" style="background: none; border: none; color: #7c6cf0; font-size: 0.7rem; font-weight: bold; cursor: pointer;" data-i18n="markAllRead">Mark all as read</button>
+     </div>
+   </div>
+
+   <!-- Notifications List -->
+   <div id="notifList" style="display: flex; flex-direction: column; gap: 0.75rem;">
+     
+     <!-- Success Notif -->
+     <div class="notif-item" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(24px); border-radius: 1.25rem; padding: 1rem; border: 1px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: flex; gap: 0.75rem; position: relative; overflow: hidden;">
+       <div class="unread-indicator" style="position: absolute; left: 0; top: 0; bottom: 0; width: 0.25rem; background: #10b981; border-top-right-radius: 4px; border-bottom-right-radius: 4px;"></div>
+       
+       <div style="width: 2.5rem; height: 2.5rem; background: #ecfdf5; border: 1px solid #d1fae5; border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; color: #10b981; flex-shrink: 0; margin-left: 0.5rem;">
+         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+       </div>
+       
+       <div style="flex: 1;">
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+           <div class="notif-title-en" style="font-size: 0.8rem; font-weight: 900; color: #1e293b;">Data Processing Complete</div>
+           <div class="notif-title-ar" style="font-size: 0.8rem; font-weight: 900; color: #1e293b; display: none;">اكتملت معالجة البيانات</div>
+           <div style="font-size: 0.6rem; color: #94a3b8; font-weight: bold;" class="time-en">2m ago</div>
+           <div style="font-size: 0.6rem; color: #94a3b8; font-weight: bold; display: none;" class="time-ar">قبل دقيقتين</div>
+         </div>
+         <div class="notif-desc-en" style="font-size: 0.7rem; color: #475569; line-height: 1.4; margin-bottom: 0.5rem;">Your uploaded sales_data_2026.csv has been successfully processed and is ready for analysis.</div>
+         <div class="notif-desc-ar" style="font-size: 0.7rem; color: #475569; line-height: 1.4; margin-bottom: 0.5rem; display: none;">تمت معالجة ملف sales_data_2026.csv بنجاح وهو جاهز للتحليل.</div>
+         
+         <a href="dashboard.html" style="font-size: 0.65rem; color: #7c6cf0; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
+           <span data-i18n="goDash">Go to Dashboard</span>
+           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+         </a>
+       </div>
+     </div>
+
+     <!-- Alert Notif -->
+     <div class="notif-item" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(24px); border-radius: 1.25rem; padding: 1rem; border: 1px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: flex; gap: 0.75rem; position: relative; overflow: hidden;">
+       <div class="unread-indicator" style="position: absolute; left: 0; top: 0; bottom: 0; width: 0.25rem; background: #f59e0b; border-top-right-radius: 4px; border-bottom-right-radius: 4px;"></div>
+       
+       <div style="width: 2.5rem; height: 2.5rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; color: #f59e0b; flex-shrink: 0; margin-left: 0.5rem;">
+         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+       </div>
+       
+       <div style="flex: 1;">
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+           <div class="notif-title-en" style="font-size: 0.8rem; font-weight: 900; color: #1e293b;">Data Anomaly Detected</div>
+           <div class="notif-title-ar" style="font-size: 0.8rem; font-weight: 900; color: #1e293b; display: none;">تم اكتشاف شذوذ في البيانات</div>
+           <div style="font-size: 0.6rem; color: #94a3b8; font-weight: bold;" class="time-en">1h ago</div>
+           <div style="font-size: 0.6rem; color: #94a3b8; font-weight: bold; display: none;" class="time-ar">قبل ساعة</div>
+         </div>
+         <div class="notif-desc-en" style="font-size: 0.7rem; color: #475569; line-height: 1.4; margin-bottom: 0.5rem;">Baseera AI noticed an unusual dip in revenue in Q3. We recommend checking the Insights tab.</div>
+         <div class="notif-desc-ar" style="font-size: 0.7rem; color: #475569; line-height: 1.4; margin-bottom: 0.5rem; display: none;">لاحظ ذكاء بصيرة الاصطناعي انخفاضاً غير معتاد في الإيرادات في الربع الثالث. نوصي بالتحقق من قسم الرؤى.</div>
+         
+         <a href="insights.html" style="font-size: 0.65rem; color: #7c6cf0; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
+           <span data-i18n="goDash">View Insights</span>
+           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+         </a>
+       </div>
+     </div>
+
+     <!-- AI Notif -->
+     <div class="notif-item" style="background: rgba(255,255,255,0.6); backdrop-filter: blur(24px); border-radius: 1.25rem; padding: 1rem; border: 1px solid transparent; display: flex; gap: 0.75rem;">
+       
+       <div style="width: 2.5rem; height: 2.5rem; background: #eef2ff; border: 1px solid #e0e7ff; border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; color: #6366f1; flex-shrink: 0; margin-left: 0.5rem;">
+         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+       </div>
+       
+       <div style="flex: 1;">
+         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+           <div class="notif-title-en" style="font-size: 0.8rem; font-weight: 900; color: #1e293b;">Campaign Strategy Logged</div>
+           <div class="notif-title-ar" style="font-size: 0.8rem; font-weight: 900; color: #1e293b; display: none;">تم توثيق استراتيجية الحملة</div>
+           <div style="font-size: 0.6rem; color: #94a3b8; font-weight: bold;" class="time-en">1d ago</div>
+           <div style="font-size: 0.6rem; color: #94a3b8; font-weight: bold; display: none;" class="time-ar">قبل يوم</div>
+         </div>
+         <div class="notif-desc-en" style="font-size: 0.7rem; color: #475569; line-height: 1.4;">Your Smart Marketing plan for 'Product A' was successfully logged into the workspace.</div>
+         <div class="notif-desc-ar" style="font-size: 0.7rem; color: #475569; line-height: 1.4; display: none;">تم حفظ خطتك التسويقية لـ "المنتج A" بنجاح في مساحة العمل.</div>
+       </div>
+     </div>
+
+   </div>
+
+  </div>
+
+ </div>
+ <nav class="bottom-nav">
+   <a href="dashboard.html" class="" title="الرئيسية">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+   </a>
+   <a href="insights.html" class="" title="التحليلات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+   </a>
+   <a href="chat.html" class="" title="اسأل بصيرة" style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z"/></svg>
+   </a>
+   <a href="datasets.html" class="" title="البيانات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+   </a>
+   <a href="reports.html" class="" title="التقارير">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+   </a>
+  </nav>
+</div>
+
+<script src="app.js"></script>
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+<script>
+ function renderDate() {
+  const isAr = (document.documentElement.getAttribute('lang') || 'en') === 'ar';
+  const dayEl = document.getElementById('dash-day-label');
+  if (dayEl) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dayEl.textContent = new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-US', options);
+  }
+  
+  // Toggle English/Arabic content manually for complex strings in notifs
+  document.querySelectorAll('.notif-title-en, .notif-desc-en, .time-en').forEach(el => el.style.display = isAr ? 'none' : 'block');
+  document.querySelectorAll('.notif-title-ar, .notif-desc-ar, .time-ar').forEach(el => el.style.display = isAr ? 'block' : 'none');
+ }
+
+ function markAllRead() {
+   document.querySelectorAll('.unread-indicator').forEach(el => el.style.display = 'none');
+   document.querySelectorAll('.notif-item').forEach(el => {
+     el.style.background = 'rgba(255,255,255,0.6)';
+     el.style.border = '1px solid transparent';
+   });
+ }
+
+ document.addEventListener('DOMContentLoaded', renderDate);
+ document.addEventListener('langChanged', renderDate);
+</script>
+</body>
+</html>

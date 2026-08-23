@@ -1,0 +1,645 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}غرفة اجتماعات الوكلاء (مجلس الإدارة){% else %}Executive Boardroom (Multi-Agent Debate){% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen p-3 gap-3">
+    {% include 'dashboard/sidebar.html' with active_page='boardroom' %}
+
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Quick Navigation Sub-Bar (بار التنقل السريع باللون الأبيض) -->
+        <nav class="rounded-3xl glass px-5 py-3.5 flex items-center justify-between flex-wrap gap-3 border border-slate-200/80 dark:border-slate-800 shadow-sm animate-fade-up bg-white/90 dark:bg-slate-900">
+            <div class="flex items-center gap-2 flex-wrap text-xs font-bold">
+                <a href="{% url 'boardroom' %}" class="px-3.5 py-2 rounded-2xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition flex items-center gap-2 border border-slate-300 dark:border-slate-700 shadow-sm font-extrabold">
+                    <span>{% if trans.lang_code == 'ar' %}غرفة الاجتماعات (Boardroom){% else %}Executive Boardroom{% endif %}</span>
+                </a>
+                <a href="{% url 'agents_hub' %}" class="px-3.5 py-2 rounded-2xl bg-white/80 hover:bg-white text-slate-800 dark:text-slate-100 dark:bg-slate-800/80 transition flex items-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <span>{% if trans.lang_code == 'ar' %}مركز الوكلاء (6){% else %}Agents Hub (6){% endif %}</span>
+                </a>
+                <a href="{% url 'ask_basira' %}" class="px-3.5 py-2 rounded-2xl bg-white/80 hover:bg-white text-slate-800 dark:text-slate-100 dark:bg-slate-800/80 transition flex items-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <span>{% if trans.lang_code == 'ar' %}المساعد العام{% else %}General Assistant{% endif %}</span>
+                </a>
+            </div>
+
+            <div>
+                <button id="exportBoardroomBtn" onclick="exportBoardroomPDF()" class="hidden px-4 py-2 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs font-black shadow-md hover:opacity-90 active:scale-95 transition flex items-center gap-1.5">
+                    <i data-lucide="download" class="h-4 w-4"></i>
+                    <span>{% if trans.lang_code == 'ar' %}تصدير محضر الجلسة (PDF){% else %}Export PDF{% endif %}</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area: Grid Layout (مربعات بالأبيض النقي والزجاج) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 animate-fade-up">
+
+            <!-- LEFT COLUMN (lg:col-span-5): Topic Input Card & 6 Board Members Grid -->
+            <div class="lg:col-span-5 space-y-4">
+                
+                <!-- Strategic Decision Input Square Card -->
+                <div class="rounded-3xl p-5 glass border border-white/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900 shadow-sm relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-[var(--glow)]/10 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div class="mb-4">
+                        <h1 class="text-lg font-black text-slate-800 dark:text-white tracking-tight">
+                            {% if trans.lang_code == 'ar' %}طاولة النقاش التنفيذي الموحد{% else %}All-Agent Strategic Debate{% endif %}
+                        </h1>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                            {% if trans.lang_code == 'ar' %}
+                            اطرح أي قرار تجاري، وسيشارك كافة الوكلاء الـ 6 المعتمدين في مناظرة مخصصة لتحليل المشكلة وإتاحة الحل الشامل.
+                            {% else %}
+                            Pose any business decision, and all 6 certified specialized AI agents will participate in a dedicated debate to analyze the problem and provide a comprehensive solution.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <form id="boardroomForm" onsubmit="startBoardroomDebate(event)" class="relative z-10 space-y-3">
+                        <div>
+                            <label for="topicInput" class="text-xs font-extrabold text-slate-800 dark:text-white flex items-center gap-1.5 mb-2">
+                                <i data-lucide="help-circle" class="h-3.5 w-3.5 text-[var(--glow)]"></i>
+                                {% if trans.lang_code == 'ar' %}ما القرار أو التحدي الاستراتيجي المراد مناقشته؟{% else %}Strategic decision or challenge to debate?{% endif %}
+                            </label>
+                            <textarea 
+                                id="topicInput" 
+                                required
+                                rows="3"
+                                placeholder="{% if trans.lang_code == 'ar' %}مثال: لدينا ارتفاع في المصاريف وانخفاض في مبيعات المنتجات المرتفعة هامش الربح، كيف نتعامل مع المشكلة؟{% else %}e.g. We have rising expenses and a drop in sales of high-margin items. How should we handle it?{% endif %}"
+                                class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/90 p-3 text-xs font-semibold text-slate-800 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition resize-none"
+                            ></textarea>
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            id="startDebateBtn"
+                            class="w-full py-3 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs font-black shadow-md hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                            <i data-lucide="play" class="h-4 w-4 fill-white"></i>
+                            <span>{% if trans.lang_code == 'ar' %}بدء جلسة المجلس الآن{% else %}Convene Board Debate{% endif %}</span>
+                        </button>
+
+                        <!-- Quick Presets -->
+                        <div class="space-y-1.5 pt-1">
+                            <span class="text-[11px] text-slate-500 font-bold flex items-center gap-1">
+                                <i data-lucide="zap" class="h-3 w-3 text-amber-500"></i>
+                                {% if trans.lang_code == 'ar' %}مقترحات استراتيجية مبنية على بياناتك:{% else %}Data-Driven Strategic Presets:{% endif %}
+                            </span>
+                            <div class="flex flex-col gap-1.5 text-xs">
+                                {% if weekly_digest and weekly_digest.top_risks %}
+                                    {% for risk in weekly_digest.top_risks|slice:":3" %}
+                                    <button type="button" 
+                                        data-topic="{% if trans.lang_code == 'ar' %}كيف نتعامل مع هذا التحدي بناءً على مبيعاتنا: {{ risk }}؟{% else %}How do we handle this challenge based on our sales: {{ risk }}?{% endif %}"
+                                        onclick="setTopicFromBtn(this)" 
+                                        class="w-full text-[11px] text-{{ trans.align }} px-3 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80 dark:border-slate-700 transition font-medium text-ellipsis overflow-hidden">
+                                        • {{ risk }}
+                                    </button>
+                                    {% endfor %}
+                                {% else %}
+                                    <button type="button" 
+                                        data-topic="{% if trans.lang_code == 'ar' %}لدينا ارتفاع في المصاريف وانخفاض في مبيعات المنتجات المرتفعة هامش الربح، كيف نتعامل مع المشكلة؟{% else %}We have rising expenses and a drop in sales of high-margin items. How should we handle it?{% endif %}"
+                                        onclick="setTopicFromBtn(this)" 
+                                        class="w-full text-[11px] text-{{ trans.align }} px-3 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80 dark:border-slate-700 transition font-medium text-ellipsis overflow-hidden">
+                                        • {% if trans.lang_code == 'ar' %}ارتفاع المصاريف وانخفاض المنتجات عالية الهامش{% else %}Rising expenses & drop in high-margin products{% endif %}
+                                    </button>
+                                    <button type="button" 
+                                        data-topic="{% if trans.lang_code == 'ar' %}كيف نرفع الأسعار بنسبة 10% دون خسارة العملاء وتجنب تكدس المخزون؟{% else %}How to raise prices by 10% without losing customers or accumulating dead stock?{% endif %}"
+                                        onclick="setTopicFromBtn(this)" 
+                                        class="w-full text-[11px] text-{{ trans.align }} px-3 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80 dark:border-slate-700 transition font-medium text-ellipsis overflow-hidden">
+                                        • {% if trans.lang_code == 'ar' %}رفع الأسعار 10% دون خسارة العملاء أو تكدس المخزون{% else %}Raise prices 10% without losing customers or stockouts{% endif %}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+
+            </div>
+
+            <!-- RIGHT COLUMN (lg:col-span-7): Live Debate Stream & Executive Resolution Card -->
+            <div class="lg:col-span-7 space-y-4">
+                
+                <!-- Status Banner & Parallel Loading Animation (11 Seconds Fast Stream) -->
+                <div id="debateLoading" class="hidden rounded-3xl p-6 glass text-center border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900 shadow-sm animate-fade-up">
+                    <div class="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white mb-3 shadow-md animate-pulse">
+                        <i data-lucide="cpu" class="h-7 w-7 animate-spin"></i>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-black mb-2 border border-indigo-100 dark:border-indigo-900">
+                        <span class="h-2 w-2 rounded-full bg-indigo-500 animate-ping"></span>
+                        <span>{% if trans.lang_code == 'ar' %}معالجة متزامنة فائقة السرعة (جلسة نقاش 11 ثانية){% else %}High-Speed Parallel Stream (11-Sec Deliberation){% endif %}</span>
+                    </div>
+                    <h3 id="debateLoadingStatus" class="font-black text-sm text-slate-800 dark:text-white mb-1.5">
+                        {% if trans.lang_code == 'ar' %}جاري تحليل المشكلة واستخلاص القرار عبر 6 وكلاء في 11 ثانية...{% else %}Analyzing challenge and synthesizing decision across 6 agents in 11 seconds...{% endif %}
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed mb-4">
+                        {% if trans.lang_code == 'ar' %}
+                        يقوم الوكلاء الستة بمقاطعة البيانات ومحاكاة السيناريوهات المالية والتشغيلية وتقديم التوافق النهائي فوراً.
+                        {% else %}
+                        The 6 specialized agents are cross-referencing metrics and delivering actionable executive consensus immediately.
+                        {% endif %}
+                    </p>
+
+                    <!-- 11-Second Live Progress Bar -->
+                    <div class="w-full max-w-xs mx-auto">
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-200/60 dark:border-slate-700">
+                            <div id="debateProgressBar" class="h-full bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] rounded-full transition-all duration-150" style="width: 8%;"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 mt-1.5 px-1">
+                            <span id="debateActiveAgentIndicator">{% if trans.lang_code == 'ar' %}تداول الوكلاء المالي واللوجستي والتسعيري...{% else %}Deliberating Finance, Logistics & Pricing...{% endif %}</span>
+                            <span id="debateCountdownText" class="text-indigo-600 dark:text-indigo-400 font-extrabold">11s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Speeches Timeline Container -->
+                <div id="speechesList" class="space-y-3.5"></div>
+
+                <!-- Executive Resolution Card (Pure White Theme) -->
+                <div id="resolutionCard" class="hidden rounded-3xl p-6 glass border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900 text-slate-800 dark:text-white shadow-md animate-fade-up relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-60 h-60 bg-[var(--glow)]/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between flex-wrap gap-2 mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-[var(--nile)] to-[var(--glow)] flex items-center justify-center shadow-md">
+                                    <i data-lucide="award" class="h-6 w-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] uppercase font-black tracking-widest text-[var(--glow)]">BOARD RESOLUTION · {% if trans.lang_code == 'ar' %}التوافق النهائي الموحد{% else %}Final Executive Consensus{% endif %}</span>
+                                    <h3 class="text-base font-extrabold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}التوصية التنفيذية النهائية الموحدة (Final Executive Consensus){% else %}Final Executive Consensus Resolution{% endif %}</h3>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="roiBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-xs">
+                                    {% if trans.lang_code == 'ar' %}+18% نمو متوقع{% else %}+18% Projected Growth{% endif %}
+                                </span>
+                                <span id="riskBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-xs">
+                                    {% if trans.lang_code == 'ar' %}مستوى المخاطر: تحت السيطرة{% else %}Risk Level: Controlled{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="h-4 w-4 text-[var(--glow)]"></i>
+                                <span>{% if trans.lang_code == 'ar' %}القرار التنفيذي المعتمد وخلاصة مواءمة الأقسام الـ 6:{% else %}Adopted Executive Decision & 6-Department Alignment Summary:{% endif %}</span>
+                            </h4>
+                            <p id="resolutionDecisionText" class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 leading-relaxed bg-slate-50 dark:bg-slate-800/90 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"></p>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1.5">
+                                <i data-lucide="check-square" class="h-4 w-4 text-[var(--glow)]"></i>
+                                <span>{% if trans.lang_code == 'ar' %}خطة العمل التنفيذية المشتركة (Action Items):{% else %}Joint Executive Action Plan (Action Items):{% endif %}</span>
+                            </h4>
+                            <ul id="resolutionActionList" class="space-y-2 text-xs text-slate-800 dark:text-slate-200"></ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- Printable Resolution Template (Hidden) -->
+<div id="printableResolution" class="hidden"></div>
+
+<script>
+let currentBoardroomData = null;
+
+const IS_AR = "{{ trans.lang_code }}" === "ar";
+
+const AGENT_CONFIG = {
+    financial: {
+        name: IS_AR ? 'وكيل التحليل المالي' : 'Financial Analyst Agent',
+        role: IS_AR ? 'الأثر المالي والسيولة' : 'Financial Impact & Liquidity',
+        avatar_icon: 'line-chart',
+        colorClasses: 'bg-gradient-to-br from-emerald-400 to-teal-600 text-white',
+        borderClass: 'border-emerald-200 dark:border-emerald-800/60',
+        badgeColor: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
+        analyzingText: IS_AR ? 'جاري تقييم الأثر المالي والسيولة...' : 'Evaluating financial impact...'
+    },
+    supply_chain: {
+        name: IS_AR ? 'وكيل سلاسل الإمداد والمخزون' : 'Supply Chain & Inventory Agent',
+        role: IS_AR ? 'حركة المخزون والتوريد' : 'Inventory & Sourcing Dynamics',
+        avatar_icon: 'truck',
+        colorClasses: 'bg-gradient-to-br from-blue-400 to-indigo-600 text-white',
+        borderClass: 'border-blue-200 dark:border-blue-800/60',
+        badgeColor: 'bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
+        analyzingText: IS_AR ? 'جاري تحليل حركة المخزون والتوريد...' : 'Analyzing inventory & supply...'
+    },
+    pricing: {
+        name: IS_AR ? 'وكيل التسعير واستراتيجية الهوامش' : 'Pricing & Margin Strategy Agent',
+        role: IS_AR ? 'الهوامش والأسعار' : 'Margins & Pricing Elasticity',
+        avatar_icon: 'tag',
+        colorClasses: 'bg-gradient-to-br from-purple-500 to-pink-600 text-white',
+        borderClass: 'border-purple-200 dark:border-purple-800/60',
+        badgeColor: 'bg-purple-50 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+        analyzingText: IS_AR ? 'جاري محاكاة مرونة الأسعار والهامش...' : 'Simulating pricing elasticity...'
+    },
+    audit: {
+        name: IS_AR ? 'وكيل التدقيق الجنائي ومكافحة الهدر' : 'Forensic Audit & Waste Agent',
+        role: IS_AR ? 'التسريبات والمخاطر' : 'Leakage, Fraud & Compliance',
+        avatar_icon: 'shield-alert',
+        colorClasses: 'bg-gradient-to-br from-cyan-500 to-blue-700 text-white',
+        borderClass: 'border-cyan-200 dark:border-cyan-800/60',
+        badgeColor: 'bg-cyan-50 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800',
+        analyzingText: IS_AR ? 'جاري فحص التسريبات ومكافحة الهدر...' : 'Inspecting leakage & waste...'
+    },
+    retention: {
+        name: IS_AR ? 'وكيل ولاء واستعادة العملاء' : 'Customer Retention & Loyalty Agent',
+        role: IS_AR ? 'سلوك وإقبال العملاء' : 'Customer Behavior & Churn Risk',
+        avatar_icon: 'heart-handshake',
+        colorClasses: 'bg-gradient-to-br from-rose-500 to-red-600 text-white',
+        borderClass: 'border-rose-200 dark:border-rose-800/60',
+        badgeColor: 'bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800',
+        analyzingText: IS_AR ? 'جاري تحليل سلوك ومخاطر فقدان العملاء...' : 'Analyzing churn & retention...'
+    },
+    general: {
+        name: IS_AR ? 'المساعد العام (بصيرة الذكية)' : 'General Executive Assistant (Baseera)',
+        role: IS_AR ? 'التوصية التنفيذية الشاملة' : 'Holistic Strategic Alignment',
+        avatar_icon: 'sparkles',
+        colorClasses: 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white',
+        borderClass: 'border-indigo-200 dark:border-indigo-800/60',
+        badgeColor: 'bg-indigo-50 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800',
+        analyzingText: IS_AR ? 'جاري صياغة التوافق التنفيذي الشامل...' : 'Drafting executive consensus...'
+    }
+};
+
+const ALL_AGENT_IDS = ['financial', 'supply_chain', 'pricing', 'audit', 'retention', 'general'];
+
+function setTopic(text) {
+    document.getElementById('topicInput').value = text;
+}
+
+function setTopicFromBtn(btn) {
+    if (btn && btn.dataset && btn.dataset.topic) {
+        setTopic(btn.dataset.topic);
+    }
+}
+
+function setAllSeatsAnalyzing() {
+    ALL_AGENT_IDS.forEach(id => {
+        const seat = document.getElementById(`seat-${id}`);
+        const statusEl = document.getElementById(`status-${id}`);
+        const cfg = AGENT_CONFIG[id];
+        if (seat) {
+            seat.classList.add('ring-2', 'ring-[var(--glow)]', 'scale-[1.02]', 'bg-indigo-50/40', 'dark:bg-indigo-950/30', 'animate-pulse');
+        }
+        if (statusEl) {
+            statusEl.innerHTML = `<span class="text-indigo-600 dark:text-indigo-400 font-bold">${cfg ? cfg.analyzingText : 'جاري التحليل...'}</span>`;
+        }
+    });
+}
+
+function resetAllSeats() {
+    ALL_AGENT_IDS.forEach(id => {
+        const seat = document.getElementById(`seat-${id}`);
+        const statusEl = document.getElementById(`status-${id}`);
+        if (seat) {
+            seat.classList.remove('ring-2', 'ring-[var(--glow)]', 'ring-emerald-400', 'scale-[1.02]', 'scale-[1.04]', 'bg-indigo-50/40', 'dark:bg-indigo-950/30', 'bg-emerald-50/40', 'animate-pulse', 'shadow-md');
+        }
+        if (statusEl) {
+            statusEl.textContent = IS_AR ? 'في وضع الاستعداد' : 'Standby';
+            statusEl.className = 'speaker-status text-[9px] font-bold text-slate-400 block mt-0.5';
+        }
+    });
+}
+
+function markSeatSpoken(speakerId) {
+    const seat = document.getElementById(`seat-${speakerId}`);
+    const statusEl = document.getElementById(`status-${speakerId}`);
+    if (seat) {
+        seat.classList.remove('ring-[var(--glow)]', 'bg-indigo-50/40', 'animate-pulse', 'scale-[1.04]');
+        seat.classList.add('ring-1', 'ring-emerald-400', 'bg-emerald-50/30');
+    }
+    if (statusEl) {
+        statusEl.innerHTML = IS_AR ? '<span class="text-emerald-600 dark:text-emerald-400 font-extrabold">تمت المداخلة ✓</span>' : '<span class="text-emerald-600 dark:text-emerald-400 font-extrabold">Delivered ✓</span>';
+    }
+}
+
+function highlightActiveSpeakerSeat(speakerId) {
+    ALL_AGENT_IDS.forEach(id => {
+        const seat = document.getElementById(`seat-${id}`);
+        if (seat) {
+            if (id === speakerId) {
+                seat.classList.add('ring-2', 'ring-[var(--glow)]', 'scale-[1.04]', 'shadow-md');
+                seat.classList.remove('animate-pulse');
+                const statusEl = document.getElementById(`status-${id}`);
+                if (statusEl) {
+                    statusEl.innerHTML = IS_AR ? '<span class="text-indigo-600 dark:text-indigo-400 font-black animate-bounce">يتحدث الآن...</span>' : '<span class="text-indigo-600 dark:text-indigo-400 font-black animate-bounce">Speaking now...</span>';
+                }
+            } else if (!seat.classList.contains('ring-emerald-400')) {
+                seat.classList.remove('scale-[1.04]');
+            }
+        }
+    });
+}
+
+let debateTimerInterval = null;
+
+function startDebate11sTimer() {
+    if (debateTimerInterval) clearInterval(debateTimerInterval);
+    const totalDurationMs = 11000;
+    const startTime = Date.now();
+    const pBar = document.getElementById('debateProgressBar');
+    const cText = document.getElementById('debateCountdownText');
+    const aText = document.getElementById('debateActiveAgentIndicator');
+    
+    const agentPhasesAr = [
+        "جاري استدعاء وتحليل وكيل التحليل المالي والسيولة...",
+        "جاري فحص سلاسل الإمداد ومخاطر المخزون...",
+        "جاري حساب مرونة الأسعار واستراتيجية الهامش...",
+        "جاري تدقيق المعاملات وكشف الهدر التشغيلي...",
+        "جاري نمذجة سلوك ولاء واستعادة العملاء...",
+        "جاري مواءمة التوصية التنفيذية النهائية المشتركة..."
+    ];
+
+    const agentPhasesEn = [
+        "Analyzing Financial Impact & Liquidity...",
+        "Evaluating Supply Chain & Inventory Risks...",
+        "Simulating Pricing Elasticity & Margin Strategy...",
+        "Auditing Operational Waste & Leakage...",
+        "Modeling Customer Retention & Loyalty...",
+        "Synthesizing Joint Board Executive Consensus..."
+    ];
+
+    const phases = IS_AR ? agentPhasesAr : agentPhasesEn;
+
+    debateTimerInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const remainingMs = Math.max(0, totalDurationMs - elapsed);
+        const remainingSec = (remainingMs / 1000).toFixed(1);
+        const progressPct = Math.min(98, Math.max(8, (elapsed / totalDurationMs) * 100));
+
+        if (pBar) pBar.style.width = `${progressPct}%`;
+        if (cText) cText.textContent = `${remainingSec}s`;
+
+        const phaseIdx = Math.min(phases.length - 1, Math.floor((elapsed / totalDurationMs) * phases.length));
+        if (aText && phases[phaseIdx]) aText.textContent = phases[phaseIdx];
+
+        if (remainingMs <= 0) {
+            clearInterval(debateTimerInterval);
+        }
+    }, 100);
+}
+
+function stopDebate11sTimer() {
+    if (debateTimerInterval) {
+        clearInterval(debateTimerInterval);
+        debateTimerInterval = null;
+    }
+    const pBar = document.getElementById('debateProgressBar');
+    const cText = document.getElementById('debateCountdownText');
+    if (pBar) pBar.style.width = '100%';
+    if (cText) cText.textContent = '0.0s';
+}
+
+async function startBoardroomDebate(e) {
+    if (e) e.preventDefault();
+    const topic = document.getElementById('topicInput').value.trim();
+    if (!topic) return;
+
+    const loading = document.getElementById('debateLoading');
+    const speechesList = document.getElementById('speechesList');
+    const resolutionCard = document.getElementById('resolutionCard');
+    const startBtn = document.getElementById('startDebateBtn');
+    const exportBtn = document.getElementById('exportBoardroomBtn');
+
+    // Reset UI & activate parallel loading across all 6 seats
+    speechesList.innerHTML = '';
+    resolutionCard.classList.add('hidden');
+    exportBtn.classList.add('hidden');
+    loading.classList.remove('hidden');
+    startBtn.disabled = true;
+    startBtn.classList.add('opacity-50');
+
+    setAllSeatsAnalyzing();
+    startDebate11sTimer();
+
+    // Get dataset context if present
+    let fileContext = '';
+    const rawData = localStorage.getItem('basira_dataset');
+    if (rawData) {
+        try {
+            const ds = JSON.parse(rawData);
+            if (ds && ds.rows) {
+                fileContext = `Active File: ${ds.fileName || 'Data.csv'}, Total Rows: ${ds.rows.length}, Columns: ${(ds.columns || []).join(', ')}`;
+            }
+        } catch(err) {}
+    }
+
+    try {
+        const response = await fetch('/api/boardroom/debate/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic: topic, file_context: fileContext, lang: IS_AR ? 'ar' : 'en' })
+        });
+
+        const resData = await response.json();
+        stopDebate11sTimer();
+        loading.classList.add('hidden');
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-50');
+
+        if (resData.status === 'success' && resData.data) {
+            currentBoardroomData = resData.data;
+            await renderSequentialDebate(resData.data);
+            exportBtn.classList.remove('hidden');
+        } else {
+            resetAllSeats();
+            speechesList.innerHTML = `<div class="p-4 rounded-2xl bg-rose-50 text-rose-800 text-xs font-bold border border-rose-200">${IS_AR ? `حدث خطأ أثناء محاكاة الجلسة: ${resData.message || 'يرجى المحاولة مرة أخرى'}` : `An error occurred during debate simulation: ${resData.message || 'Please try again'}`}</div>`;
+        }
+    } catch(err) {
+        stopDebate11sTimer();
+        loading.classList.add('hidden');
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-50');
+        resetAllSeats();
+        speechesList.innerHTML = `<div class="p-4 rounded-2xl bg-rose-50 text-rose-800 text-xs font-bold border border-rose-200">${IS_AR ? 'تعذر الاتصال بخادم المحاكاة. تأكد من اتصال الإنترنت.' : 'Could not connect to simulation server. Please check your network connection.'}</div>`;
+    }
+}
+
+async function renderSequentialDebate(data) {
+    const speechesList = document.getElementById('speechesList');
+    const speakers = data.speakers || [];
+
+    for (let i = 0; i < speakers.length; i++) {
+        const s = speakers[i];
+        const cfg = AGENT_CONFIG[s.id] || {
+            name: s.name,
+            role: s.stance || (IS_AR ? 'موقف استشاري' : 'Advisory Stance'),
+            avatar_icon: s.avatar_icon || 'bot',
+            colorClasses: 'bg-slate-700 text-white',
+            borderClass: 'border-slate-200',
+            badgeColor: 'bg-slate-100 text-slate-800'
+        };
+
+        // Highlight active speaker seat on board
+        highlightActiveSpeakerSeat(s.id);
+
+        const card = document.createElement('div');
+        card.className = `rounded-3xl p-5 glass border ${cfg.borderClass} bg-white/95 dark:bg-slate-900/95 shadow-sm animate-fade-up flex items-start gap-4 transition-all duration-300 hover:shadow-md`;
+        
+        card.innerHTML = `
+            <div class="h-11 w-11 rounded-2xl ${cfg.colorClasses} shrink-0 flex items-center justify-center shadow-md">
+                <i data-lucide="${s.avatar_icon || cfg.avatar_icon}" class="h-5 w-5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h4 class="font-black text-xs sm:text-sm text-slate-800 dark:text-white">${cfg.name || s.name}</h4>
+                        <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${cfg.badgeColor}">
+                            ${IS_AR ? (s.stance || cfg.role) : (cfg.role || s.stance)}
+                        </span>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-400">${IS_AR ? `مداخلة #${i + 1} من 6` : `Speech #${i + 1} of 6`}</span>
+                </div>
+                <p class="text-xs sm:text-[13px] text-slate-700 dark:text-slate-200 leading-relaxed font-medium bg-slate-50/60 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/80">
+                    ${s.argument}
+                </p>
+            </div>
+        `;
+
+        speechesList.appendChild(card);
+        lucide.createIcons();
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        markSeatSpoken(s.id);
+
+        // Fast natural delay between speakers to finish smoothly
+        await new Promise(r => setTimeout(r, 220));
+    }
+
+    // Render Final Executive Consensus (التوصية التنفيذية النهائية الموحدة)
+    if (data.resolution) {
+        const resolutionCard = document.getElementById('resolutionCard');
+        document.getElementById('resolutionDecisionText').textContent = data.resolution.decision || '';
+        document.getElementById('roiBadge').textContent = data.resolution.expected_roi || (IS_AR ? '+18% نمو متوقع' : '+18% Projected Growth');
+        document.getElementById('riskBadge').textContent = IS_AR ? `مستوى المخاطر: ${data.resolution.risk_level || 'تحت السيطرة'}` : `Risk Level: ${data.resolution.risk_level || 'Controlled'}`;
+        
+        const actionList = document.getElementById('resolutionActionList');
+        actionList.innerHTML = '';
+        (data.resolution.action_items || []).forEach((item, idx) => {
+            const li = document.createElement('li');
+            li.className = 'flex items-start gap-2.5 bg-white/90 dark:bg-slate-800/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs shadow-xs';
+            li.innerHTML = `<span class="h-5 w-5 rounded-full bg-[var(--glow)]/10 text-[var(--glow)] font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span> <span class="font-medium">${item}</span>`;
+            actionList.appendChild(li);
+        });
+
+        resolutionCard.classList.remove('hidden');
+        lucide.createIcons();
+        resolutionCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function exportBoardroomPDF() {
+    if (!currentBoardroomData) return;
+
+    const printDiv = document.getElementById('printableResolution');
+    const today = new Date().toLocaleDateString(IS_AR ? 'ar-OM' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const logoUrl = "{% static 'dashboard/img/logo.png' %}";
+
+    let speakersHtml = '';
+    (currentBoardroomData.speakers || []).forEach((s, idx) => {
+        const cfg = AGENT_CONFIG[s.id];
+        const speakerName = cfg ? cfg.name : s.name;
+        speakersHtml += `
+            <div style="margin-bottom: 12px; padding: 14px; background: #f8fafc; border-${IS_AR ? 'right' : 'left'}: 4px solid #4f46e5; border-radius: 8px;">
+                <div style="font-weight: bold; font-size: 13px; color: #1e1b4b; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                    <span>${idx + 1}. ${speakerName}</span>
+                    <span style="font-size: 11px; color: #4f46e5; font-weight: bold;">[${s.stance || ''}]</span>
+                </div>
+                <div style="font-size: 12px; color: #334155; line-height: 1.7;">
+                    ${s.argument}
+                </div>
+            </div>
+        `;
+    });
+
+    let actionsHtml = '';
+    (currentBoardroomData.resolution?.action_items || []).forEach((item, idx) => {
+        actionsHtml += `<li style="margin-bottom: 8px; font-size: 12px; color: #1e293b; line-height: 1.6;"><strong>${idx + 1}.</strong> ${item}</li>`;
+    });
+
+    printDiv.innerHTML = `
+        <div style="direction: ${IS_AR ? 'rtl' : 'ltr'}; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 30px; color: #0f172a; max-width: 800px; margin: auto;">
+            <!-- Header with Basira Logo -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #4f46e5; padding-bottom: 15px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <img src="${logoUrl}" alt="Basira Logo" style="height: 52px; width: auto; object-fit: contain;" />
+                    <div>
+                        <h1 style="font-size: 20px; font-weight: bold; color: #1e1b4b; margin: 0;">${IS_AR ? 'بصيرة · محضر اجتماع مجلس الإدارة التنفيذي (6 وكلاء)' : 'Baseera · Executive Boardroom Meeting Minutes (6 Agents)'}</h1>
+                        <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">All-Agent Multi-Agent Executive Boardroom Resolution</p>
+                    </div>
+                </div>
+                <div style="text-align: ${IS_AR ? 'left' : 'right'}; font-size: 12px; color: #475569; line-height: 1.5;">
+                    <div><strong>${IS_AR ? 'التاريخ:' : 'Date:'}</strong> ${today}</div>
+                    <div><strong>${IS_AR ? 'الحالة:' : 'Status:'}</strong> ${IS_AR ? 'معتمد رسمي بمشاركة كافة الوكلاء' : 'Officially Certified (All 6 Agents)'}</div>
+                </div>
+            </div>
+
+            <!-- Special Message from Basira to the Client -->
+            <div style="margin-bottom: 20px; background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); border: 1px solid #c7d2fe; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                <div style="display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; color: #4338ca; margin-bottom: 6px;">
+                    <span>${IS_AR ? 'رسالة خاصة من مجلس إدارة بصيرة للمؤسسة:' : 'Special Message from Baseera Boardroom to the Enterprise:'}</span>
+                </div>
+                <p style="font-size: 12px; color: #1e1b4b; line-height: 1.7; margin: 0;">
+                    ${IS_AR ? 'نضع بين يديك هذا المحضر الاستراتيجي الصادر عن اجتماع مجلس الإدارة المستقل للذكاء الاصطناعي بمشاركة كافة الوكلاء التخصصيين الستة (المالي، سلاسل الإمداد، التسعير، التدقيق ومكافحة الهدر، ولاء العملاء، وبصيرة الذكية). تم فحص وتدقيق كافة المعطيات بدقة متناهية استناداً إلى بياناتك ومؤشراتك، لتقديم قرار متكامل يضمن النمو المستدام والربحية.' : 'We present this strategic resolution issued by the autonomous AI Boardroom meeting with the participation of all six specialized agents (Finance, Supply Chain, Pricing, Forensic Audit, Customer Retention, and Baseera AI). All inputs were meticulously examined against your dataset to provide an integrated decision that guarantees sustainable growth and profitability.'}
+                </p>
+            </div>
+
+            <div style="margin-bottom: 20px; background: #f8fafc; padding: 14px 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <strong style="color: #4338ca; font-size: 13px;">${IS_AR ? 'موضوع الجلسة والقرار الاستراتيجي:' : 'Session Strategic Topic & Decision:'}</strong>
+                <p style="font-size: 14px; font-weight: bold; color: #0f172a; margin: 6px 0 0 0;">${currentBoardroomData.topic}</p>
+            </div>
+
+            <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 12px;">${IS_AR ? 'سجل مداخلات ومناظرة الوكلاء الـ 6 بالتوازي:' : 'Parallel 6-Agent Debate & Deliberation Log:'}</h3>
+            ${speakersHtml}
+
+            <div style="margin-top: 25px; padding: 18px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
+                <h3 style="font-size: 15px; font-weight: bold; color: #166534; margin: 0 0 8px 0;">${IS_AR ? 'التوصية التنفيذية النهائية الموحدة (Final Executive Consensus):' : 'Final Executive Consensus Resolution:'}</h3>
+                <p style="font-size: 13px; font-weight: 600; color: #14532d; line-height: 1.7; margin: 0 0 12px 0;">
+                    ${currentBoardroomData.resolution?.decision || ''}
+                </p>
+                <div style="font-size: 12px; color: #15803d; margin-bottom: 10px;">
+                    <strong>${IS_AR ? 'العائد المتوقع:' : 'Expected ROI:'}</strong> ${currentBoardroomData.resolution?.expected_roi || ''} | <strong>${IS_AR ? 'المخاطر:' : 'Risk Level:'}</strong> ${currentBoardroomData.resolution?.risk_level || ''}
+                </div>
+                <h4 style="font-size: 13px; font-weight: bold; color: #166534; margin: 12px 0 6px 0;">${IS_AR ? 'خطة العمل والخطوات التنفيذية المشتركة:' : 'Joint Strategic Action Plan & Steps:'}</h4>
+                <ul style="padding-${IS_AR ? 'right' : 'left'}: 20px; margin: 0;">
+                    ${actionsHtml}
+                </ul>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+                ${IS_AR ? 'تم توليد هذا المحضر آلياً عبر منصة بصيرة للذكاء الاصطناعي متعدد الوكلاء (Baseera Decision Intelligence Platform).' : 'This document was automatically generated by Baseera Multi-Agent Decision Intelligence Platform.'}
+            </div>
+        </div>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>${IS_AR ? 'محضر اجتماع مجلس الإدارة' : 'Boardroom Meeting Minutes'} - ${currentBoardroomData.topic}</title>
+                <style>
+                    @media print {
+                        body { margin: 0; padding: 10px; }
+                        @page { size: A4; margin: 1.5cm; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${printDiv.innerHTML}
+                <script>
+                    window.onload = function() { window.print(); window.close(); }
+                <\/script>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+</script>
+{% endblock %}

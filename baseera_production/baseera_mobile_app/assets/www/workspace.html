@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Workspace</title>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var t=localStorage.getItem("baseera-theme")||"light";document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("baseera-lang")||"en";document.documentElement.setAttribute("lang",l);document.documentElement.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
+<script>
+ window.BASEERA_TRANSLATIONS = {
+  workspaceTitle: { en: 'Workspace', ar: 'مساحة العمل' },
+  workspaceDesc: { en: 'All files, generated code scripts, reports, and datasets stored in your active workspace.', ar: 'هنا تجد جميع الملفات والتقارير التي تم توليدها أو رفعها في مساحة عملك.' },
+  uploadBtn: { en: 'Upload File', ar: 'رفع ملف' },
+  searchPh: { en: 'Search file by name...', ar: 'ابحث باسم الملف...' },
+  totalFiles: { en: 'Total Files:', ar: 'إجمالي الملفات:' },
+  typeData: { en: 'Data', ar: 'بيانات' },
+  typeCode: { en: 'Code', ar: 'كود' },
+  typeDoc: { en: 'Doc', ar: 'مستند' }
+ };
+</script>
+</head>
+<body class="page-enter">
+
+<div class="app-shell">
+ <div class="app-content">
+
+  <div class="dash-topbar" style="position: relative;">
+   <div>
+    <div class="dash-day" id="dash-day-label"></div>
+    <div class="dash-greeting" data-i18n="workspaceTitle" style="font-size: 1.25rem;">Workspace</div>
+   </div>
+   <div class="dash-icons">
+    <button class="dash-icon-btn theme-toggle-pill" title="Dark mode">
+     <span class="theme-toggle-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span>
+    </button>
+    <button class="dash-icon-btn lang-toggle-pill" title="Toggle language" style="height: 32px; padding: 0 10px; justify-content: center; font-size: 0.75rem; font-weight: bold; border-radius: 16px;">
+     <span class="lang-toggle-label">Eng/ع</span>
+    </button>
+    <button class="dash-icon-btn" onclick="window.history.back()" title="Back">
+     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+   </div>
+  </div>
+
+  <!-- Navigation Sub-Bar (Mobile) -->
+  <div style="padding: 1rem; margin-top: 1rem; display: flex; gap: 0.5rem; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+    <button style="padding: 0.5rem 1rem; border-radius: 1rem; background: #4f46e5; color: white; border: none; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 0.25rem; box-shadow: 0 2px 10px rgba(79,70,229,0.3);">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      <span data-i18n="workspaceTitle">Workspace</span>
+    </button>
+    <button onclick="window.location.href='datasets.html'" style="padding: 0.5rem 1rem; border-radius: 1rem; background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 0.25rem;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10b981" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+      <span>Datasets</span>
+    </button>
+  </div>
+
+  <div style="padding: 0 1rem 5rem 1rem;">
+   
+   <!-- Header Card -->
+   <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(24px); border-radius: 1.5rem; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 4px 15px rgba(27,20,75,0.05); margin-bottom: 1rem;">
+     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+       <div style="flex: 1;">
+         <div data-i18n="workspaceTitle" style="font-size: 1rem; font-weight: 900; color: #1e293b; margin-bottom: 0.25rem;">Workspace</div>
+         <div data-i18n="workspaceDesc" style="font-size: 0.65rem; color: #64748b; line-height: 1.3;">All files, generated code scripts, reports, and datasets stored in your active workspace.</div>
+       </div>
+       <button style="padding: 0.5rem 0.75rem; border-radius: 0.75rem; background: white; border: 1px solid #e2e8f0; font-size: 0.7rem; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 0.25rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);" onclick="document.getElementById('fileUpload').click();">
+         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+         <span data-i18n="uploadBtn">Upload</span>
+       </button>
+       <input type="file" id="fileUpload" style="display: none;">
+     </div>
+     
+     <div style="position: relative;">
+       <input type="text" id="searchInput" onkeyup="filterFiles()" style="width: 100%; padding: 0.75rem 0.75rem 0.75rem 2.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; font-size: 0.75rem; font-family: inherit; outline: none; background: #f8fafc; box-sizing: border-box;">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+     </div>
+   </div>
+
+   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 0.5rem;">
+     <span style="font-size: 0.7rem; font-weight: 900; color: #64748b;" data-i18n="totalFiles">Total Files:</span>
+     <span style="font-size: 0.7rem; font-weight: 900; color: #1e293b;" id="totalCount">3</span>
+   </div>
+
+   <!-- File List -->
+   <div id="fileList" style="display: flex; flex-direction: column; gap: 0.75rem;">
+     <div id="loadingFiles" style="text-align: center; color: #94a3b8; font-size: 0.8rem; padding: 2rem;">
+       جاري تحميل الملفات...
+     </div>
+   </div>
+
+   </div>
+
+  </div>
+ <nav class="bottom-nav">
+   <a href="dashboard.html" class="" title="الرئيسية">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+   </a>
+   <a href="insights.html" class="" title="التحليلات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+   </a>
+   <a href="chat.html" class="" title="اسأل بصيرة" style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z"/></svg>
+   </a>
+   <a href="datasets.html" class="" title="البيانات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+   </a>
+   <a href="reports.html" class="" title="التقارير">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+   </a>
+  </nav>
+</div>
+</div>
+
+<script src="app.js"></script>
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+<script>
+ function renderDate() {
+  const isAr = (document.documentElement.getAttribute('lang') || 'en') === 'ar';
+  const dayEl = document.getElementById('dash-day-label');
+  if (dayEl) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dayEl.textContent = new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-US', options);
+  }
+  document.getElementById('searchInput').placeholder = window.BASEERA_TRANSLATIONS['searchPh'][isAr ? 'ar' : 'en'];
+ }
+
+ async function loadWorkspaceFiles() {
+   try {
+     const response = await fetch('http://127.0.0.1:8000/api/workspace/files/');
+     const data = await response.json();
+     const fileList = document.getElementById('fileList');
+     fileList.innerHTML = '';
+     
+     if (data.status === 'success' && data.files.length > 0) {
+       document.getElementById('totalCount').textContent = data.files.length;
+       data.files.forEach(file => {
+         let fileType = 'Doc';
+         let icon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
+         let colorClass = 'color: #64748b; background: #f8fafc; border-color: #e2e8f0;';
+         let badgeClass = 'color: #475569; background: #e2e8f0;';
+         
+         if (file.name.endsWith('.csv') || file.name.endsWith('.xlsx')) {
+           fileType = 'Data';
+           icon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>';
+           colorClass = 'color: #10b981; background: #ecfdf5; border-color: #a7f3d0;';
+           badgeClass = 'color: #047857; background: #d1fae5;';
+         } else if (file.name.endsWith('.py') || file.name.endsWith('.js') || file.name.endsWith('.html') || file.name.endsWith('.css')) {
+           fileType = 'Code';
+           icon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>';
+           colorClass = 'color: #3b82f6; background: #eff6ff; border-color: #bfdbfe;';
+           badgeClass = 'color: #1d4ed8; background: #dbeafe;';
+         }
+
+         const sizeStr = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
+
+         const item = document.createElement('div');
+         item.className = 'file-item';
+         item.style = 'background: rgba(255,255,255,0.7); backdrop-filter: blur(24px); border-radius: 1.25rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 4px 15px rgba(27,20,75,0.05); display: flex; align-items: center; justify-content: space-between;';
+         item.innerHTML = `
+           <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%; overflow: hidden;">
+             <div style="width: 2.5rem; min-width: 2.5rem; height: 2.5rem; border: 1px solid; border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; ${colorClass}">
+               ${icon}
+             </div>
+             <div style="overflow: hidden; width: 100%;">
+               <div class="file-name" style="font-size: 0.8rem; font-weight: 900; color: #1e293b; margin-bottom: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; direction: ltr; text-align: left;">${file.name}</div>
+               <div style="display: flex; gap: 0.5rem; align-items: center;">
+                 <span style="font-size: 0.55rem; font-weight: 900; padding: 0.1rem 0.4rem; border-radius: 0.5rem; ${badgeClass}">${fileType}</span>
+                 <span style="font-size: 0.6rem; color: #94a3b8; font-family: monospace;">${sizeStr}</span>
+               </div>
+             </div>
+           </div>
+           <div style="display: flex; gap: 0.5rem;">
+             <a href="http://127.0.0.1:8000/workspace/download/${encodeURIComponent(file.name)}/" target="_blank" style="width: 2rem; height: 2rem; border-radius: 0.5rem; border: none; background: #f1f5f9; color: #475569; display: flex; justify-content: center; align-items: center; cursor: pointer; text-decoration: none;">
+               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+             </a>
+           </div>
+         `;
+         fileList.appendChild(item);
+       });
+     } else {
+       fileList.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 0.8rem; padding: 2rem;">مساحة العمل فارغة حالياً. جرب رفع ملف أو توليده بالذكاء الاصطناعي.</div>';
+       document.getElementById('totalCount').textContent = '0';
+     }
+   } catch (err) {
+     console.error("Error loading files:", err);
+     document.getElementById('fileList').innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 0.8rem; padding: 2rem;">حدث خطأ أثناء الاتصال بالخادم.</div>';
+   }
+ }
+
+ function filterFiles() {
+   const q = document.getElementById('searchInput').value.toLowerCase();
+   const items = document.querySelectorAll('.file-item');
+   let count = 0;
+   items.forEach(el => {
+     const name = el.querySelector('.file-name').textContent.toLowerCase();
+     if (name.includes(q)) {
+       el.style.display = 'flex';
+       count++;
+     } else {
+       el.style.display = 'none';
+     }
+   });
+   document.getElementById('totalCount').textContent = count;
+ }
+
+ document.addEventListener('DOMContentLoaded', () => {
+   renderDate();
+   loadWorkspaceFiles();
+ });
+ document.addEventListener('langChanged', renderDate);
+</script>
+</body>
+</html>

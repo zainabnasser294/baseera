@@ -1,0 +1,53 @@
+# Impeccable - Command Guide
+
+## When to use it
+`/impeccable` is the main command. Use it in two ways:
+
+1. **Run `/impeccable` by itself** when you want the skill to inspect the project and recommend what to do next.
+2. **Add a plain-English request** when you know the outcome but not the exact command.
+
+Reach for `/impeccable` directly when:
+- **You are not sure where to start.** It checks whether setup files exist, looks at the current project state, and recommends two or three next commands. It asks before running anything.
+- **You are not sure which command fits.** Describe what you want in plain English and let the skill pick the right approach.
+- **The work spans multiple disciplines.** “Redo this hero section” touches layout, type, color, and motion. One command cannot own that.
+- **You want freeform design help.** Use the main command when no specialist command maps cleanly to the work.
+- **If this is a new project, start with `/impeccable init`.** That creates the setup files every other command reads.
+
+## How it works
+Most AI-generated UIs fail the same way: generic fonts, purple gradients, card grids on card grids, glassmorphism everywhere. `/impeccable` gives the model stronger design instructions before it writes code.
+
+Two files at your project root shape everything the skill does:
+- `PRODUCT.md` says what the project is for: platform, audience, product purpose, positioning, real evidence, and brand commitments.
+- `DESIGN.md` says how the interface should look: colors, typography, components, elevation, and design rules.
+
+Every command reads both files before generating, plus any brief for the specific surface you named. The judgment that changes the most is the surface’s mode, which names what the visitor came to do: Persuade, Operate, Read, or Experience. Impeccable reads that from the surface itself rather than from what the company sells, so one project can hold all four. 
+
+On first use in a project, `/impeccable` may route you into init: a short interview that writes `PRODUCT.md` and offers to write `DESIGN.md`. Future commands read those files without asking again.
+
+## Try it
+Run it with no command to get your bearings:
+`/impeccable`
+
+Or describe what you want and it does the work directly:
+`/impeccable redo this hero section`
+`/impeccable build me a pricing page for a developer tool`
+
+For visual iteration in the browser rather than chat:
+`/impeccable live`
+Pick any element on your running dev server. Drop a comment or stroke. Get three production-quality variants hot-swapped in via HMR. Accept the one you want and it writes back to source.
+
+## Pin commands back as shortcuts
+If you miss the short form of a command, pin it back:
+`/impeccable pin critique`
+
+Useful pins to try:
+- `/impeccable pin polish` for final-pass work
+- `/impeccable pin audit` for deterministic a11y/perf checks
+- `/impeccable pin live` for the browser iteration flow
+- `/impeccable pin critique` for design review
+
+## Pitfalls
+- **Treating it like a style guide:** It is an opinionated design partner, not a linter. The defaults exist to raise the floor, not to overrule your judgment. If you have a real reason to push back (brand guideline, accessibility constraint, user research), push back and explain why. 
+- **Expecting it to fix existing code:** `/impeccable` is for creation. For refinement, reach for `/impeccable polish`, `/impeccable distill`, or `/impeccable critique` instead.
+- **Running it before init has saved context:** On a fresh project it will interview you mid-flight, which is fine but slower. Running `/impeccable init` first is smoother.
+- **Letting it judge the wrong mode:** A landing page and a settings screen need different defaults, and the mode comes from the surface you named. If a request spans both, scope it to one surface at a time or say which mode you mean.

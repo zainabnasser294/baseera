@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Know Baseera Agents | وكلاء بصيرة المتخصصون</title>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (function () {
+      var t = localStorage.getItem("baseera-theme") || "light";
+      document.documentElement.setAttribute("data-theme", t);
+      var l = localStorage.getItem("baseera-lang") || "ar";
+      document.documentElement.setAttribute("lang", l);
+      document.documentElement.setAttribute("dir", l === "ar" ? "rtl" : "ltr");
+    })();
+  </script>
+  <link rel="icon" type="image/x-icon" href="images/logo-cropped.png">
+  <style>
+    .agent-card {
+      background: #ffffff;
+      border-radius: 1.5rem;
+      padding: 1.25rem;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 6px 25px rgba(27, 20, 75, 0.06);
+      margin-bottom: 1.25rem;
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .agent-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 10.5px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .agent-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: #1e293b;
+      margin-bottom: 10px;
+    }
+
+    .agent-info-block {
+      font-size: 11.5px;
+      color: #475569;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .agent-info-label {
+      font-weight: 800;
+      color: #1e293b;
+    }
+
+    .btn-consult {
+      width: 100%;
+      padding: 0.65rem;
+      border-radius: 0.75rem;
+      font-size: 12px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+      transition: all 0.2s ease;
+    }
+  </style>
+</head>
+
+<body class="page-enter">
+
+  <div class="app-shell">
+
+    <!-- Top Header -->
+    <div class="settings-topbar" style="padding: 16px 20px 6px;">
+      <button class="icon-back-btn" onclick="window.history.back()" title="Back">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </button>
+      <div>
+        <div class="settings-heading" id="pageTitle">تعرّف على وكلاء بصيرة</div>
+        <div id="pageSubtitle" style="font-size: 11px; color: #64748b;">استكشف وكلاء الذكاء الاصطناعي المتخصصين واستشرهم
+          مباشرة</div>
+      </div>
+    </div>
+
+    <!-- Cards Container -->
+    <div style="padding: 14px 14px 90px 14px; overflow-y: auto; flex: 1;">
+
+      <!-- 1. Financial Agent -->
+      <div class="agent-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <span class="agent-badge" style="background: #e0f2fe; color: #0284c7;" id="b1">المالية والحسابات</span>
+          <div
+            style="width: 32px; height: 32px; border-radius: 8px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="agent-title" id="t1">وكيل التحليل المالي</div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="srcLabel1">مصدر البيانات:</span>
+          <span id="src1"> كشوفات الحساب البنكية (CSV)، الفواتير، وسجلات الإيرادات والمصروفات.</span>
+        </div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="taskLabel1">المهام التشغيلية:</span>
+          <span id="task1"> يحلل السيولة النقدية، يكتشف التسرب المالي، ويقدم تنبيهات فورية عن المخاطر المحاسبية.</span>
+        </div>
+        <button class="btn-consult" onclick="window.location.href='chat.html?agent=financial'"
+          style="background: #0284c7; color: #ffffff;" id="btn1">استشارة التحليل المالي ➔</button>
+      </div>
+
+      <!-- 2. Supply Chain Agent -->
+      <div class="agent-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <span class="agent-badge" style="background: #eff6ff; color: #2563eb;" id="b2">العمليات والتوريد</span>
+          <div
+            style="width: 32px; height: 32px; border-radius: 8px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+          </div>
+        </div>
+        <div class="agent-title" id="t2">وكيل سلاسل الإمداد والمخزون</div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="srcLabel2">مصدر البيانات:</span>
+          <span id="src2"> سجلات المخزون، أوامر الشراء، وبيانات الموردين.</span>
+        </div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="taskLabel2">المهام التشغيلية:</span>
+          <span id="task2"> يتتبع البضائع الراكدة، يحدد توقيت إعادة الطلب، ويعالج اختناقات التوريد اللوجستية.</span>
+        </div>
+        <button class="btn-consult" onclick="window.location.href='chat.html?agent=supply'"
+          style="background: #2563eb; color: #ffffff;" id="btn2">استشارة سلاسل الإمداد ➔</button>
+      </div>
+
+      <!-- 3. Pricing Agent -->
+      <div class="agent-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <span class="agent-badge" style="background: #f3e8ff; color: #7c3aed;" id="b3">التسعير والاستراتيجيات</span>
+          <div
+            style="width: 32px; height: 32px; border-radius: 8px; background: #f3e8ff; color: #7c3aed; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="agent-title" id="t3">وكيل التسعير واستراتيجية الهوامش</div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="srcLabel3">مصدر البيانات:</span>
+          <span id="src3"> تاريخ المبيعات، هوامش الربح، وبيانات تسعير المنافسين.</span>
+        </div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="taskLabel3">المهام التشغيلية:</span>
+          <span id="task3"> يصمم استراتيجيات التسعير الديناميكي، يحلل مرونة الطلب، ويعظم ربحية كل مبيعة.</span>
+        </div>
+        <button class="btn-consult" onclick="window.location.href='chat.html?agent=pricing'"
+          style="background: #7c3aed; color: #ffffff;" id="btn3">استشارة استراتيجية التسعير ➔</button>
+      </div>
+
+      <!-- 4. Retention Agent -->
+      <div class="agent-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <span class="agent-badge" style="background: #ffe4e6; color: #e11d48;" id="b4">ولاء العملاء</span>
+          <div
+            style="width: 32px; height: 32px; border-radius: 8px; background: #ffe4e6; color: #e11d48; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+              </path>
+            </svg>
+          </div>
+        </div>
+        <div class="agent-title" id="t4">وكيل ولاء واستعادة العملاء</div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="srcLabel4">مصدر البيانات:</span>
+          <span id="src4"> سجلات تقييم العملاء، بيانات المشتروات المتكررة، وشكاوى العملاء.</span>
+        </div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="taskLabel4">المهام التشغيلية:</span>
+          <span id="task4"> يمنع تسرب العملاء، يحلل الشكاوى، ويصمم برامج استبقاء لرفع القيمة الدائمة.</span>
+        </div>
+        <button class="btn-consult" onclick="window.location.href='chat.html?agent=retention'"
+          style="background: #e11d48; color: #ffffff;" id="btn4">استشارة ولاء العملاء ➔</button>
+      </div>
+
+      <!-- 5. Forensic Agent -->
+      <div class="agent-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <span class="agent-badge" style="background: #ccfbf1; color: #0d9488;" id="b5">التدقيق والرقابة</span>
+          <div
+            style="width: 32px; height: 32px; border-radius: 8px; background: #ccfbf1; color: #0d9488; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="agent-title" id="t5">وكيل التدقيق الجنائي ومكافحة الهدر</div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="srcLabel5">مصدر البيانات:</span>
+          <span id="src5"> المصاريف التشغيلية (Opex)، الفواتير الملغاة، وسجلات الرواتب.</span>
+        </div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="taskLabel5">المهام التشغيلية:</span>
+          <span id="task5"> يكتشف الهدر الخفي، يرصد المعاملات غير المبررة، ويوصي بإجراءات صارمة لخفض التكاليف.</span>
+        </div>
+        <button class="btn-consult" onclick="window.location.href='chat.html?agent=forensic'"
+          style="background: #0d9488; color: #ffffff;" id="btn5">بدء التدقيق والرقابة ➔</button>
+      </div>
+
+      <!-- 6. General Orchestrator -->
+      <div class="agent-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <span class="agent-badge" style="background: #f1f5f9; color: #2b2470;" id="b6">المساعد الرئيسي</span>
+          <div
+            style="width: 32px; height: 32px; border-radius: 8px; background: #f1f5f9; color: #2b2470; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="4"></circle>
+              <line x1="4.93" y1="4.93" x2="9.17" y2="9.17"></line>
+              <line x1="14.83" y1="14.83" x2="19.07" y2="19.07"></line>
+              <line x1="14.83" y1="9.17" x2="19.07" y2="4.93"></line>
+              <line x1="14.83" y1="9.17" x2="18.36" y2="5.64"></line>
+              <line x1="4.93" y1="19.07" x2="9.17" y2="14.83"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="agent-title" id="t6">المساعد العام (بصيرة الذكية)</div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="srcLabel6">مصدر البيانات:</span>
+          <span id="src6"> كافة قواعد البيانات الترابطية، لوحات المؤشرات (Dashboard)، ومدخلات المستخدم المباشرة.</span>
+        </div>
+        <div class="agent-info-block">
+          <span class="agent-info-label" id="taskLabel6">المهام التشغيلية:</span>
+          <span id="task6"> يعمل كـ (خط تجميع - Orchestrator)، يوزع المهام على الوكلاء، ويدمج مخرجاتهم في قرارات
+            نهائية.</span>
+        </div>
+        <button class="btn-consult" onclick="window.location.href='chat.html?agent=general'"
+          style="background: #2b2470; color: #ffffff;" id="btn6">استشارة بصيرة العامة ➔</button>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <a href="dashboard.html" class="" title="الرئيسية">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z" />
+        </svg>
+      </a>
+      <a href="insights.html" class="" title="التحليلات">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+      </a>
+      <a href="chat.html" class="" title="اسأل بصيرة"
+        style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+          <path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z" />
+        </svg>
+      </a>
+      <a href="datasets.html" class="" title="البيانات">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+        </svg>
+      </a>
+      <a href="reports.html" class="" title="التقارير">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </a>
+    </nav>
+
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const isAr = (localStorage.getItem('baseera-lang') || document.documentElement.getAttribute('lang') || 'en') === 'ar';
+
+    function applyLocale() {
+      if (!isAr) {
+        document.getElementById('pageTitle').textContent = 'Know Baseera Agents';
+        document.getElementById('pageSubtitle').textContent = 'Explore Baseera AI agents and consult them directly';
+
+        for (let i = 1; i <= 6; i++) {
+          document.getElementById('srcLabel' + i).textContent = 'Data Source:';
+          document.getElementById('taskLabel' + i).textContent = 'Tasks:';
+        }
+
+        document.getElementById('b1').textContent = 'Finance & Accounting';
+        document.getElementById('t1').textContent = 'Financial Analysis Agent';
+        document.getElementById('src1').textContent = ' Bank Statements (CSV), Invoices, and Revenue/Expense logs.';
+        document.getElementById('task1').textContent = ' Analyzes cash liquidity, detects leaks, and sends risk alerts.';
+        document.getElementById('btn1').textContent = 'Consult Financial Agent ➔';
+
+        document.getElementById('b2').textContent = 'Operations & Supply';
+        document.getElementById('t2').textContent = 'Supply Chain & Inventory Agent';
+        document.getElementById('src2').textContent = ' Inventory logs, Purchase Orders, and Supplier data.';
+        document.getElementById('task2').textContent = ' Tracks slow inventory, optimizes reorder timing, and clears bottlenecks.';
+        document.getElementById('btn2').textContent = 'Consult Supply Chain Agent ➔';
+
+        document.getElementById('b3').textContent = 'Pricing & Strategy';
+        document.getElementById('t3').textContent = 'Pricing & Margins Strategy Agent';
+        document.getElementById('src3').textContent = ' Sales history, Profit margins, and Competitor pricing.';
+        document.getElementById('task3').textContent = ' Designs dynamic pricing, analyzes demand elasticity, and maximizes margins.';
+        document.getElementById('btn3').textContent = 'Consult Pricing Agent ➔';
+
+        document.getElementById('b4').textContent = 'Customer Loyalty';
+        document.getElementById('t4').textContent = 'Customer Retention & Loyalty Agent';
+        document.getElementById('src4').textContent = ' Customer ratings, Repeat orders, and Complaints.';
+        document.getElementById('task4').textContent = ' Prevents churn, resolves complaints, and builds high-retention programs.';
+        document.getElementById('btn4').textContent = 'Consult Loyalty Agent ➔';
+
+        document.getElementById('b5').textContent = 'Audit & Control';
+        document.getElementById('t5').textContent = 'Forensic Audit & Waste Control Agent';
+        document.getElementById('src5').textContent = ' Opex expenses, Canceled invoices, and Payroll logs.';
+        document.getElementById('task5').textContent = ' Detects operational waste, flags unauthorized transactions, and cuts costs.';
+        document.getElementById('btn5').textContent = 'Consult Forensic Agent ➔';
+
+        document.getElementById('b6').textContent = 'Primary Assistant';
+        document.getElementById('t6').textContent = 'General AI Assistant (Baseera)';
+        document.getElementById('src6').textContent = ' All connected databases, Dashboard metrics, and direct user inputs.';
+        document.getElementById('task6').textContent = ' Master orchestrator delegating tasks to agents and synthesizing decisions.';
+        document.getElementById('btn6').textContent = 'Consult General Assistant ➔';
+      }
+    }
+
+    applyLocale();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1450 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}لوحة الإشراف العامة — بصيرة{% else %}Super Admin Dashboard — Baseera{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Custom Dashboard Page Container (Glassmorphic Light Theme: Blue, Teal, Lavender) -->
+<div class="flex min-h-screen p-3 gap-4 bg-gradient-to-br from-[#f3f1fb] via-[#eef2ff] to-[#f5f3ff] dark:from-[#0f172a] dark:to-[#1e1b4b] text-{{ trans.align|default:'right' }}" dir="{{ trans.dir|default:'rtl' }}">
+    
+    <!-- ==================== LEFT SIDEBAR PANEL (Light Glassmorphic Navigation) ==================== -->
+    <aside class="w-72 shrink-0 flex flex-col gap-3">
+        
+        <!-- 1. Top User Profile Card (Nile Blue to Glowing Teal & Lavender Gradient) -->
+        <div class="bg-gradient-to-br from-[#2b2470] via-[#5b47b8] to-[#7c6cf0] rounded-t-[32px] rounded-b-[24px] p-6 text-white text-center flex flex-col items-center relative overflow-hidden shadow-xl border border-white/30">
+            <!-- Background Radial Glow -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#b9a6f2]/30 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-28 h-28 bg-[#14b8a6]/20 rounded-full blur-xl"></div>
+            
+            <!-- Avatar with Circular Progress Ring -->
+            <div class="relative mb-3">
+                <div class="w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-[#14b8a6] via-[#b9a6f2] to-amber-300 flex items-center justify-center shadow-lg">
+                    {% if request.user.profile.avatar %}
+                    <img src="{{ request.user.profile.avatar.url }}" alt="{{ request.user.username }}" class="w-full h-full object-cover rounded-full">
+                    {% else %}
+                    <div class="w-full h-full rounded-full bg-[#1a1730] flex items-center justify-center text-white font-extrabold text-2xl">
+                        {{ request.user.username|slice:":1"|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Name & Email -->
+            <h2 class="text-lg font-black text-white leading-tight">
+                {{ request.user.get_full_name|default:request.user.username }}
+            </h2>
+            <p class="text-xs text-[#e9d5ff] font-semibold mt-1 truncate max-w-full">
+                {{ request.user.email|default:"hasansajjadux@gmail.com" }}
+            </p>
+            <div class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-extrabold border border-white/30 text-white shadow-sm">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-300"></i>
+                {% if trans.lang_code == 'ar' %}مدير النظام (Super Admin){% else %}Super Admin{% endif %}
+            </div>
+        </div>
+
+        <!-- 2. Light Glass Navigation Container (Frosted Lavender/Blue Glass) -->
+        <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-[28px] p-3 text-slate-800 dark:text-slate-100 flex flex-col gap-2 shadow-xl border border-white/80 dark:border-white/10 relative">
+            
+            <!-- Active Tab: Deep Nile Pill with Glow -->
+            <button onclick="switchAdminTab('overview')" id="tab-btn-overview" class="admin-nav-tab active w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#2b2470] text-white font-black text-sm shadow-lg shadow-[#2b2470]/25 transition-all">
+                <div class="w-7 h-7 rounded-xl bg-white/15 flex items-center justify-center">
+                    <i data-lucide="layout-grid" class="w-4 h-4 text-amber-300"></i>
+                </div>
+                <span>{% if trans.lang_code == 'ar' %}لوحة التحكم (Dashboard){% else %}Dashboard{% endif %}</span>
+            </button>
+
+            <!-- Profiles / Users Management Tab -->
+            <button onclick="switchAdminTab('users')" id="tab-btn-users" class="admin-nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#2b2470] dark:text-slate-200 hover:bg-[#b9a6f2]/20 font-bold text-sm transition-all">
+                <i data-lucide="user" class="w-4 h-4 text-[#7c6cf0]"></i>
+                <span>{% if trans.lang_code == 'ar' %}المستخدمين (Profiles){% else %}Profiles{% endif %}</span>
+            </button>
+
+            <!-- Subscriptions & Finance Tab -->
+            <button onclick="switchAdminTab('finance')" id="tab-btn-finance" class="admin-nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#2b2470] dark:text-slate-200 hover:bg-[#b9a6f2]/20 font-bold text-sm transition-all">
+                <i data-lucide="banknote" class="w-4 h-4 text-[#0d9488]"></i>
+                <span>{% if trans.lang_code == 'ar' %}الماليّة والتراخيص (Finance){% else %}Subscription{% endif %}</span>
+            </button>
+
+            <!-- Customization / Feedback Tab -->
+            <button onclick="switchAdminTab('feedback')" id="tab-btn-feedback" class="admin-nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#2b2470] dark:text-slate-200 hover:bg-[#b9a6f2]/20 font-bold text-sm transition-all">
+                <i data-lucide="sliders" class="w-4 h-4 text-amber-500"></i>
+                <span>{% if trans.lang_code == 'ar' %}التخصيص (Customization){% else %}Customization{% endif %}</span>
+            </button>
+
+            <!-- System Activity Logs Tab -->
+            <button onclick="switchAdminTab('logs')" id="tab-btn-logs" class="admin-nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#2b2470] dark:text-slate-200 hover:bg-[#b9a6f2]/20 font-bold text-sm transition-all">
+                <i data-lucide="activity" class="w-4 h-4 text-rose-500"></i>
+                <span>{% if trans.lang_code == 'ar' %}سجلات النظام (Logs){% else %}System Logs{% endif %}</span>
+            </button>
+
+            <!-- Settings / Account Profile Tab -->
+            <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="admin-nav-tab w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#2b2470] dark:text-slate-200 hover:bg-[#b9a6f2]/20 font-bold text-sm transition-all">
+                <i data-lucide="settings" class="w-4 h-4 text-purple-600"></i>
+                <span>{% if trans.lang_code == 'ar' %}إعدادات الحساب (Settings){% else %}Settings{% endif %}</span>
+            </button>
+
+            <!-- 3. Calendar Card (Light Glass Widget) -->
+            <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-[24px] p-4 text-slate-800 dark:text-slate-100 shadow-md border border-white/90 dark:border-slate-700 mt-2 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <button onclick="openCalendarNoteModal()" class="w-7 h-7 rounded-lg bg-[#b9a6f2]/20 text-[#2b2470] dark:text-purple-300 hover:bg-[#7c6cf0] hover:text-white flex items-center justify-center transition" title="أضف تذكير أو ملاحظة">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <span class="font-extrabold text-sm text-[#2b2470] dark:text-white" id="calendar-header-day">Mon, Aug 10</span>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center gap-1 text-slate-400">
+                        <button onclick="prevMonth()" class="p-0.5 hover:text-[#2b2470] dark:hover:text-white" title="الشهر السابق"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="nextMonth()" class="p-0.5 hover:text-[#2b2470] dark:hover:text-white" title="الشهر التالي"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                    <span id="calendar-month-year" class="font-extrabold text-[#2b2470] dark:text-purple-200">August 2026</span>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-[#7c6cf0] dark:text-purple-300 mt-1">
+                    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                    <div id="calendar-days-grid" class="col-span-7 grid grid-cols-7 gap-1 text-xs"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </aside>
+
+    <!-- ==================== RIGHT MAIN CONTENT AREA ==================== -->
+    <main class="flex-1 flex flex-col gap-4 min-w-0">
+        
+        <!-- Baseera Topbar Component (Search, Notifications, Theme Toggle, Profile Menu) -->
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Alert System Messages Banner -->
+        {% if messages %}
+        <div class="flex flex-col gap-2">
+            {% for message in messages %}
+            <div class="px-4 py-3 rounded-2xl flex items-center justify-between text-xs font-bold text-white shadow-md transition-all backdrop-blur-md
+                {% if message.tags == 'error' %}bg-rose-600/90
+                {% elif message.tags == 'warning' %}bg-amber-500/90
+                {% else %}bg-emerald-600/90{% endif %}">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    <span>{{ message }}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="p-1 hover:opacity-80"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- TAB 1: OVERVIEW CONTENT -->
+        <div id="admin-tab-overview" class="flex flex-col gap-4 animate-fade-up">
+            
+            <!-- Quick Actions Header Banner (Light Glass Panel) -->
+            <div class="flex items-center justify-between flex-wrap gap-3 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] px-6 py-4 border border-white/80 dark:border-slate-800 shadow-xl shadow-[#7c6cf0]/5">
+                <div>
+                    <h1 class="text-xl font-black text-[#2b2470] dark:text-white">
+                        {% if trans.lang_code == 'ar' %}لوحة تحكم وإدارة النظام الأعلى{% else %}Super Admin Control Panel{% endif %}
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        {% if trans.lang_code == 'ar' %}نظام إدارة المستخدمين، التراخيص، نشر التنبيهات العامة ومراقبة أداء المنصة{% else %}Manage users, subscriptions, system announcements, and performance metrics{% endif %}
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <button onclick="openModal('createUserModal')" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#2b2470] to-[#5b47b8] hover:from-[#1e1b4b] hover:to-[#2b2470] text-white text-xs font-extrabold shadow-lg shadow-[#2b2470]/25 transition flex items-center gap-2">
+                        <i data-lucide="user-plus" class="w-4 h-4 text-amber-300"></i>
+                        <span>{% if trans.lang_code == 'ar' %}إضافة مستخدم جديد{% else %}Add New User{% endif %}</span>
+                    </button>
+                    <button onclick="openModal('announcementModal')" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#7c6cf0] to-[#9333ea] hover:from-[#5b47b8] hover:to-[#7c6cf0] text-white text-xs font-extrabold shadow-lg shadow-[#7c6cf0]/25 transition flex items-center gap-2">
+                        <i data-lucide="mega-phone" class="w-4 h-4 text-white"></i>
+                        <span>{% if trans.lang_code == 'ar' %}نشر إعلان عام{% else %}Post Announcement{% endif %}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Announcements Bar -->
+            {% if announcements %}
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col gap-2">
+                <div class="text-xs font-extrabold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    <span>{% if trans.lang_code == 'ar' %}التنبيهات العامة المعروضة حالياً للمستخدمين:{% else %}Active System Announcements:{% endif %}</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {% for ann in announcements %}
+                    <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-xl p-3 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <h4 class="font-extrabold text-xs text-[#2b2470] dark:text-white truncate">{{ ann.title }}</h4>
+                            <p class="text-[11px] text-slate-500 truncate mt-0.5">{{ ann.message }}</p>
+                        </div>
+                        <form method="POST" action="{% url 'admin_dashboard' %}" class="shrink-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_announcement_id" value="{{ ann.id }}">
+                            <button type="submit" onclick="return confirm('حذف هذا التنبيه؟');" class="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 text-xs font-bold" title="حذف التنبيه">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 1. TOP METRICS CARDS GRID (Light Glass Colors: Blue, Teal, Soft Lavender) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- Card 1: Total Accounts (Nile Blue & Lavender Glow) -->
+                <div class="rounded-3xl bg-gradient-to-br from-[#2b2470] via-[#372f6e] to-[#4c3fa8] text-white p-5 shadow-xl shadow-[#2b2470]/20 flex flex-col justify-between h-36 relative overflow-hidden group border border-white/20">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-[#b9a6f2] tracking-wide">
+                            {% if trans.lang_code == 'ar' %}إجمالي الحسابات{% else %}Total Balance{% endif %}
+                        </span>
+                        <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white">
+                            <i data-lucide="users" class="w-4 h-4 text-[#b9a6f2]"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-black text-white">{{ total_tenants|default:"2256" }}</h3>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-[#b9a6f2]/80 font-medium">
+                        <span>{% if trans.lang_code == 'ar' %}تم التحديث قبل ساعة{% else %}Updated Hour Ago{% endif %}</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </div>
+
+                <!-- Card 2: Active Accounts (Teal & Cyan Gradient) -->
+                <div class="rounded-3xl bg-gradient-to-br from-[#0d9488] to-[#14b8a6] text-white p-5 shadow-xl shadow-[#0d9488]/20 flex flex-col justify-between h-36 relative overflow-hidden group border border-white/20">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-teal-100 tracking-wide">
+                            {% if trans.lang_code == 'ar' %}الحسابات النشطة{% else %}Total Sales{% endif %}
+                        </span>
+                        <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white">
+                            <i data-lucide="briefcase" class="w-4 h-4 text-teal-200"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-black text-white">{{ active_count|default:"158" }}</h3>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-teal-100/90 font-medium">
+                        <span>{% if trans.lang_code == 'ar' %}تم التحديث قبل ساعة{% else %}Updated Hour Ago{% endif %}</span>
+                    </div>
+                </div>
+
+                <!-- Card 3: Frozen Accounts (Soft Lavender Glass Card) -->
+                <div class="rounded-3xl bg-[#b9a6f2]/25 backdrop-blur-xl border border-[#b9a6f2]/50 text-[#2b2470] dark:text-purple-200 p-5 shadow-xl flex flex-col justify-between h-36 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold text-[#2b2470] dark:text-purple-300 tracking-wide">
+                            {% if trans.lang_code == 'ar' %}الحسابات المجمدة{% else %}Total Expenses{% endif %}
+                        </span>
+                        <div class="w-8 h-8 rounded-full bg-[#2b2470]/10 flex items-center justify-center text-[#2b2470] dark:text-purple-200">
+                            <i data-lucide="wallet" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-black text-[#2b2470] dark:text-white">{{ pending_count|default:"86" }}</h3>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-[#2b2470]/70 dark:text-purple-300 font-bold">
+                        <span>{% if trans.lang_code == 'ar' %}تم التحديث قبل ساعة{% else %}Updated Hour Ago{% endif %}</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </div>
+
+                <!-- Card 4: AI Usage Queries (Glowing Purple & Lavender) -->
+                <div class="rounded-3xl bg-gradient-to-br from-[#7c6cf0] to-[#9333ea] text-white p-5 shadow-xl shadow-[#7c6cf0]/20 flex flex-col justify-between h-36 relative overflow-hidden group border border-white/20">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-purple-100 tracking-wide">
+                            {% if trans.lang_code == 'ar' %}استعلامات الذكاء الاصطناعي{% else %}Total Visitors{% endif %}
+                        </span>
+                        <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-purple-200"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-black text-white">{{ ai_usage_count|default:"506" }}</h3>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-purple-200 font-medium">
+                        <span>{% if trans.lang_code == 'ar' %}تم التحديث قبل ساعة{% else %}Updated Hour Ago{% endif %}</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 2. MIDDLE ROW (Observations & Category Analytics) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                
+                <!-- Left: Observations Panel (7 cols Light Glass Card) -->
+                <div class="lg:col-span-7 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h2 class="text-lg font-black text-[#2b2470] dark:text-white">
+                            {% if trans.lang_code == 'ar' %}أنشطة وملاحظات المشتركين{% else %}Observations{% endif %}
+                        </h2>
+                        <button onclick="switchAdminTab('users')" class="text-xs font-bold text-[#7c6cf0] hover:underline">
+                            {% if trans.lang_code == 'ar' %}عرض الكل{% else %}View All{% endif %}
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        {% for u in users_list|slice:":3" %}
+                        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/60 border border-white/90 dark:border-slate-700 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-11 h-11 flex items-center justify-center shrink-0">
+                                    <svg class="w-11 h-11 transform -rotate-90">
+                                        <circle cx="22" cy="22" r="17" stroke="#E2E8F0" stroke-width="3" fill="transparent"/>
+                                        <circle cx="22" cy="22" r="17" stroke="{% if forloop.counter == 1 %}#2b2470{% elif forloop.counter == 2 %}#7c6cf0{% else %}#14b8a6{% endif %}" stroke-width="3" stroke-dasharray="106.8" stroke-dashoffset="21.36" stroke-linecap="round" fill="transparent"/>
+                                    </svg>
+                                    <span class="absolute text-[10px] font-extrabold text-[#2b2470] dark:text-white">80%</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-extrabold text-sm text-[#2b2470] dark:text-white">{{ u.username }}</span>
+                                    <span class="text-[11px] text-slate-400 font-medium">24 April, 2023, 4:30pm</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="hidden sm:flex items-center text-amber-400 gap-0.5 text-xs"><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i></div>
+                                <span class="px-3 py-1 rounded-xl bg-[#b9a6f2]/20 text-[#2b2470] dark:text-purple-200 text-xs font-extrabold">
+                                    {% if forloop.counter == 1 %}2 Days Left{% elif forloop.counter == 2 %}5 Days Left{% else %}Outcome Statistics{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/60 border border-white/90 dark:border-slate-700 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-11 h-11 flex items-center justify-center shrink-0">
+                                    <svg class="w-11 h-11 transform -rotate-90">
+                                        <circle cx="22" cy="22" r="17" stroke="#E2E8F0" stroke-width="3" fill="transparent"/>
+                                        <circle cx="22" cy="22" r="17" stroke="#2b2470" stroke-width="3" stroke-dasharray="106.8" stroke-dashoffset="21.36" stroke-linecap="round" fill="transparent"/>
+                                    </svg>
+                                    <span class="absolute text-[10px] font-extrabold text-[#2b2470] dark:text-white">80%</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-extrabold text-sm text-[#2b2470] dark:text-white">Taylor Swift</span>
+                                    <span class="text-[11px] text-slate-400">24 April, 2023, 4:30pm</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center text-amber-400 gap-0.5 text-xs"><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i><i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i></div>
+                                <span class="px-3 py-1 rounded-xl bg-[#b9a6f2]/20 text-[#2b2470] text-xs font-bold">2 Days Left</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Right: Sector Breakdown Analytics (5 cols Light Glass Card) -->
+                <div class="lg:col-span-5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col justify-between gap-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h2 class="text-base font-black text-[#2b2470] dark:text-white">
+                            {% if trans.lang_code == 'ar' %}توزيع القطاعات والأعمال المدخلة{% else %}Sector Data Distribution{% endif %}
+                        </h2>
+                        <span class="text-[11px] font-extrabold text-[#7c6cf0] bg-[#7c6cf0]/10 px-2.5 py-0.5 rounded-full">
+                            {% if trans.lang_code == 'ar' %}إحصائيات حية{% else %}Live Stats{% endif %}
+                        </span>
+                    </div>
+
+                    {% for sec in sector_stats %}
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-xs font-bold text-[#2b2470] dark:text-slate-200">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-lg {{ sec.bg_color }} flex items-center justify-center">
+                                    <i data-lucide="{{ sec.icon }}" class="w-4 h-4"></i>
+                                </div>
+                                <span class="truncate max-w-[160px]">{% if trans.lang_code == 'ar' %}{{ sec.name_ar }}{% else %}{{ sec.name_en }}{% endif %}</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[11px] text-slate-400 font-semibold">({{ sec.count }})</span>
+                                <span class="font-extrabold">{{ sec.pct }}%</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                            <div class="{{ sec.bar_color }} h-full rounded-full transition-all duration-500" style="width: {{ sec.pct }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <!-- 3. BOTTOM ROW (Stocks Graph - Full Width Light Glass Card) -->
+            <div class="grid grid-cols-1 gap-4">
+                
+                <!-- Stocks Line Chart (Full Width Glass Card) -->
+                <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4 relative">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-black text-[#2b2470] dark:text-white">
+                            {% if trans.lang_code == 'ar' %}منحنى أداء واستخدام النظام (Stocks Graph){% else %}Stocks Graph{% endif %}
+                        </h2>
+                        <div class="bg-gradient-to-r from-[#2b2470] to-[#7c6cf0] text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md">
+                            <span>4.5 Points</span>
+                        </div>
+                    </div>
+                    <div class="relative w-full h-[240px]">
+                        <canvas id="stocksGraphChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TAB 2: USERS MANAGEMENT CONTENT -->
+        <div id="admin-tab-users" class="hidden flex-col gap-4">
+            <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4">
+                <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#2b2470] to-[#7c6cf0] text-white flex items-center justify-center shadow-md">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-[#2b2470] dark:text-white">
+                                {% if trans.lang_code == 'ar' %}إدارة حسابات المستخدمين والمشتركين{% else %}User Accounts Management{% endif %}
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                {% if trans.lang_code == 'ar' %}إنشاء وتفعيل وتجميد الحسابات والدخول المباشر كـ مستخدم{% else %}Create, activate/freeze, and login as user{% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2.5">
+                        <button onclick="openModal('createUserModal')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#2b2470] to-[#5b47b8] text-white text-xs font-bold shadow transition flex items-center gap-1.5">
+                            <i data-lucide="user-plus" class="w-3.5 h-3.5 text-amber-300"></i>
+                            <span>{% if trans.lang_code == 'ar' %}مستخدم جديد{% else %}Add User{% endif %}</span>
+                        </button>
+                        <div class="relative w-full sm:w-64">
+                            <i data-lucide="search" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                            <input type="text" id="userSearchInput" onkeyup="filterUserTable()" 
+                                placeholder="{% if trans.lang_code == 'ar' %}ابحث بالاسم، البريد...{% else %}Search name, email...{% endif %}"
+                                class="w-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800 py-2 pr-10 pl-4 text-xs font-semibold outline-none focus:border-[#7c6cf0] transition shadow-sm" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-{{ trans.align|default:'right' }}" id="usersTable">
+                        <thead>
+                            <tr class="border-b border-slate-200/80 dark:border-slate-800 text-xs font-bold text-[#2b2470] dark:text-[#b9a6f2] uppercase tracking-wider bg-[#b9a6f2]/10 rounded-xl">
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}المستخدم{% else %}User{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}الشركة / المنشأة{% else %}Company{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}الهاتف / السجل{% else %}Phone / CR{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}الصلاحيات{% else %}Role{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}تاريخ الانضمام{% else %}Joined{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                                <th class="py-3 px-3 text-center">{% if trans.lang_code == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            {% for u in users_list %}
+                            <tr class="user-row hover:bg-[#b9a6f2]/10 transition">
+                                <td class="py-3.5 px-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 shrink-0 rounded-2xl bg-gradient-to-br from-[#2b2470] to-[#7c6cf0] text-white font-extrabold text-xs flex items-center justify-center shadow-sm">
+                                            {{ u.username|slice:":1"|upper }}
+                                        </div>
+                                        <div class="truncate max-w-[180px]">
+                                            <div class="font-extrabold text-[#2b2470] dark:text-white text-xs flex items-center gap-1.5">
+                                                <span>{{ u.username }}</span>
+                                                {% if u == request.user %}
+                                                <span class="text-[10px] bg-[#7c6cf0]/15 text-[#7c6cf0] border border-[#7c6cf0]/30 rounded-md px-1.5 py-0.2 font-semibold">
+                                                    {% if trans.lang_code == 'ar' %}أنت{% else %}You{% endif %}
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-[11px] text-slate-400 truncate">{{ u.email|default:"لا يوجد بريد" }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    {% if u.profile %}
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1">
+                                        <i data-lucide="building-2" class="w-3.5 h-3.5 text-slate-400"></i>
+                                        {{ u.profile.company_name }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-xs text-slate-400 italic">{% if trans.lang_code == 'ar' %}حساب فردي{% else %}Individual{% endif %}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    {% if u.profile %}
+                                    <div class="text-xs text-slate-700 dark:text-slate-300">
+                                        <div>{{ u.profile.phone_number|default:"—" }}</div>
+                                        {% if u.profile.commercial_register %}
+                                        <div class="text-[11px] text-slate-400">CR: {{ u.profile.commercial_register }}</div>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <span class="text-xs text-slate-400">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    {% if u.is_superuser or u.is_staff or u.username == 'admin' %}
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-[#7c6cf0]/15 border border-[#7c6cf0]/30 text-[#7c6cf0] font-bold px-2.5 py-0.5 text-xs">
+                                        <i data-lucide="shield" class="w-3 h-3"></i>
+                                        {% if trans.lang_code == 'ar' %}مشرف نظام{% else %}Admin{% endif %}
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-500/10 border border-slate-500/20 text-slate-600 dark:text-slate-400 font-medium px-2.5 py-0.5 text-xs">
+                                        <i data-lucide="user" class="w-3 h-3"></i>
+                                        {% if trans.lang_code == 'ar' %}مستخدم{% else %}User{% endif %}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3 text-xs text-slate-500 dark:text-slate-400">
+                                    {{ u.date_joined|date:"Y-m-d H:i" }}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    {% if u.is_active %}
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        {% if trans.lang_code == 'ar' %}نشط{% else %}Active{% endif %}
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 px-2.5 py-0.5 text-xs font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                        {% if trans.lang_code == 'ar' %}مجمد{% else %}Frozen{% endif %}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3 text-center">
+                                    {% if u == request.user %}
+                                    <span class="text-xs text-slate-400 italic">{% if trans.lang_code == 'ar' %}الحساب الحالي{% else %}Current Admin{% endif %}</span>
+                                    {% else %}
+                                    <div class="flex items-center justify-center gap-2">
+                                        <form method="POST" action="{% url 'admin_dashboard' %}" class="inline-block" onsubmit="return confirmUserToggle(this);">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="toggle_user_id" value="{{ u.pk }}">
+                                            {% if u.is_active %}
+                                            <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-bold transition">
+                                                <i data-lucide="user-x" class="w-3.5 h-3.5"></i>
+                                                {% if trans.lang_code == 'ar' %}تجميد{% else %}Freeze{% endif %}
+                                            </button>
+                                            {% else %}
+                                            <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold transition">
+                                                <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                                                {% if trans.lang_code == 'ar' %}تفعيل{% else %}Activate{% endif %}
+                                            </button>
+                                            {% endif %}
+                                        </form>
+                                        <a href="{% url 'impersonate_user' u.id %}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#7c6cf0]/10 hover:bg-[#7c6cf0]/20 text-[#7c6cf0] border border-[#7c6cf0]/30 text-xs font-bold transition">
+                                            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+                                            {% if trans.lang_code == 'ar' %}دخول{% else %}Login As{% endif %}
+                                        </a>
+                                        <form method="POST" action="{% url 'admin_dashboard' %}" class="inline-block" onsubmit="return confirm('هل أنت متأكد من حذف هذا الحساب نهائياً؟');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="delete_user_id" value="{{ u.pk }}">
+                                            <button type="submit" class="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition" title="حذف الحساب">
+                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="py-8 text-center text-slate-400 text-sm">
+                                    {% if trans.lang_code == 'ar' %}لا يوجد مستخدمون مسجلون حالياً.{% else %}No users found.{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: FINANCE & SUBSCRIPTIONS CONTENT -->
+        <div id="admin-tab-finance" class="hidden flex-col gap-4">
+            <!-- Revenue Overview Card (Teal & Nile Gradient Glass) -->
+            <div class="bg-gradient-to-r from-[#0d9488] via-[#14b8a6] to-[#2b2470] text-white rounded-[28px] p-6 shadow-xl shadow-[#0d9488]/20 flex items-center justify-between flex-wrap gap-4 border border-white/20">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+                        <i data-lucide="banknote" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-teal-100 font-bold uppercase tracking-wider">
+                            {% if trans.lang_code == 'ar' %}إجمالي إيرادات المدفوعات والاشتراكات{% else %}Total Revenue & Subscriptions{% endif %}
+                        </p>
+                        <h2 class="text-3xl font-black mt-1 text-white">
+                            {{ total_revenue|default:"0.00" }} <span class="text-lg font-normal opacity-90">OMR</span>
+                        </h2>
+                    </div>
+                </div>
+                <div class="px-4 py-2 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 text-xs font-bold flex items-center gap-2">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-teal-200"></i>
+                    <span>{% if trans.lang_code == 'ar' %}تراخيص الباقات مفعلة{% else %}Active Subscriptions{% endif %}</span>
+                </div>
+            </div>
+
+            <!-- Invoices Table Card (Light Glass) -->
+            <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <h2 class="text-lg font-black text-[#2b2470] dark:text-white">
+                        {% if trans.lang_code == 'ar' %}سجل الفواتير والمدفوعات (Payment History){% else %}Payment History{% endif %}
+                    </h2>
+                    <div class="relative w-full sm:w-64">
+                        <i data-lucide="search" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="invoiceSearchInput" onkeyup="filterInvoicesTable()" 
+                            placeholder="{% if trans.lang_code == 'ar' %}ابحث بالرقم، المستخدم...{% else %}Search invoice, user...{% endif %}"
+                            class="w-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800 py-2 pr-10 pl-4 text-xs font-semibold outline-none focus:border-[#7c6cf0] transition shadow-sm" />
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-{{ trans.align|default:'right' }}" id="invoicesTable">
+                        <thead>
+                            <tr class="border-b border-slate-200/80 dark:border-slate-800 text-xs font-bold text-[#2b2470] dark:text-[#b9a6f2] uppercase tracking-wider bg-[#b9a6f2]/10">
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}رقم الفاتورة{% else %}Invoice ID{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}المستخدم{% else %}User{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}الباقة / الترخيص{% else %}Plan{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}المبلغ{% else %}Amount{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}تاريخ الدفع{% else %}Date{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            {% for invoice in invoices %}
+                            <tr class="invoice-row hover:bg-[#b9a6f2]/10 transition">
+                                <td class="py-3.5 px-3 font-mono font-bold text-slate-600 dark:text-slate-400">#INV-{{ invoice.id|stringformat:"05d" }}</td>
+                                <td class="py-3.5 px-3 font-extrabold text-[#2b2470] dark:text-white">{{ invoice.user.username }}</td>
+                                <td class="py-3.5 px-3">
+                                    <span class="px-2.5 py-1 text-xs rounded-full bg-[#7c6cf0]/15 text-[#7c6cf0] font-bold border border-[#7c6cf0]/20">
+                                        {{ invoice.plan_name }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-3 font-black text-emerald-600 dark:text-emerald-400">{{ invoice.amount }} {{ invoice.currency }}</td>
+                                <td class="py-3.5 px-3 text-xs text-slate-500 dark:text-slate-400 font-mono">{{ invoice.created_at|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-400 text-sm">
+                                    {% if trans.lang_code == 'ar' %}لا توجد فواتير أو مدفوعات مسجلة حتى الآن.{% else %}No invoices found.{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: CUSTOMIZATION & FEEDBACK CONTENT -->
+        <div id="admin-tab-feedback" class="hidden flex-col gap-4">
+            <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4">
+                <div class="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                        <i data-lucide="star" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-[#2b2470] dark:text-white">
+                            {% if trans.lang_code == 'ar' %}تقييمات وملاحظات المستخدمين{% else %}Platform Feedback & Ratings{% endif %}
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                            {% if trans.lang_code == 'ar' %}الملاحظات والاقتراحات المرسلة من المشتركين عبر نموذج التقييم{% else %}Feedback and recommendations submitted by platform users{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-{{ trans.align|default:'right' }}">
+                        <thead>
+                            <tr class="border-b border-slate-200/80 dark:border-slate-800 text-xs font-bold text-[#2b2470] dark:text-[#b9a6f2] uppercase tracking-wider bg-[#b9a6f2]/10">
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}النوع{% else %}Type{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}البريد الإلكتروني{% else %}Email / User{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}التقييم{% else %}Rating{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}الرسالة{% else %}Message{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            {% for fb in feedback_list %}
+                            <tr class="hover:bg-[#b9a6f2]/10 transition">
+                                <td class="py-3.5 px-3">
+                                    {% if fb.feedback_type == 'rating' %}
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-bold">
+                                        <i data-lucide="star" class="w-3 h-3"></i>
+                                        {% if trans.lang_code == 'ar' %}تقييم المنصة{% else %}Rating{% endif %}
+                                    </span>
+                                    {% elif fb.feedback_type == 'suggestion' %}
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 px-2.5 py-0.5 text-xs font-bold">
+                                        <i data-lucide="lightbulb" class="w-3 h-3"></i>
+                                        {% if trans.lang_code == 'ar' %}اقتراح ميزة{% else %}Suggestion{% endif %}
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2.5 py-0.5 text-xs font-bold">
+                                        <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+                                        {% if trans.lang_code == 'ar' %}شكوى / ملاحظة{% else %}Complaint{% endif %}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    <div class="font-semibold text-slate-800 dark:text-slate-200 text-xs">{{ fb.email }}</div>
+                                    {% if fb.user %}
+                                    <div class="text-[11px] text-slate-400">@{{ fb.user.username }}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    <div class="flex items-center text-amber-400 gap-0.5">
+                                        {% for i in "12345" %}
+                                        {% if forloop.counter <= fb.rating %}
+                                        <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+                                        {% else %}
+                                        <i data-lucide="star" class="w-3.5 h-3.5 text-slate-300 dark:text-slate-600"></i>
+                                        {% endif %}
+                                        {% endfor %}
+                                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1">({{ fb.rating }}/5)</span>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-3 max-w-md">
+                                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-white/80 dark:bg-slate-800 p-2.5 rounded-xl border border-white/90 dark:border-slate-700">
+                                        {{ fb.message }}
+                                    </p>
+                                </td>
+                                <td class="py-3.5 px-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                                    {{ fb.created_at|date:"Y-m-d H:i" }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-400 text-sm">
+                                    {% if trans.lang_code == 'ar' %}لا توجد تقييمات أو ملاحظات مسجلة حتى الآن.{% else %}No feedback recorded yet.{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: SYSTEM LOGS CONTENT -->
+        <div id="admin-tab-logs" class="hidden flex-col gap-4">
+            <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                            <i data-lucide="activity" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-[#2b2470] dark:text-white">
+                                {% if trans.lang_code == 'ar' %}سجلات وعمليات النظام (System Logs){% else %}System Activity Logs{% endif %}
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                {% if trans.lang_code == 'ar' %}مراقبة أحداث الدخول، والتسجيل، والتعديلات الفورية على المنصة{% else %}Monitor logins, registrations, and system events{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="relative w-full sm:w-64">
+                        <i data-lucide="search" class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="logSearchInput" onkeyup="filterLogsTable()" 
+                            placeholder="{% if trans.lang_code == 'ar' %}ابحث بنوع العملية، المستخدم...{% else %}Search action, user...{% endif %}"
+                            class="w-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800 py-2 pr-10 pl-4 text-xs font-semibold outline-none focus:border-[#7c6cf0] transition shadow-sm" />
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-{{ trans.align|default:'right' }}" id="logsTable">
+                        <thead>
+                            <tr class="border-b border-slate-200/80 dark:border-slate-800 text-xs font-bold text-[#2b2470] dark:text-[#b9a6f2] uppercase tracking-wider bg-[#b9a6f2]/10">
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}التاريخ والوقت{% else %}Timestamp{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}المستخدم{% else %}User{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}نوع العملية{% else %}Action Type{% endif %}</th>
+                                <th class="py-3 px-3">{% if trans.lang_code == 'ar' %}التفاصيل{% else %}Details{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            {% for log in logs %}
+                            <tr class="log-row hover:bg-[#b9a6f2]/10 transition">
+                                <td class="py-3.5 px-3 font-mono text-xs text-slate-500" dir="ltr">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                <td class="py-3.5 px-3 font-extrabold text-[#2b2470] dark:text-white">
+                                    {% if log.user %}
+                                        {{ log.user.username }}
+                                    {% else %}
+                                        <span class="text-slate-400 italic">System</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-3">
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-full 
+                                        {% if 'Login' in log.action_type or 'دخول' in log.action_type %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20
+                                        {% elif 'Register' in log.action_type or 'تسجيل' in log.action_type %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20
+                                        {% elif 'Upload' in log.action_type or 'رفع' in log.action_type %}bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20
+                                        {% elif 'Payment' in log.action_type or 'دفع' in log.action_type %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20
+                                        {% else %}bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20{% endif %}">
+                                        {{ log.action_type }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{{ log.details }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="py-8 text-center text-slate-400 text-sm">
+                                    {% if trans.lang_code == 'ar' %}لا توجد سجلات عمليات مسجلة حتى الآن.{% else %}No logs recorded yet.{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: SETTINGS & PROFILE CONTENT -->
+        <div id="admin-tab-settings" class="hidden flex-col gap-4">
+            <!-- Top Summary Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Card 1: Owner -->
+                <div class="bg-gradient-to-br from-[#194E5B] to-[#0E585E] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between h-32 border border-white/20">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-teal-100 uppercase tracking-wider">
+                            {% if trans.lang_code == 'ar' %}مالك الحساب{% else %}Account Owner{% endif %}
+                        </span>
+                        <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                            <i data-lucide="user-check" class="h-4 w-4"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-0.5">
+                        <h4 class="text-base font-black tracking-tight truncate">{{ request.user.username }}</h4>
+                        <p class="text-[11px] text-teal-200 font-bold">{% if trans.lang_code == 'ar' %}مدير نظام معتمد{% else %}Verified Super Admin{% endif %}</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Company -->
+                <div class="bg-gradient-to-br from-[#F4A742] to-[#d97706] text-slate-950 p-5 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between h-32 border border-white/20">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black opacity-80 uppercase tracking-wider">
+                            {% if trans.lang_code == 'ar' %}المؤسسة الحالية{% else %}Current Company{% endif %}
+                        </span>
+                        <div class="h-8 w-8 rounded-full bg-black/15 flex items-center justify-center text-slate-950">
+                            <i data-lucide="building-2" class="h-4 w-4"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-0.5">
+                        <h4 class="text-base font-black tracking-tight truncate">
+                            {% if request.user.profile and request.user.profile.company_name %}{{ request.user.profile.company_name }}{% else %}شركة منصة بصيرة الذكية{% endif %}
+                        </h4>
+                        <p class="text-[11px] text-slate-900 font-bold">{% if trans.lang_code == 'ar' %}سجل تجاري موثق{% else %}Verified CR Entity{% endif %}</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Language -->
+                <div class="bg-gradient-to-br from-[#2b2470] to-[#7c6cf0] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between h-32 border border-white/20">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-purple-200 uppercase tracking-wider">
+                            {% if trans.lang_code == 'ar' %}لغة الواجهة{% else %}Interface Language{% endif %}
+                        </span>
+                        <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                            <i data-lucide="globe" class="h-4 w-4"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-0.5">
+                        <h4 class="text-base font-black tracking-tight">{% if trans.lang_code == 'ar' %}العربية (AR){% else %}English (EN){% endif %}</h4>
+                        <a href="?lang={{ trans.other_lang }}" class="text-[11px] text-purple-200 hover:text-white font-bold underline inline-block">
+                            {% if trans.lang_code == 'ar' %}تغيير للإنجليزية{% else %}Switch to Arabic{% endif %}
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 4: Security -->
+                <div class="bg-gradient-to-br from-[#1e293b] to-[#0f172a] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between h-32 border border-slate-700">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-300 uppercase tracking-wider">
+                            {% if trans.lang_code == 'ar' %}مستوى الأمان{% else %}Security Level{% endif %}
+                        </span>
+                        <div class="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                            <i data-lucide="shield-check" class="h-4 w-4"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-0.5">
+                        <h4 class="text-base font-black tracking-tight text-emerald-400">
+                            {% if trans.lang_code == 'ar' %}حماية عالية (SSL){% else %}SSL Protected{% endif %}
+                        </h4>
+                        <p class="text-[11px] text-slate-400 font-bold">{% if trans.lang_code == 'ar' %}جلسة مشفرة ومؤمنة{% else %}Encrypted Active Session{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Forms 2-Column Grid -->
+            <form method="POST" action="{% url 'settings' %}" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                {% csrf_token %}
+                <input type="hidden" name="update_profile" value="1">
+
+                <!-- Left Column (7 Cols): Profile & Enterprise Info -->
+                <div class="lg:col-span-7 flex flex-col gap-4">
+                    <!-- Profile Info Card -->
+                    <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                                    <i data-lucide="user" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-black text-[#2b2470] dark:text-white">
+                                        {% if trans.lang_code == 'ar' %}معلومات الملف الشخصي والمالك{% else %}Profile & Owner Details{% endif %}
+                                    </h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        {% if trans.lang_code == 'ar' %}إدارة اسم المستخدم، البريد، ورقم التواصل الرسمية{% else %}Manage username, email, and phone contact{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-extrabold text-[#7c6cf0] bg-[#7c6cf0]/10 px-3 py-1 rounded-full">
+                                {% if trans.lang_code == 'ar' %}الملف الشخصي{% else %}Personal{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                                    {% if trans.lang_code == 'ar' %}اسم المالك / اسم المستخدم{% else %}Username / Display Name{% endif %}
+                                </label>
+                                <input type="text" name="username" value="{{ request.user.username }}" required 
+                                       class="w-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800 py-2.5 px-4 text-xs font-semibold outline-none focus:border-[#7c6cf0] transition shadow-sm" />
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                                    {% if trans.lang_code == 'ar' %}رقم الهاتف للتواصل{% else %}Phone Number{% endif %}
+                                </label>
+                                <input type="tel" name="phone" value="{% if request.user.profile %}{{ request.user.profile.phone_number }}{% endif %}" required 
+                                       class="w-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800 py-2.5 px-4 text-xs font-semibold outline-none focus:border-[#7c6cf0] transition shadow-sm" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                                {% if trans.lang_code == 'ar' %}البريد الإلكتروني الرسمي{% else %}Official Email Address{% endif %}
+                            </label>
+                            <input type="email" name="email" value="{{ request.user.email }}" required 
+                                   class="w-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800 py-2.5 px-4 text-xs font-semibold outline-none focus:border-[#7c6cf0] transition shadow-sm" />
+                        </div>
+                    </div>
+
+                    <!-- Enterprise Info Card -->
+                    <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-600 flex items-center justify-center">
+                                    <i data-lucide="building-2" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-black text-[#2b2470] dark:text-white">
+                                        {% if trans.lang_code == 'ar' %}بيانات المؤسسة والسجل التجاري{% else %}Company & Commercial Register{% endif %}
+                                    </h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        {% if trans.lang_code == 'ar' %}تفاصيل اسم المشروع ورقم السجل التجاري المعترف به{% else %}Company name and CR registration details{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-extrabold text-teal-600 bg-teal-500/10 px-3 py-1 rounded-full">
+                                {% if trans.lang_code == 'ar' %}المؤسسة{% else %}Enterprise{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                                    {% if trans.lang_code == 'ar' %}اسم المؤسسة / الشركة{% else %}Company Name{% endif %}
+                                </label>
+                                <input type="text" name="company_name" value="{% if request.user.profile %}{{ request.user.profile.company_name }}{% endif %}" required 
+                                       class="w-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800 py-2.5 px-4 text-xs font-semibold outline-none focus:border-[#7c6cf0] transition shadow-sm" />
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                                    {% if trans.lang_code == 'ar' %}رقم السجل التجاري (CR){% else %}Commercial Register (CR){% endif %}
+                                </label>
+                                <input type="text" name="cr_number" value="{% if request.user.profile %}{{ request.user.profile.commercial_register }}{% endif %}" required 
+                                       class="w-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800 py-2.5 px-4 text-xs font-semibold outline-none focus:border-[#7c6cf0] transition shadow-sm" />
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex justify-end">
+                            <button type="submit" class="w-full sm:w-auto px-7 py-3 rounded-2xl bg-gradient-to-r from-[#2b2470] to-[#5b47b8] hover:from-[#1e1b4b] hover:to-[#2b2470] text-white text-xs font-black shadow-lg shadow-[#2b2470]/20 transition flex items-center justify-center gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-amber-300"></i>
+                                <span>{% if trans.lang_code == 'ar' %}حفظ وتحديث الإعدادات{% else %}Save & Update Settings{% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (5 Cols): Preferences & Security -->
+                <div class="lg:col-span-5 flex flex-col gap-4">
+                    <!-- System Preferences -->
+                    <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[28px] p-6 shadow-xl shadow-[#7c6cf0]/5 border border-white/80 dark:border-slate-800 flex flex-col gap-4">
+                        <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div class="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                                <i data-lucide="sliders" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-black text-[#2b2470] dark:text-white">
+                                    {% if trans.lang_code == 'ar' %}التفضيلات وخيارات النظام{% else %}System Preferences{% endif %}
+                                </h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                    {% if trans.lang_code == 'ar' %}إعدادات العرض واللغة والتنبيهات العامة{% else %}Display, language, and notification toggles{% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-3 text-xs">
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-white/90 dark:border-slate-700 shadow-sm">
+                                <div>
+                                    <p class="font-extrabold text-[#2b2470] dark:text-white">{% if trans.lang_code == 'ar' %}اللغة الافتراضية للنظام{% else %}Interface Language{% endif %}</p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">{% if trans.lang_code == 'ar' %}لغة الواجهات والتقارير{% else %}System language{% endif %}</p>
+                                </div>
+                                <a href="?lang={{ trans.other_lang }}" class="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-[#2b2470] dark:text-slate-200 hover:bg-[#b9a6f2]/20 transition shadow-xs">
+                                    {{ trans.other_lang_name }}
+                                </a>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-white/90 dark:border-slate-700 shadow-sm">
+                                <div>
+                                    <p class="font-extrabold text-[#2b2470] dark:text-white">{% if trans.lang_code == 'ar' %}تنبيهات الأمان والأنشطة{% else %}Security Alerts & Activity{% endif %}</p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">{% if trans.lang_code == 'ar' %}إشعارات فورية عند كل دخول للنظام{% else %}Instant login notifications{% endif %}</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-10 h-5.5 bg-slate-300 dark:bg-slate-700 rounded-full peer peer-checked:bg-[#7c6cf0] transition after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:after:translate-x-full"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security & Account Actions -->
+                    <div class="bg-rose-500/10 dark:bg-rose-950/20 p-6 rounded-[28px] border border-rose-500/20 shadow-xl shadow-rose-500/5 flex flex-col gap-4">
+                        <div class="flex items-center gap-3 border-b border-rose-500/20 pb-3">
+                            <div class="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-black">
+                                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-black text-rose-700 dark:text-rose-400">
+                                    {% if trans.lang_code == 'ar' %}منطقة الأمان وإلغاء الحساب{% else %}Security & Account Control{% endif %}
+                                </h3>
+                                <p class="text-[11px] text-rose-600/80">{% if trans.lang_code == 'ar' %}إدارة كلمة المرور والعمليات الحرجة{% else %}Password management and critical actions{% endif %}</p>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-rose-800 dark:text-rose-300 leading-relaxed font-medium">
+                            {% if trans.lang_code == 'ar' %}
+                            يمكنك تحديث كلمة المرور الخاصة بك أو إدارة أذونات الدخول الآمن لحساب الإدارة العليا في أي وقت.
+                            {% else %}
+                            You can update your administrator password or manage credentials for the super admin portal at any time.
+                            {% endif %}
+                        </p>
+
+                        <div class="pt-1 flex items-center gap-2">
+                            <a href="{% url 'password_reset' %}" class="px-5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white text-xs font-bold transition shadow-sm flex items-center justify-center gap-2">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                                <span>{% if trans.lang_code == 'ar' %}إعادة تعيين كلمة المرور{% else %}Reset Password{% endif %}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </main>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- 1. Add User Modal -->
+<div id="createUserModal" class="hidden fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[28px] max-w-lg w-full p-6 shadow-2xl border border-white/80 dark:border-slate-800 flex flex-col gap-4 animate-fade-up">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2b2470] to-[#7c6cf0] text-white flex items-center justify-center shadow-md">
+                    <i data-lucide="user-plus" class="w-5 h-5 text-amber-300"></i>
+                </div>
+                <h3 class="text-base font-black text-[#2b2470] dark:text-white">
+                    {% if trans.lang_code == 'ar' %}إضافة مستخدم جديد للنظام{% else %}Add New System User{% endif %}
+                </h3>
+            </div>
+            <button onclick="closeModal('createUserModal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'admin_dashboard' %}" class="flex flex-col gap-3 text-{{ trans.align }}" dir="{{ trans.dir }}">
+            {% csrf_token %}
+            <input type="hidden" name="create_user" value="1">
+
+            <div>
+                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                    {% if trans.lang_code == 'ar' %}اسم المستخدم *{% else %}Username *{% endif %}
+                </label>
+                <input type="text" name="username" required placeholder="{% if trans.lang_code == 'ar' %}مثال: ahmed_2025{% else %}e.g. ahmed_2025{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                        {% if trans.lang_code == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}
+                    </label>
+                    <input type="email" name="email" placeholder="user@company.com" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]">
+                </div>
+                <div>
+                    <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                        {% if trans.lang_code == 'ar' %}كلمة المرور *{% else %}Password *{% endif %}
+                    </label>
+                    <input type="password" name="password" required placeholder="••••••••" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                        {% if trans.lang_code == 'ar' %}اسم الشركة / المنشأة{% else %}Company Name{% endif %}
+                    </label>
+                    <input type="text" name="company_name" placeholder="{% if trans.lang_code == 'ar' %}شركة الابتكار{% else %}Innovation Corp{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]">
+                </div>
+                <div>
+                    <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                        {% if trans.lang_code == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}
+                    </label>
+                    <input type="text" name="phone_number" placeholder="+968 91234567" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]">
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                    {% if trans.lang_code == 'ar' %}نوع الصلاحيات{% else %}User Role{% endif %}
+                </label>
+                <select name="role" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]">
+                    <option value="user">{% if trans.lang_code == 'ar' %}مستخدم عادي (User){% else %}Regular User{% endif %}</option>
+                    <option value="admin">{% if trans.lang_code == 'ar' %}مشرف نظام (Super Admin){% else %}Super Admin{% endif %}</option>
+                </select>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2">
+                <button type="button" onclick="closeModal('createUserModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#2b2470] to-[#5b47b8] hover:from-[#1e1b4b] hover:to-[#2b2470] text-xs font-black text-white shadow-md">
+                    {% if trans.lang_code == 'ar' %}إنشاء الحساب الآن{% else %}Create Account Now{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 2. Create Announcement Modal -->
+<div id="announcementModal" class="hidden fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[28px] max-w-lg w-full p-6 shadow-2xl border border-white/80 dark:border-slate-800 flex flex-col gap-4 animate-fade-up">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7c6cf0] to-[#9333ea] text-white flex items-center justify-center shadow-md">
+                    <i data-lucide="mega-phone" class="w-5 h-5 text-white"></i>
+                </div>
+                <h3 class="text-base font-black text-[#2b2470] dark:text-white">
+                    {% if trans.lang_code == 'ar' %}نشر إعلان عام لكافة المستخدمين{% else %}Post System Announcement{% endif %}
+                </h3>
+            </div>
+            <button onclick="closeModal('announcementModal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'admin_dashboard' %}" class="flex flex-col gap-3 text-{{ trans.align }}" dir="{{ trans.dir }}">
+            {% csrf_token %}
+            <input type="hidden" name="create_announcement" value="1">
+
+            <div>
+                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                    {% if trans.lang_code == 'ar' %}عنوان الإعلان *{% else %}Announcement Title *{% endif %}
+                </label>
+                <input type="text" name="title" required placeholder="{% if trans.lang_code == 'ar' %}مثال: تحديث جديد في منصة بصيرة{% else %}e.g. Platform System Update{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]">
+            </div>
+
+            <div>
+                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                    {% if trans.lang_code == 'ar' %}محتوى الإعلان *{% else %}Announcement Message *{% endif %}
+                </label>
+                <textarea name="message" required rows="3" placeholder="{% if trans.lang_code == 'ar' %}أدخل تفاصيل التنبيه الموجه للعملاء...{% else %}Enter announcement details for users...{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]"></textarea>
+            </div>
+
+            <div>
+                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                    {% if trans.lang_code == 'ar' %}نوع التنبيه{% else %}Announcement Type{% endif %}
+                </label>
+                <select name="type" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]">
+                    <option value="info">{% if trans.lang_code == 'ar' %}معلومة عامة (Info){% else %}General Info (Blue){% endif %}</option>
+                    <option value="warning">{% if trans.lang_code == 'ar' %}تنبيه مهم (Warning){% else %}Important Warning (Yellow){% endif %}</option>
+                    <option value="success">{% if trans.lang_code == 'ar' %}إشعار إيجابي (Success){% else %}Success Notice (Green){% endif %}</option>
+                </select>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2">
+                <button type="button" onclick="closeModal('announcementModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#7c6cf0] to-[#9333ea] hover:from-[#5b47b8] hover:to-[#7c6cf0] text-xs font-black text-white shadow-md">
+                    {% if trans.lang_code == 'ar' %}نشر الإعلان الآن{% else %}Post Announcement Now{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. Calendar Event / Note Modal -->
+<div id="calendarNoteModal" class="hidden fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[28px] max-w-md w-full p-6 shadow-2xl border border-white/80 dark:border-slate-800 flex flex-col gap-4 animate-fade-up">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2b2470] to-[#7c6cf0] text-white flex items-center justify-center shadow-md">
+                    <i data-lucide="calendar" class="w-5 h-5 text-amber-300"></i>
+                </div>
+                <h3 class="text-base font-black text-[#2b2470] dark:text-white" id="calendarNoteModalTitle">
+                    {% if trans.lang_code == 'ar' %}ملاحظة التاريخ{% else %}Date Memo{% endif %}
+                </h3>
+            </div>
+            <button onclick="closeModal('calendarNoteModal')" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-3 text-{{ trans.align }}" dir="{{ trans.dir }}">
+            <div>
+                <label class="text-xs font-extrabold text-slate-700 dark:text-slate-200 block mb-1">
+                    {% if trans.lang_code == 'ar' %}تذكير / ملاحظة لليوم المختار{% else %}Reminder / Note for Selected Date{% endif %}
+                </label>
+                <textarea id="calendarNoteText" rows="3" placeholder="{% if trans.lang_code == 'ar' %}أدخل تفاصيل التذكير أو الملاحظات الخاصة بهذا اليوم...{% else %}Enter memo or reminder details for this day...{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 p-2.5 text-xs font-semibold outline-none focus:border-[#7c6cf0]"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2">
+                <button type="button" onclick="closeModal('calendarNoteModal')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+                <button type="button" onclick="saveCalendarNote()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#2b2470] to-[#5b47b8] hover:from-[#1e1b4b] hover:to-[#2b2470] text-xs font-black text-white shadow-md">
+                    {% if trans.lang_code == 'ar' %}حفظ الملاحظة{% else %}Save Note{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Tab Switcher, Modal Handlers & Table Filters JS -->
+<script>
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('hidden');
+    }
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function switchAdminTab(tabName) {
+        const tabs = ['overview', 'users', 'finance', 'feedback', 'logs', 'settings'];
+        tabs.forEach(t => {
+            const el = document.getElementById(`admin-tab-${t}`);
+            const btn = document.getElementById(`tab-btn-${t}`);
+            if (el) {
+                if (t === tabName) {
+                    el.classList.remove('hidden');
+                    el.classList.add('flex');
+                } else {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
+            }
+            if (btn) {
+                if (t === tabName) {
+                    btn.classList.add('active', 'bg-[#2b2470]', 'text-white', 'font-black', 'shadow-lg', 'shadow-[#2b2470]/25');
+                    btn.classList.remove('text-[#2b2470]', 'hover:bg-[#b9a6f2]/20');
+                } else {
+                    btn.classList.remove('active', 'bg-[#2b2470]', 'text-white', 'font-black', 'shadow-lg', 'shadow-[#2b2470]/25');
+                    btn.classList.add('text-[#2b2470]', 'dark:text-slate-200', 'hover:bg-[#b9a6f2]/20');
+                }
+            }
+        });
+    }
+
+    function filterUserTable() {
+        const input = document.getElementById("userSearchInput");
+        if (!input) return;
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll("#usersTable tbody tr.user-row");
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    }
+
+    function filterInvoicesTable() {
+        const input = document.getElementById("invoiceSearchInput");
+        if (!input) return;
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll("#invoicesTable tbody tr.invoice-row");
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    }
+
+    function filterLogsTable() {
+        const input = document.getElementById("logSearchInput");
+        if (!input) return;
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll("#logsTable tbody tr.log-row");
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    }
+
+    function confirmUserToggle(form) {
+        const isAr = "{{ trans.lang_code|default:'ar' }}" === "ar";
+        const msg = isAr ? "هل أنت متأكد من تغيير حالة هذا الحساب؟" : "Are you sure you want to change account status?";
+        return confirm(msg);
+    }
+
+    // Fully Interactive Calendar Engine
+    let currentDate = new Date();
+    let selectedDate = new Date();
+
+    function renderCalendar() {
+        const headerDay = document.getElementById('calendar-header-day');
+        const monthYear = document.getElementById('calendar-month-year');
+        const grid = document.getElementById('calendar-days-grid');
+        if (!grid) return;
+
+        const optionsDay = { weekday: 'short', month: 'short', day: 'numeric' };
+        if (headerDay) headerDay.textContent = selectedDate.toLocaleDateString('en-US', optionsDay);
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        if (monthYear) monthYear.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+
+        grid.innerHTML = '';
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+        const totalDays = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = "py-1 text-slate-300 dark:text-slate-700";
+            grid.appendChild(emptyCell);
+        }
+
+        for (let d = 1; d <= totalDays; d++) {
+            const dayCell = document.createElement('button');
+            dayCell.textContent = d;
+            
+            const isSelected = (
+                selectedDate.getDate() === d &&
+                selectedDate.getMonth() === currentDate.getMonth() &&
+                selectedDate.getFullYear() === currentDate.getFullYear()
+            );
+
+            const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()+1}-${d}`;
+            const hasNote = localStorage.getItem(`cal_note_${dateKey}`);
+
+            if (isSelected) {
+                dayCell.className = "w-6 h-6 mx-auto rounded-full bg-gradient-to-br from-[#2b2470] to-[#7c6cf0] text-white font-black flex items-center justify-center text-xs shadow-md shadow-[#2b2470]/30 relative";
+            } else {
+                dayCell.className = "w-6 h-6 mx-auto rounded-full hover:bg-[#b9a6f2]/30 text-[#2b2470] dark:text-slate-200 font-bold flex items-center justify-center text-xs transition relative";
+            }
+
+            if (hasNote) {
+                const dot = document.createElement('span');
+                dot.className = "absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-amber-400 rounded-full shadow-sm";
+                dayCell.appendChild(dot);
+            }
+
+            dayCell.onclick = function() {
+                selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), d);
+                renderCalendar();
+            };
+
+            grid.appendChild(dayCell);
+        }
+    }
+
+    function prevMonth() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+    }
+
+    function nextMonth() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    }
+
+    function openCalendarNoteModal() {
+        const modal = document.getElementById('calendarNoteModal');
+        const title = document.getElementById('calendarNoteModalTitle');
+        const dateKey = `${selectedDate.getFullYear()}-${selectedDate.getMonth()+1}-${selectedDate.getDate()}`;
+        const optionsDay = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        
+        const isAr = "{{ trans.lang_code|default:'ar' }}" === "ar";
+        const dateStr = selectedDate.toLocaleDateString(isAr ? 'ar-OM' : 'en-US', optionsDay);
+        if (title) title.textContent = isAr ? `ملاحظات يوم (${dateStr})` : `Notes for (${dateStr})`;
+        
+        const existingNote = localStorage.getItem(`cal_note_${dateKey}`) || '';
+        document.getElementById('calendarNoteText').value = existingNote;
+        
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function saveCalendarNote() {
+        const dateKey = `${selectedDate.getFullYear()}-${selectedDate.getMonth()+1}-${selectedDate.getDate()}`;
+        const text = document.getElementById('calendarNoteText').value.trim();
+        if (text) {
+            localStorage.setItem(`cal_note_${dateKey}`, text);
+        } else {
+            localStorage.removeItem(`cal_note_${dateKey}`);
+        }
+        closeModal('calendarNoteModal');
+        renderCalendar();
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        renderCalendar();
+
+        const canvas = document.getElementById('stocksGraphChart');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Agu', 'Sep', 'Otc', 'Nov', 'Dec'],
+                    datasets: [
+                        {
+                            label: 'Metrics Curve 1',
+                            data: [30, 45, 38, 55, 60, 48, 70, 85, 95, 78, 65, 80],
+                            borderColor: '#2b2470',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.45,
+                            pointRadius: [0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0],
+                            pointBackgroundColor: '#7c6cf0',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Metrics Curve 2',
+                            data: [50, 40, 52, 68, 42, 65, 58, 80, 62, 75, 55, 70],
+                            borderColor: '#14b8a6',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.45,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        y: { display: false, beginAtZero: true },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748B', font: { size: 11, weight: '600' } }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

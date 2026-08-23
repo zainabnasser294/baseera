@@ -1,0 +1,409 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}مركز الوكلاء والأبحاث الذكية{% else %}Agents Hub & AI Intelligence{% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen p-3 gap-3">
+    {% include 'dashboard/sidebar.html' with active_page='agents_hub' %}
+
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Navigation Sub-Bar (بار التنقل السريع والمنظم للوكلاء) -->
+        <nav class="rounded-3xl glass px-5 py-3.5 flex items-center justify-between flex-wrap gap-3 border border-white/80 shadow-sm animate-fade-up">
+            <div class="flex items-center gap-2 flex-wrap text-xs font-bold">
+                <a href="{% url 'boardroom' %}" class="px-3.5 py-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 transition flex items-center gap-2 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
+                    <i data-lucide="users" class="h-4 w-4 text-indigo-600"></i>
+                    <span>{% if trans.lang_code == 'ar' %}غرفة الاجتماعات (Boardroom){% else %}Executive Boardroom{% endif %}</span>
+                </a>
+                <a href="#officialAgentsSection" class="px-3.5 py-2 rounded-2xl bg-white/70 hover:bg-white text-slate-800 dark:text-slate-100 dark:bg-slate-800/80 transition flex items-center gap-2 border border-slate-200/60 dark:border-slate-700 shadow-sm">
+                    <i data-lucide="shield-check" class="h-4 w-4 text-emerald-500"></i>
+                    <span>{% if trans.lang_code == 'ar' %}الوكلاء التخصصيون المعتمدون (7){% else %}Certified Agents (7){% endif %}</span>
+                </a>
+                {% if custom_agents %}
+                <a href="#customAgentsSection" class="px-3.5 py-2 rounded-2xl bg-white/70 hover:bg-white text-slate-800 dark:text-slate-100 dark:bg-slate-800/80 transition flex items-center gap-2 border border-slate-200/60 dark:border-slate-700 shadow-sm">
+                    <i data-lucide="bot" class="h-4 w-4 text-[var(--glow)]"></i>
+                    <span>{% if trans.lang_code == 'ar' %}وكلاءك المخصصون{% else %}Custom Agents{% endif %}</span>
+                    <span class="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold">{{ custom_agents.count }}</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <div>
+                <button onclick="openCustomAgentModal()" class="px-4 py-2 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs font-black shadow-md hover:opacity-90 active:scale-95 transition flex items-center gap-1.5">
+                    <i data-lucide="plus-circle" class="h-4 w-4"></i>
+                    <span>{% if trans.lang_code == 'ar' %}إنشاء وكيل مخصص{% else %}Create Custom Agent{% endif %}</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Body -->
+        <div class="space-y-5 animate-fade-up">
+
+            <!-- 1. Custom Agents Section (Shows ONLY if user created custom agents) -->
+            {% if custom_agents %}
+            <section id="customAgentsSection" class="text-{{ trans.align }}">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="h-8 w-8 rounded-xl bg-indigo-500/10 text-indigo-500 grid place-items-center">
+                            <i data-lucide="bot" class="h-5 w-5"></i>
+                        </div>
+                        <h2 class="text-lg font-black text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}وكلاءك المخصصون (Custom Agents){% else %}Your Custom Agents{% endif %}</h2>
+                    </div>
+                    <span class="text-xs font-bold text-slate-500 bg-white/60 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">{{ custom_agents.count }} {% if trans.lang_code == 'ar' %}وكيل محفوظ{% else %}saved agents{% endif %}</span>
+                </div>
+
+                <div id="customAgentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for agent in custom_agents %}
+                    <div id="custom-agent-card-{{ agent.id }}" class="glass p-6 rounded-3xl border border-white/80 relative group hover:-translate-y-1.5 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white grid place-items-center shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                    <i data-lucide="{{ agent.icon }}" class="h-7 w-7"></i>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="deleteCustomAgent('{{ agent.id }}')" class="p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-500 transition" title="حذف الوكيل">
+                                        <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                    </button>
+                                    <a href="{% url 'ask_basira' %}?agent_id=custom_{{ agent.id }}" class="h-9 w-9 rounded-full bg-white/70 dark:bg-slate-800/80 border border-white/80 grid place-items-center text-slate-400 group-hover:text-indigo-600 transition-colors shadow-sm">
+                                        <i data-lucide="arrow-{% if trans.lang_code == 'ar' %}left{% else %}right{% endif %}" class="h-4 w-4"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-xs uppercase font-extrabold tracking-wide text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/40">{{ agent.department }}</span>
+                                <h3 class="text-lg font-black text-slate-800 dark:text-white mt-2.5 leading-snug">{{ agent.name }}</h3>
+                                <p class="text-xs font-bold text-indigo-500 mt-0.5 truncate">{{ agent.role_title }}</p>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 line-clamp-3">
+                                {{ agent.system_prompt }}
+                            </p>
+                        </div>
+                        <a href="{% url 'ask_basira' %}?agent_id=custom_{{ agent.id }}" class="block text-center bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white text-indigo-700 dark:text-indigo-300 py-2.5 rounded-2xl text-xs font-black transition-all shadow-sm">
+                            {% if trans.lang_code == 'ar' %}بدء المحادثة المعمقة{% else %}Start Deep Chat{% endif %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- 2. Specialized Official Agents Grid (Spacious 3-column layout with larger cards) -->
+            <section id="officialAgentsSection" class="text-{{ trans.align }}">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="h-8 w-8 rounded-xl bg-emerald-500/10 text-emerald-500 grid place-items-center">
+                            <i data-lucide="shield-check" class="h-5 w-5"></i>
+                        </div>
+                        <h2 class="text-lg font-black text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}الوكلاء التخصصيون المعتمدون{% else %}Certified Specialized Agents{% endif %}</h2>
+                    </div>
+                    <span class="text-xs font-bold text-slate-500 bg-white/60 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">6 {% if trans.lang_code == 'ar' %}وكلاء متاحون{% else %}agents available{% endif %}</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- 1. Financial Analyst -->
+                    <a href="{% url 'ask_basira' %}?agent_id=financial" class="block group">
+                        <div class="glass p-6 rounded-3xl border border-white/80 hover:border-emerald-400/60 transition-all duration-300 flex flex-col justify-between h-full hover:-translate-y-1.5 shadow-sm hover:shadow-xl hover:shadow-emerald-500/15">
+                            <div>
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white grid place-items-center shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                        <i data-lucide="line-chart" class="h-7 w-7"></i>
+                                    </div>
+                                    <div class="h-9 w-9 rounded-full bg-white/70 dark:bg-slate-800/80 border border-white/80 grid place-items-center text-slate-400 group-hover:text-emerald-500 group-hover:bg-emerald-50 transition-colors shadow-sm">
+                                        <i data-lucide="arrow-{% if trans.lang_code == 'ar' %}left{% else %}right{% endif %}" class="h-4 w-4"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs uppercase font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-100 dark:border-emerald-900/40">{% if trans.lang_code == 'ar' %}المالية والحسابات{% else %}Finance{% endif %}</span>
+                                <h3 class="text-lg font-black text-slate-800 dark:text-white mt-2.5 mb-2 leading-snug group-hover:text-emerald-600 transition-colors">{% if trans.lang_code == 'ar' %}وكيل التحليل المالي{% else %}Financial Analyst{% endif %}</h3>
+                                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 space-y-2">
+                                    <p><strong>📥 {% if trans.lang_code == 'ar' %}مصدر البيانات:{% else %}Data Source:{% endif %}</strong> {% if trans.lang_code == 'ar' %}كشوفات الحساب البنكية (CSV)، الفواتير، وسجلات الإيرادات والمصروفات.{% else %}Bank Statements (CSV), Invoices, and Revenue/Expense Logs.{% endif %}</p>
+                                    <p><strong>🎯 {% if trans.lang_code == 'ar' %}المهام التشغيلية:{% else %}Operational Tasks:{% endif %}</strong> {% if trans.lang_code == 'ar' %}يحلل السيولة النقدية، يكتشف التسرب المالي، ويقدم تنبيهات فورية عن المخاطر المحاسبية.{% else %}Analyzes cash flow, detects financial leakage, and provides instant accounting risk alerts.{% endif %}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/60 text-xs font-bold text-emerald-600 group-hover:translate-x-[-2px] transition-transform">
+                                <span>{% if trans.lang_code == 'ar' %}استشارة التحليل المالي{% else %}Consult Financial Agent{% endif %}</span>
+                                <i data-lucide="sparkles" class="h-4 w-4"></i>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 2. Supply Chain -->
+                    <a href="{% url 'ask_basira' %}?agent_id=supply_chain" class="block group">
+                        <div class="glass p-6 rounded-3xl border border-white/80 hover:border-blue-400/60 transition-all duration-300 flex flex-col justify-between h-full hover:-translate-y-1.5 shadow-sm hover:shadow-xl hover:shadow-blue-500/15">
+                            <div>
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-600 text-white grid place-items-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                        <i data-lucide="truck" class="h-7 w-7"></i>
+                                    </div>
+                                    <div class="h-9 w-9 rounded-full bg-white/70 dark:bg-slate-800/80 border border-white/80 grid place-items-center text-slate-400 group-hover:text-blue-500 group-hover:bg-blue-50 transition-colors shadow-sm">
+                                        <i data-lucide="arrow-{% if trans.lang_code == 'ar' %}left{% else %}right{% endif %}" class="h-4 w-4"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs uppercase font-extrabold text-blue-600 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-900/40">{% if trans.lang_code == 'ar' %}العمليات والتوريد{% else %}Supply Chain{% endif %}</span>
+                                <h3 class="text-lg font-black text-slate-800 dark:text-white mt-2.5 mb-2 leading-snug group-hover:text-blue-600 transition-colors">{% if trans.lang_code == 'ar' %}وكيل سلاسل الإمداد والمخزون{% else %}Supply Chain Agent{% endif %}</h3>
+                                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 space-y-2">
+                                    <p><strong>📥 {% if trans.lang_code == 'ar' %}مصدر البيانات:{% else %}Data Source:{% endif %}</strong> {% if trans.lang_code == 'ar' %}سجلات المخزون، أوامر الشراء، وبيانات الموردين.{% else %}Inventory Logs, Purchase Orders, and Supplier Data.{% endif %}</p>
+                                    <p><strong>🎯 {% if trans.lang_code == 'ar' %}المهام التشغيلية:{% else %}Operational Tasks:{% endif %}</strong> {% if trans.lang_code == 'ar' %}يتتبع البضائع الراكدة، يحدد توقيت إعادة الطلب، ويعالج اختناقات التوريد اللوجستية.{% else %}Tracks slow-moving inventory, optimizes reorder points, and resolves supply bottlenecks.{% endif %}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/60 text-xs font-bold text-blue-600 group-hover:translate-x-[-2px] transition-transform">
+                                <span>{% if trans.lang_code == 'ar' %}تحليل سلاسل الإمداد{% else %}Consult Supply Chain Agent{% endif %}</span>
+                                <i data-lucide="sparkles" class="h-4 w-4"></i>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 3. Dynamic Pricing -->
+                    <a href="{% url 'ask_basira' %}?agent_id=pricing" class="block group">
+                        <div class="glass p-6 rounded-3xl border border-white/80 hover:border-purple-400/60 transition-all duration-300 flex flex-col justify-between h-full hover:-translate-y-1.5 shadow-sm hover:shadow-xl hover:shadow-purple-500/15">
+                            <div>
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 text-white grid place-items-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                        <i data-lucide="tag" class="h-7 w-7"></i>
+                                    </div>
+                                    <div class="h-9 w-9 rounded-full bg-white/70 dark:bg-slate-800/80 border border-white/80 grid place-items-center text-slate-400 group-hover:text-purple-500 group-hover:bg-purple-50 transition-colors shadow-sm">
+                                        <i data-lucide="arrow-{% if trans.lang_code == 'ar' %}left{% else %}right{% endif %}" class="h-4 w-4"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs uppercase font-extrabold text-purple-600 bg-purple-50 dark:bg-purple-950/60 px-3 py-1 rounded-full border border-purple-100 dark:border-purple-900/40">{% if trans.lang_code == 'ar' %}التسعير والاستراتيجيات{% else %}Pricing & Strategy{% endif %}</span>
+                                <h3 class="text-lg font-black text-slate-800 dark:text-white mt-2.5 mb-2 leading-snug group-hover:text-purple-600 transition-colors">{% if trans.lang_code == 'ar' %}وكيل التسعير واستراتيجية الهوامش{% else %}Pricing Strategist{% endif %}</h3>
+                                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 space-y-2">
+                                    <p><strong>📥 {% if trans.lang_code == 'ar' %}مصدر البيانات:{% else %}Data Source:{% endif %}</strong> {% if trans.lang_code == 'ar' %}تاريخ المبيعات، هوامش الربح، وبيانات تسعير المنافسين.{% else %}Sales History, Profit Margins, and Competitor Pricing Data.{% endif %}</p>
+                                    <p><strong>🎯 {% if trans.lang_code == 'ar' %}المهام التشغيلية:{% else %}Operational Tasks:{% endif %}</strong> {% if trans.lang_code == 'ar' %}يصمم استراتيجيات التسعير الديناميكي، يحلل مرونة الطلب، ويعظم ربحية كل مبيعة.{% else %}Designs dynamic pricing, analyzes price elasticity, and maximizes per-sale profitability.{% endif %}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/60 text-xs font-bold text-purple-600 group-hover:translate-x-[-2px] transition-transform">
+                                <span>{% if trans.lang_code == 'ar' %}استشارة استراتيجية التسعير{% else %}Consult Pricing Strategist{% endif %}</span>
+                                <i data-lucide="sparkles" class="h-4 w-4"></i>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 4. Customer Retention -->
+                    <a href="{% url 'ask_basira' %}?agent_id=retention" class="block group">
+                        <div class="glass p-6 rounded-3xl border border-white/80 hover:border-rose-400/60 transition-all duration-300 flex flex-col justify-between h-full hover:-translate-y-1.5 shadow-sm hover:shadow-xl hover:shadow-rose-500/15">
+                            <div>
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white grid place-items-center shadow-lg shadow-rose-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                        <i data-lucide="heart-handshake" class="h-7 w-7"></i>
+                                    </div>
+                                    <div class="h-9 w-9 rounded-full bg-white/70 dark:bg-slate-800/80 border border-white/80 grid place-items-center text-slate-400 group-hover:text-rose-500 group-hover:bg-rose-50 transition-colors shadow-sm">
+                                        <i data-lucide="arrow-{% if trans.lang_code == 'ar' %}left{% else %}right{% endif %}" class="h-4 w-4"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs uppercase font-extrabold text-rose-600 bg-rose-50 dark:bg-rose-950/60 px-3 py-1 rounded-full border border-rose-100 dark:border-rose-900/40">{% if trans.lang_code == 'ar' %}ولاء العملاء{% else %}Customer Loyalty{% endif %}</span>
+                                <h3 class="text-lg font-black text-slate-800 dark:text-white mt-2.5 mb-2 leading-snug group-hover:text-rose-600 transition-colors">{% if trans.lang_code == 'ar' %}وكيل ولاء واستعادة العملاء{% else %}Customer Retention Agent{% endif %}</h3>
+                                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 space-y-2">
+                                    <p><strong>📥 {% if trans.lang_code == 'ar' %}مصدر البيانات:{% else %}Data Source:{% endif %}</strong> {% if trans.lang_code == 'ar' %}سجلات تقييم العملاء، بيانات المشتريات المتكررة، وشكاوى العملاء.{% else %}Customer Feedback Logs, Repeat Purchase Data, and Support Tickets.{% endif %}</p>
+                                    <p><strong>🎯 {% if trans.lang_code == 'ar' %}المهام التشغيلية:{% else %}Operational Tasks:{% endif %}</strong> {% if trans.lang_code == 'ar' %}يمنع تسرب العملاء، يحلل الشكاوى، ويصمم برامج استبقاء لرفع القيمة الدائمة.{% else %}Prevents customer churn, analyzes feedback, and designs retention programs to increase CLV.{% endif %}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/60 text-xs font-bold text-rose-600 group-hover:translate-x-[-2px] transition-transform">
+                                <span>{% if trans.lang_code == 'ar' %}استشارة ولاء العملاء{% else %}Consult Retention Agent{% endif %}</span>
+                                <i data-lucide="sparkles" class="h-4 w-4"></i>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 5. Financial Audit -->
+                    <a href="{% url 'ask_basira' %}?agent_id=audit" class="block group">
+                        <div class="glass p-6 rounded-3xl border border-white/80 hover:border-cyan-400/60 transition-all duration-300 flex flex-col justify-between h-full hover:-translate-y-1.5 shadow-sm hover:shadow-xl hover:shadow-cyan-500/15">
+                            <div>
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-700 text-white grid place-items-center shadow-lg shadow-cyan-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                        <i data-lucide="shield-alert" class="h-7 w-7"></i>
+                                    </div>
+                                    <div class="h-9 w-9 rounded-full bg-white/70 dark:bg-slate-800/80 border border-white/80 grid place-items-center text-slate-400 group-hover:text-cyan-500 group-hover:bg-cyan-50 transition-colors shadow-sm">
+                                        <i data-lucide="arrow-{% if trans.lang_code == 'ar' %}left{% else %}right{% endif %}" class="h-4 w-4"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs uppercase font-extrabold text-cyan-600 bg-cyan-50 dark:bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-100 dark:border-cyan-900/40">{% if trans.lang_code == 'ar' %}التدقيق والرقابة{% else %}Audit & Control{% endif %}</span>
+                                <h3 class="text-lg font-black text-slate-800 dark:text-white mt-2.5 mb-2 leading-snug group-hover:text-cyan-600 transition-colors">{% if trans.lang_code == 'ar' %}وكيل التدقيق الجنائي ومكافحة الهدر{% else %}Audit & Fraud Detective{% endif %}</h3>
+                                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 space-y-2">
+                                    <p><strong>📥 {% if trans.lang_code == 'ar' %}مصدر البيانات:{% else %}Data Source:{% endif %}</strong> {% if trans.lang_code == 'ar' %}المصاريف التشغيلية (Opex)، الفواتير الملغاة، وسجلات الرواتب.{% else %}Operating Expenses (Opex), Voided Invoices, and Payroll Records.{% endif %}</p>
+                                    <p><strong>🎯 {% if trans.lang_code == 'ar' %}المهام التشغيلية:{% else %}Operational Tasks:{% endif %}</strong> {% if trans.lang_code == 'ar' %}يكتشف الهدر الخفي، يرصد المعاملات غير المبررة، ويوصي بإجراءات صارمة لخفض التكاليف.{% else %}Detects hidden waste, spots unjustified transactions, and recommends strict cost-cutting measures.{% endif %}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/60 text-xs font-bold text-cyan-600 group-hover:translate-x-[-2px] transition-transform">
+                                <span>{% if trans.lang_code == 'ar' %}بدء التدقيق والرقابة{% else %}Consult Audit Agent{% endif %}</span>
+                                <i data-lucide="sparkles" class="h-4 w-4"></i>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 6. General Assistant -->
+                    <a href="{% url 'ask_basira' %}?agent_id=general" class="block group">
+                        <div class="glass p-6 rounded-3xl border border-white/80 hover:border-[var(--glow)]/60 transition-all duration-300 flex flex-col justify-between h-full hover:-translate-y-1.5 shadow-sm hover:shadow-xl hover:shadow-[var(--glow)]/15">
+                            <div>
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="h-14 w-14 rounded-2xl bg-white dark:bg-slate-800 p-2 shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform shrink-0 border border-indigo-100 dark:border-indigo-900/40 grid place-items-center">
+                                        <img src="{% static 'dashboard/img/logo.png' %}" alt="بصيرة" class="w-full h-full object-contain drop-shadow" />
+                                    </div>
+                                    <div class="h-9 w-9 rounded-full bg-white/70 dark:bg-slate-800/80 border border-white/80 grid place-items-center text-slate-400 group-hover:text-[var(--glow)] group-hover:bg-indigo-50 transition-colors shadow-sm">
+                                        <i data-lucide="arrow-{% if trans.lang_code == 'ar' %}left{% else %}right{% endif %}" class="h-4 w-4"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs uppercase font-extrabold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/40">{% if trans.lang_code == 'ar' %}المساعد الرئيسي{% else %}General AI{% endif %}</span>
+                                <h3 class="text-lg font-black text-slate-800 dark:text-white mt-2.5 mb-2 leading-snug group-hover:text-[var(--glow)] transition-colors">{% if trans.lang_code == 'ar' %}المساعد العام (بصيرة الذكية){% else %}General Assistant (Basira){% endif %}</h3>
+                                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 space-y-2">
+                                    <p><strong>📥 {% if trans.lang_code == 'ar' %}مصدر البيانات:{% else %}Data Source:{% endif %}</strong> {% if trans.lang_code == 'ar' %}كافة قواعد البيانات المترابطة، لوحات المؤشرات (Dashboard)، ومدخلات المستخدم المباشرة.{% else %}All connected databases, existing dashboards, and direct user inputs.{% endif %}</p>
+                                    <p><strong>🎯 {% if trans.lang_code == 'ar' %}المهام التشغيلية:{% else %}Operational Tasks:{% endif %}</strong> {% if trans.lang_code == 'ar' %}يعمل كـ(خط تجميع - Orchestrator)، يوزع المهام على الوكلاء، ويدمج مخرجاتهم في قرارات نهائية.{% else %}Acts as an Assembly Line Orchestrator, delegating tasks to agents and merging outputs into final decisions.{% endif %}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/60 text-xs font-bold text-indigo-600 group-hover:translate-x-[-2px] transition-transform">
+                                <span>{% if trans.lang_code == 'ar' %}استشارة بصيرة العامة{% else %}Consult General Assistant{% endif %}</span>
+                                <i data-lucide="sparkles" class="h-4 w-4"></i>
+                            </div>
+                        </div>
+                    </a>
+
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- Custom Agent Builder Modal -->
+<div id="customAgentModal" class="fixed inset-0 bg-black/50 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-white/20 animate-fade-up max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-[var(--nile)] to-[var(--glow)] text-white flex items-center justify-center">
+                    <i data-lucide="bot" class="h-4 w-4"></i>
+                </div>
+                <h3 class="font-extrabold text-base text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}بناء وكيل ذكاء اصطناعي مخصص{% else %}Build Custom AI Agent{% endif %}</h3>
+            </div>
+            <button onclick="closeCustomAgentModal()" class="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
+                <i data-lucide="x" class="h-4 w-4"></i>
+            </button>
+        </div>
+
+        <form id="customAgentForm" onsubmit="saveCustomAgent(event)" class="space-y-4 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{% if trans.lang_code == 'ar' %}اسم الوكيل (مثلاً: مستشار فرع صلالة){% else %}Agent Name (e.g. Salalah Branch Advisor){% endif %}</label>
+                <input type="text" id="agentNameInput" required placeholder="{% if trans.lang_code == 'ar' %}أدخل اسم الوكيل...{% else %}Enter agent name...{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[var(--glow)]" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{% if trans.lang_code == 'ar' %}المسمى الوظيفي{% else %}Role / Job Title{% endif %}</label>
+                    <input type="text" id="agentRoleInput" required placeholder="{% if trans.lang_code == 'ar' %}مثال: مدير المشتريات والتفاوض{% else %}e.g. Procurement & Negotiation Manager{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-xs font-semibold text-slate-800 dark:text-white outline-none focus:border-[var(--glow)]" />
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{% if trans.lang_code == 'ar' %}القسم{% else %}Department{% endif %}</label>
+                    <select id="agentDeptInput" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-xs font-semibold text-slate-800 dark:text-white outline-none">
+                        <option value="operations">{% if trans.lang_code == 'ar' %}العمليات والمشتريات{% else %}Operations & Procurement{% endif %}</option>
+                        <option value="finance">{% if trans.lang_code == 'ar' %}المالية والحسابات{% else %}Finance & Accounting{% endif %}</option>
+                        <option value="support">{% if trans.lang_code == 'ar' %}خدمة العملاء والولاء{% else %}Customer Support & Loyalty{% endif %}</option>
+                        <option value="management">{% if trans.lang_code == 'ar' %}الإدارة العامة والاستراتيجية{% else %}General Management & Strategy{% endif %}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{% if trans.lang_code == 'ar' %}أيقونة الوكيل{% else %}Agent Icon{% endif %}</label>
+                <select id="agentIconInput" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-xs font-semibold text-slate-800 dark:text-white outline-none">
+                    <option value="bot">{% if trans.lang_code == 'ar' %}وكيل ذكي (Bot){% else %}Smart Bot{% endif %}</option>
+                    <option value="briefcase">{% if trans.lang_code == 'ar' %}حقيبة أعمال (Briefcase){% else %}Business Executive{% endif %}</option>
+                    <option value="line-chart">{% if trans.lang_code == 'ar' %}رسم بياني مالي (Chart){% else %}Financial Analyst{% endif %}</option>
+                    <option value="target">{% if trans.lang_code == 'ar' %}هدف تسويقي (Target){% else %}Marketing Target{% endif %}</option>
+                    <option value="truck">{% if trans.lang_code == 'ar' %}شاحنة إمداد (Truck){% else %}Supply Chain Truck{% endif %}</option>
+                    <option value="tag">{% if trans.lang_code == 'ar' %}بطاقة تسعير (Tag){% else %}Pricing Tag{% endif %}</option>
+                    <option value="heart-handshake">{% if trans.lang_code == 'ar' %}ولاء العملاء (Handshake){% else %}Customer Loyalty{% endif %}</option>
+                    <option value="shield-alert">{% if trans.lang_code == 'ar' %}تدقيق وحماية (Shield){% else %}Audit & Security{% endif %}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{% if trans.lang_code == 'ar' %}توجيهات النظام ونبرة الحديث (System Prompt){% else %}System Prompt & Tone of Voice{% endif %}</label>
+                <textarea id="agentPromptInput" required rows="3" placeholder="{% if trans.lang_code == 'ar' %}أنت وكيل خبير في التفاوض مع الموردين، ركز دائماً على خفض تكلفة المواد الأولية بنسبة 15% واقترح بدائل محلية...{% else %}You are an expert supplier negotiation agent. Always focus on reducing raw material costs by 15% and proposing local Omani alternatives...{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-xs font-medium text-slate-800 dark:text-white outline-none focus:border-[var(--glow)]"></textarea>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{% if trans.lang_code == 'ar' %}ملاحظات ومعرفة مرجعية (Knowledge Notes / Context){% else %}Knowledge Notes & Context{% endif %}</label>
+                <textarea id="agentKnowledgeInput" rows="2" placeholder="{% if trans.lang_code == 'ar' %}ملاحظة: تكلفة إيجار الفرع 800 ر.ع شهرياً، والمورد الرئيسي هو شركة النماء بعقد خصم 5%...{% else %}Note: Monthly branch rent is 800 OMR, and primary supplier is Al-Namaa with a 5% discount agreement...{% endif %}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-xs font-medium text-slate-800 dark:text-white outline-none focus:border-[var(--glow)]"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeCustomAgentModal()" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-bold">{% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}</button>
+                <button type="submit" id="saveAgentBtn" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs font-extrabold shadow-md hover:opacity-90 transition">
+                    {% if trans.lang_code == 'ar' %}حفظ وتفعيل الوكيل{% else %}Save & Activate Agent{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const isArabic = {% if trans.lang_code == 'ar' %}true{% else %}false{% endif %};
+
+function openCustomAgentModal() {
+    document.getElementById('customAgentModal').classList.remove('hidden');
+}
+
+function closeCustomAgentModal() {
+    document.getElementById('customAgentModal').classList.add('hidden');
+}
+
+async function saveCustomAgent(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveAgentBtn');
+    btn.disabled = true;
+    btn.textContent = isArabic ? 'جاري الحفظ...' : 'Saving...';
+
+    const payload = {
+        name: document.getElementById('agentNameInput').value.trim(),
+        role_title: document.getElementById('agentRoleInput').value.trim(),
+        department: document.getElementById('agentDeptInput').value,
+        icon: document.getElementById('agentIconInput').value,
+        system_prompt: document.getElementById('agentPromptInput').value.trim(),
+        knowledge_notes: document.getElementById('agentKnowledgeInput').value.trim(),
+    };
+
+    try {
+        const res = await fetch('/api/custom-agents/create/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            closeCustomAgentModal();
+            window.location.reload();
+        } else {
+            alert((isArabic ? 'حدث خطأ: ' : 'Error: ') + (data.message || (isArabic ? 'يرجى مراجعة البيانات' : 'Please check input data')));
+        }
+    } catch(err) {
+        alert(isArabic ? 'تعذر الحفظ' : 'Failed to save agent');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = isArabic ? 'حفظ وتفعيل الوكيل' : 'Save & Activate Agent';
+    }
+}
+
+async function deleteCustomAgent(agentId) {
+    const confirmMsg = isArabic 
+        ? 'هل أنت متأكد من رغبتك في حذف هذا الوكيل المخصص؟' 
+        : 'Are you sure you want to delete this custom agent?';
+    if (!confirm(confirmMsg)) return;
+    try {
+        const res = await fetch(`/api/custom-agents/${agentId}/delete/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            const card = document.getElementById(`custom-agent-card-${agentId}`);
+            if (card) card.remove();
+        }
+    } catch(err) {
+        console.error('Error deleting agent:', err);
+    }
+}
+</script>
+{% endblock %}
+
+

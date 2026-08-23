@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Onboarding - Baseera</title>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var t=localStorage.getItem("baseera-theme")||"light";document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("baseera-lang")||"en";document.documentElement.setAttribute("lang",l);document.documentElement.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
+<script>
+ window.BASEERA_TRANSLATIONS = {
+  skipBtn: { en: 'Skip', ar: 'تخطي' },
+  onb1Heading: { en: 'Analyze Your Data', ar: 'حلل بياناتك' },
+  onb1Subtitle: { en: 'Upload spreadsheets and get instant AI-powered insights for smarter business decisions.', ar: 'ارفع ملفات البيانات واحصل على رؤى فورية مدعومة بالذكاء الاصطناعي لقرارات أعمال أذكى.' },
+  onb2Heading: { en: 'Ask Baseera Anything', ar: 'اسأل بصيرة عن أي شيء' },
+  onb2Subtitle: { en: 'Chat in Arabic or English and get clear answers about your business, instantly.', ar: 'تحدث بالعربية أو الإنجليزية واحصل على إجابات واضحة عن أعمالك فورًا.' },
+  onb3Heading: { en: 'Meet Your 6 Agents', ar: 'تعرف على وكلائك الستة' },
+  onb3Subtitle: { en: 'Meet your dedicated AI executive team working for your business.', ar: 'تعرف على فريقك التنفيذي الذكي ليدعم قراراتك اليومية.' }
+ };
+</script>
+</head>
+<body class="page-enter">
+
+<div class="entry-shell" style="position: relative; overflow: hidden; padding-top: 15px;">
+
+ <!-- Top Navigation Bar with Skip Button -->
+ <div style="display: flex; justify-content: flex-end; padding: 10px 20px 0; width: 100%; position: absolute; top: 10px; right: 0; left: 0; z-index: 20;">
+  <button type="button" onclick="window.location.href='dashboard.html'" style="background: rgba(255,255,255,0.6); border: 1px solid rgba(226,232,240,0.8); backdrop-filter: blur(8px); padding: 5px 14px; border-radius: 16px; font-size: 12px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s;" data-i18n="skipBtn">
+   Skip
+  </button>
+ </div>
+
+ <div class="floating-orb" style="width:44px; height:44px; top:100px; left:-20px; background:#d0cfec; opacity:0.5; animation-duration:8s;"></div>
+ <div class="floating-orb" style="width:32px; height:32px; top:90px; right:20px; background:#6fd6ff; opacity:0.35; animation-duration:6s;"></div>
+ <div class="floating-orb" style="width:28px; height:28px; bottom:200px; left:14px; background:#d0cfec; opacity:0.4; animation-duration:9s;"></div>
+
+ <div class="onboarding-slides" style="margin-top: 25px;">
+
+  <!-- Slide 1: Analyze Your Data -->
+  <div class="onboarding-slide active" data-slide="1">
+   <div class="onboarding-illustration">
+    <div class="bar" style="height: 40px;"></div>
+    <div class="bar" style="height: 70px;"></div>
+    <div class="bar" style="height: 100px;"></div>
+    <div class="bar" style="height: 60px;"></div>
+   </div>
+   <h1 class="onboarding-heading" data-i18n="onb1Heading">Analyze Your Data</h1>
+   <p class="onboarding-subtitle" data-i18n="onb1Subtitle">Upload spreadsheets and get instant AI-powered insights for smarter business decisions.</p>
+  </div>
+
+  <!-- Slide 2: Ask Baseera Anything -->
+  <div class="onboarding-slide" data-slide="2">
+   <div class="onboarding-icon-circle">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+   </div>
+   <h1 class="onboarding-heading" data-i18n="onb2Heading">Ask Baseera Anything</h1>
+   <p class="onboarding-subtitle" data-i18n="onb2Subtitle">Chat in Arabic or English and get clear answers about your business, instantly.</p>
+  </div>
+
+  <!-- Slide 3: Meet Your 6 Agents (NEW) -->
+  <div class="onboarding-slide" data-slide="3" style="width: 100%; max-width: 360px; margin: 0 auto; text-align: start;">
+   <h1 class="onboarding-heading" style="text-align: center; font-size: 1.35rem; font-weight: 900; margin-bottom: 4px;" data-i18n="onbAgentsHeading">Meet Your 6 Agents</h1>
+   <p class="onboarding-subtitle" style="text-align: center; font-size: 0.78rem; color: rgba(0,0,0,0.5); margin-bottom: 12px;" data-i18n="onbAgentsSubtitle">Meet your dedicated AI executive team working for your business.</p>
+
+   <!-- Scrollable Accordion Container for 6 Agents -->
+   <div class="onb-agents-container">
+    
+    <!-- Agent 1: General Assistant -->
+    <div class="onb-agent-card" onclick="toggleOnbAgent(this)">
+     <div class="onb-agent-header">
+      <div class="onb-agent-badge" style="background: #f1f5f9; color: #475569;">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
+      </div>
+      <div class="onb-agent-titles">
+       <div class="onb-agent-name" data-i18n="onbAgent1Name">General Assistant (Orchestrator)</div>
+       <div class="onb-agent-brief" data-i18n="onbAgent1Brief">Coordinates AI tasks and answers general business queries.</div>
+      </div>
+      <div class="onb-agent-chevron">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+     </div>
+     <div class="onb-agent-body">
+      <ul>
+       <li data-i18n="onbAgent1Detail1">Orchestrates multi-agent analysis for holistic executive insights.</li>
+       <li data-i18n="onbAgent1Detail2">Routes specialized queries directly to domain agents.</li>
+       <li data-i18n="onbAgent1Detail3">Generates instant high-level business digests.</li>
+      </ul>
+     </div>
+    </div>
+
+    <!-- Agent 2: Financial Agent -->
+    <div class="onb-agent-card" onclick="toggleOnbAgent(this)">
+     <div class="onb-agent-header">
+      <div class="onb-agent-badge" style="background: #d1fae5; color: #059669;">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+      </div>
+      <div class="onb-agent-titles">
+       <div class="onb-agent-name" data-i18n="onbAgent2Name">Financial Agent (CFO)</div>
+       <div class="onb-agent-brief" data-i18n="onbAgent2Brief">Analyzes revenue, expenses, cash flow, and profit margins.</div>
+      </div>
+      <div class="onb-agent-chevron">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+     </div>
+     <div class="onb-agent-body">
+      <ul>
+       <li data-i18n="onbAgent2Detail1">Detects revenue leakages and unexpected cost spikes.</li>
+       <li data-i18n="onbAgent2Detail2">Forecasts monthly cash flow and liquidity health.</li>
+       <li data-i18n="onbAgent2Detail3">Evaluates profit margins across sales channels.</li>
+      </ul>
+     </div>
+    </div>
+
+    <!-- Agent 3: Supply Chain Agent -->
+    <div class="onb-agent-card" onclick="toggleOnbAgent(this)">
+     <div class="onb-agent-header">
+      <div class="onb-agent-badge" style="background: #dbeafe; color: #2563eb;">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+      </div>
+      <div class="onb-agent-titles">
+       <div class="onb-agent-name" data-i18n="onbAgent3Name">Supply Chain Agent (COO)</div>
+       <div class="onb-agent-brief" data-i18n="onbAgent3Brief">Monitors inventory levels, stockouts, and supplier lead times.</div>
+      </div>
+      <div class="onb-agent-chevron">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+     </div>
+     <div class="onb-agent-body">
+      <ul>
+       <li data-i18n="onbAgent3Detail1">Prevents stockouts for fast-moving high-margin items.</li>
+       <li data-i18n="onbAgent3Detail2">Calculates optimal reorder quantities and schedule timing.</li>
+       <li data-i18n="onbAgent3Detail3">Identifies slow-moving inventory tying up working capital.</li>
+      </ul>
+     </div>
+    </div>
+
+    <!-- Agent 4: Pricing Strategy Agent -->
+    <div class="onb-agent-card" onclick="toggleOnbAgent(this)">
+     <div class="onb-agent-header">
+      <div class="onb-agent-badge" style="background: #f3e8ff; color: #9333ea;">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+      </div>
+      <div class="onb-agent-titles">
+       <div class="onb-agent-name" data-i18n="onbAgent4Name">Pricing Strategy Agent</div>
+       <div class="onb-agent-brief" data-i18n="onbAgent4Brief">Optimizes item pricing, discounts, and margin elasticity.</div>
+      </div>
+      <div class="onb-agent-chevron">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+     </div>
+     <div class="onb-agent-body">
+      <ul>
+       <li data-i18n="onbAgent4Detail1">Analyzes price elasticity across product lines.</li>
+       <li data-i18n="onbAgent4Detail2">Recommends promotional bundle discounts.</li>
+       <li data-i18n="onbAgent4Detail3">Monitors market price competitiveness.</li>
+      </ul>
+     </div>
+    </div>
+
+    <!-- Agent 5: Forensic Audit & Control -->
+    <div class="onb-agent-card" onclick="toggleOnbAgent(this)">
+     <div class="onb-agent-header">
+      <div class="onb-agent-badge" style="background: #cffafe; color: #0891b2;">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </div>
+      <div class="onb-agent-titles">
+       <div class="onb-agent-name" data-i18n="onbAgent5Name">Forensic Audit & Control</div>
+       <div class="onb-agent-brief" data-i18n="onbAgent5Brief">Scans financial records for anomalies, waste, and discrepancies.</div>
+      </div>
+      <div class="onb-agent-chevron">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+     </div>
+     <div class="onb-agent-body">
+      <ul>
+       <li data-i18n="onbAgent5Detail1">Audits transaction logs for waste and hidden leaks.</li>
+       <li data-i18n="onbAgent5Detail2">Flags suspicious inventory and billing variances.</li>
+       <li data-i18n="onbAgent5Detail3">Ensures strict internal budget compliance.</li>
+      </ul>
+     </div>
+    </div>
+
+    <!-- Agent 6: Customer Retention Agent -->
+    <div class="onb-agent-card" onclick="toggleOnbAgent(this)">
+     <div class="onb-agent-header">
+      <div class="onb-agent-badge" style="background: #ffe4e6; color: #e11d48;">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      </div>
+      <div class="onb-agent-titles">
+       <div class="onb-agent-name" data-i18n="onbAgent6Name">Customer Retention Agent</div>
+       <div class="onb-agent-brief" data-i18n="onbAgent6Brief">Identifies churn risks, customer satisfaction, and loyalty.</div>
+      </div>
+      <div class="onb-agent-chevron">
+       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+     </div>
+     <div class="onb-agent-body">
+      <ul>
+       <li data-i18n="onbAgent6Detail1">Predicts customer churn probability before departure.</li>
+       <li data-i18n="onbAgent6Detail2">Triggers re-engagement offers for inactive customers.</li>
+       <li data-i18n="onbAgent6Detail3">Monitors repeat purchase frequency and satisfaction.</li>
+      </ul>
+     </div>
+    </div>
+
+   </div>
+  </div>
+
+ </div>
+
+ <div class="onboarding-bottom">
+  <div class="onboarding-dots">
+   <span class="dot active" data-dot="1" onclick="goToSlide(1)"></span>
+   <span class="dot" data-dot="2" onclick="goToSlide(2)"></span>
+   <span class="dot" data-dot="3" onclick="goToSlide(3)"></span>
+  </div>
+  <button class="onboarding-next-btn" id="next-btn" type="button">Next</button>
+ </div>
+
+</div>
+
+<script>
+ const slides = document.querySelectorAll('.onboarding-slide');
+ const dots = document.querySelectorAll('.onboarding-dots .dot');
+ const nextBtn = document.getElementById('next-btn');
+ let current = 1;
+ const total = slides.length;
+
+ const NEXT_LABELS = {
+  en: { next: 'Next', start: 'Get Started →' },
+  ar: { next: 'التالي', start: 'ابدأ الآن ←' }
+ };
+
+ function currentLang() {
+  return document.documentElement.getAttribute('lang') || 'en';
+ }
+
+ function toggleOnbAgent(card) {
+  card.classList.toggle('expanded');
+ }
+
+ function goToSlide(n) {
+  current = n;
+  slides.forEach((s) => s.classList.toggle('active', Number(s.dataset.slide) === n));
+  dots.forEach((d) => d.classList.toggle('active', Number(d.dataset.dot) === n));
+  const labels = NEXT_LABELS[currentLang()] || NEXT_LABELS.en;
+  nextBtn.textContent = n === total ? labels.start : labels.next;
+ }
+
+ nextBtn.addEventListener('click', () => {
+  if (current < total) {
+   current += 1;
+   goToSlide(current);
+  } else {
+   window.location.href = 'dashboard.html';
+  }
+ });
+
+ goToSlide(current);
+</script>
+
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+</body>
+</html>

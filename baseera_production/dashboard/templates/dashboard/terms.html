@@ -1,0 +1,19 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}الشروط والبنود — {{ trans.brand }}{% endblock %}
+
+{% block content %}
+{% include 'dashboard/navbar.html' %}
+
+<main class="mx-auto w-[min(1100px,calc(100%-2rem))] pb-20 pt-32 text-{{ trans.align }}">
+    <section class="animate-fade-up">
+        <h1 class="text-3xl font-extrabold mb-6">{% if trans.lang_code == 'ar' %}الشروط والبنود{% else %}Terms & Conditions{% endif %}</h1>
+        <div class="glass p-8 rounded-3xl text-sm leading-relaxed text-muted-foreground space-y-4">
+            <p>{% if trans.lang_code == 'ar' %}باستخدامك لمنصة بصيرة، فإنك توافق على شروط الخدمة الخاصة بنا. المنصة مخصصة لرواد الأعمال والمؤسسات المسجلة في سلطنة عمان.{% else %}By using the Baseera platform, you agree to our terms of service. The platform is dedicated to entrepreneurs and registered SMEs in Oman.{% endif %}</p>
+            <p>{% if trans.lang_code == 'ar' %}يجب أن تكون البيانات المدخلة دقيقة، والمنصة تقدم تحليلات مبنية على البيانات المقدمة لتوفير رؤى وإرشادات للمساعدة في اتخاذ القرارات.{% else %}Entered data must be accurate. The platform provides analytics based on the submitted data to offer insights and guidance for decision making.{% endif %}</p>
+        </div>
+    </section>
+</main>
+
+{% include 'dashboard/footer.html' %}
+{% endblock %}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Welcome to Baseera</title>
+<link rel="stylesheet" href="styles.css?v=2">
+<script>(function(){var t=localStorage.getItem("baseera-theme")||"light";document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("baseera-lang")||"en";document.documentElement.setAttribute("lang",l);document.documentElement.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
+<script>
+ window.BASEERA_TRANSLATIONS = {
+  welcomeHeading: {
+   en: 'Welcome to<br><span class="brand">Baseera</span>',
+   ar: '<span class="brand">بصيرة</span><br>مرحبا بك في'
+  },
+  tapContinue: { en: 'Tap to continue', ar: 'اضغط للمتابعة' }
+ };
+</script>
+</head>
+<body>
+
+<div class="entry-shell" id="welcome-shell">
+
+ <div class="floating-orb" style="width:44px; height:44px; top:120px; left:-20px; background:#d0cfec; opacity:0.5; animation-duration:8s;"></div>
+ <div class="floating-orb" style="width:32px; height:32px; top:110px; right:24px; background:#6fd6ff; opacity:0.35; animation-duration:6s;"></div>
+ <div class="floating-orb" style="width:28px; height:28px; bottom:220px; left:14px; background:#d0cfec; opacity:0.4; animation-duration:9s;"></div>
+ <div class="floating-orb" style="width:40px; height:40px; bottom:120px; right:20px; background:#6fd6ff; opacity:0.3; animation-duration:7s;"></div>
+
+ <div class="toggle-group">
+  <button class="toggle-pill lang-toggle-pill" title="Switch language">
+   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.5 17.5 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-4.72 4.65 1.42 1.42L9 14.29l2.61 2.63.26-1.85z"/></svg>
+   <span class="lang-toggle-label">العربي</span>
+  </button>
+  <button class="toggle-pill theme-toggle-pill" title="Toggle dark mode">
+   <span class="theme-toggle-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span>
+  </button>
+ </div>
+
+ <div class="welcome-center">
+  <img class="welcome-logo" id="welcome-logo-img" src="images/logo-cropped.png" data-light-src="images/logo-cropped.png" data-dark-src="images/logo-dark.png" alt="Baseera logo">
+  <h1 class="welcome-heading" data-i18n="welcomeHeading">Welcome to<br><span class="brand">Baseera</span></h1>
+ </div>
+
+ <div class="tap-continue" id="tap-continue" data-i18n="tapContinue">Tap to continue</div>
+
+</div>
+
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+<script>
+ document.getElementById('welcome-shell').addEventListener('click', (e) => {
+  if (e.target.closest('.toggle-pill')) return;
+  
+  const username = localStorage.getItem('basira_username');
+  if (username) {
+    window.location.href = 'dashboard.html';
+  } else {
+    window.location.href = 'index.html';
+  }
+ });
+</script>
+
+</body>
+</html>

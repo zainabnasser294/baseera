@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Admin Logs</title>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var t=localStorage.getItem("baseera-theme")||"light";document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("baseera-lang")||"en";document.documentElement.setAttribute("lang",l);document.documentElement.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
+<style>
+ .admin-header-card {
+  background: var(--color-card);
+  border-radius: 20px;
+  padding: 20px;
+  margin: 0 20px 16px;
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+ }
+ .admin-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+ }
+ .admin-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(225, 29, 72, 0.1);
+  color: #e11d48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+ }
+ .admin-header-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-navy);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+ }
+ .admin-header-desc {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.4;
+ }
+ 
+ .log-card {
+  background: var(--color-card);
+  border-radius: 20px;
+  padding: 16px;
+  margin: 0 20px 12px;
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+ }
+ .log-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 12px;
+ }
+ .log-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+ }
+ .log-time {
+  font-size: 10px;
+  color: var(--color-muted);
+  font-family: monospace;
+  white-space: nowrap;
+ }
+ .log-user {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--color-navy);
+  margin-bottom: 2px;
+ }
+ .log-type {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  margin-bottom: 4px;
+ }
+ .log-detail {
+  font-size: 12px;
+  color: var(--color-muted);
+ }
+ 
+</style>
+</head>
+<body class="page-enter">
+
+<div class="app-shell">
+ <div class="app-content">
+
+  <div class="dash-topbar" style="margin-bottom: 16px;">
+   <div>
+    <div class="dash-greeting">سجلات النظام</div>
+   </div>
+   <div class="dash-icons">
+    <button class="dash-icon-btn theme-toggle-pill" title="Dark mode">
+     <span class="theme-toggle-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span>
+    </button>
+    <button class="dash-icon-btn lang-toggle-pill" title="Toggle language" style="height: 32px; padding: 0 10px; justify-content: center; font-size: 0.75rem; font-weight: bold; border-radius: 16px;">
+     <span class="lang-toggle-label">Eng/ع</span>
+    </button>
+   </div>
+  </div>
+
+  <!-- Header -->
+  <div class="admin-header-card">
+   <div class="admin-header-top">
+    <div class="admin-icon-box">
+     <svg viewBox="0 0 24 24" fill="none" width="24" height="24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+     <div class="admin-header-title">سجلات النظام (Logs)</div>
+     <div class="admin-header-desc">مراقبة الأنشطة والعمليات التي تمت في المنصة</div>
+    </div>
+   </div>
+  </div>
+
+  <!-- Logs List -->
+  <div class="log-card">
+   
+   <div class="log-row">
+    <div class="log-time">07:22:45<br>2026-08-03</div>
+    <div style="flex: 1;">
+     <div class="log-user">admin</div>
+     <div class="log-type">تسجيل دخول / Login</div>
+     <div class="log-detail">قام المستخدم admin بتسجيل الدخول بنجاح.</div>
+    </div>
+   </div>
+
+   <div class="log-row">
+    <div class="log-time">17:09:47<br>2026-08-02</div>
+    <div style="flex: 1;">
+     <div class="log-user">Sara Saleh Alharbi</div>
+     <div class="log-type">تسجيل دخول / Login</div>
+     <div class="log-detail">قام المستخدم Sara Saleh Alharbi بتسجيل الدخول بنجاح.</div>
+    </div>
+   </div>
+
+   <div class="log-row">
+    <div class="log-time">19:06:32<br>2026-07-30</div>
+    <div style="flex: 1;">
+     <div class="log-user">Sara Saleh Alharbi</div>
+     <div class="log-type" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">Impersonation</div>
+     <div class="log-detail">Admin (ID:2) is impersonating this user.</div>
+    </div>
+   </div>
+
+  </div>
+
+ </div>
+
+ <!-- Bottom Navigation -->
+ <nav class="bottom-nav">
+   <a href="dashboard.html" class="" title="الرئيسية">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+   </a>
+   <a href="insights.html" class="" title="التحليلات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+   </a>
+   <a href="chat.html" class="" title="اسأل بصيرة" style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z"/></svg>
+   </a>
+   <a href="datasets.html" class="" title="البيانات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+   </a>
+   <a href="reports.html" class="" title="التقارير">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+   </a>
+  </nav>
+
+</div>
+
+<script src="app.js"></script>
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+</body>
+</html>

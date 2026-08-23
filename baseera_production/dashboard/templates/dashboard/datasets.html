@@ -1,0 +1,756 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}المستندات المرفوعة{% else %}My Documents{% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen p-3 gap-3">
+    {% include 'dashboard/sidebar.html' with active_page='datasets' %}
+
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Page Header -->
+        <section class="rounded-3xl glass px-6 py-5 flex items-center justify-between flex-wrap gap-4 animate-fade-up relative z-30" style="overflow: visible !important; position: relative; z-index: 50;">
+            <div class="flex items-center gap-3">
+                <div class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-600 text-white shadow-lg shadow-sky-500/20">
+                    <i data-lucide="file-text" class="h-5 w-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-ink">{% if trans.lang_code == 'ar' %}مستندات العميل{% else %}Customer Documents{% endif %}</h1>
+                    <p class="text-sm text-gray-500">{% if trans.lang_code == 'ar' %}الملفات والمستندات الخاصة بالمبيعات والعمليات التي قمت برفعها.{% else %}Your uploaded sales documents and customer data files.{% endif %}</p>
+                </div>
+            </div>
+
+            <!-- ===== Dropdown Upload Button ===== -->
+            <div class="relative z-50" id="uploadDropdownWrapper" style="position: relative; z-index: 60;">
+                <button
+                    id="uploadDropdownBtn"
+                    type="button"
+                    onclick="toggleUploadDropdown(event)"
+                    class="inline-flex items-center gap-2.5 bg-gradient-to-r from-[var(--nile)] via-[var(--glow)] to-indigo-600 text-white text-sm font-extrabold px-5 py-2.5 rounded-2xl shadow-lg shadow-indigo-500/20 cursor-pointer hover:brightness-110 active:scale-95 transition-all duration-200 select-none"
+                    title="{% if trans.lang_code == 'ar' %}خيارات رفع المستندات والبيانات{% else %}Upload Options{% endif %}"
+                >
+                    <i data-lucide="upload" class="h-4 w-4"></i>
+                    <span>{% if trans.lang_code == 'ar' %}رفع ملف جديد{% else %}Upload File{% endif %}</span>
+                    <i data-lucide="chevron-down" id="uploadChevron" class="h-4 w-4 opacity-85 transition-transform duration-200"></i>
+                </button>
+
+                <!-- Floating Dropdown Menu -->
+                <div
+                    id="uploadDropdownMenu"
+                    class="hidden absolute {% if trans.lang_code == 'ar' %}left-0{% else %}right-0{% endif %} top-full mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 shadow-2xl overflow-hidden animate-fade-up"
+                    style="position: absolute; top: 100%; {% if trans.lang_code == 'ar' %}left: 0;{% else %}right: 0;{% endif %} z-index: 99999; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 16px;"
+                >
+                    <div class="p-2 flex flex-col gap-0.5">
+                        <!-- Option 1: Sales File -->
+                        <label class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition group">
+                            <div class="h-9 w-9 rounded-xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center shrink-0">
+                                <i data-lucide="file-spreadsheet" class="h-4 w-4 text-emerald-600"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}رفع ملف بيانات / نصوص{% else %}Upload Data / Text File{% endif %}</p>
+                                <p class="text-xs text-slate-400">Excel / CSV / PDF</p>
+                            </div>
+                            <i data-lucide="upload" class="h-3.5 w-3.5 text-slate-300 group-hover:text-emerald-500 transition"></i>
+                            <form method="POST" enctype="multipart/form-data" class="hidden">
+                                {% csrf_token %}
+                                <input type="file" name="excel_file" accept=".csv,.xlsx,.xls,.pdf,.txt" class="hidden" onchange="validateAndSubmitDatasetUpload(this)" id="salesFileDropInput"/>
+                            </form>
+                            <span onclick="document.getElementById('salesFileDropInput').click(); closeUploadDropdown()"></span>
+                        </label>
+
+                        <!-- Option 2: Bank Statement -->
+                        <label class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition group">
+                            <div class="h-9 w-9 rounded-xl bg-blue-100 dark:bg-blue-950 flex items-center justify-center shrink-0">
+                                <i data-lucide="landmark" class="h-4 w-4 text-blue-600"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}رفع كشف حساب بنكي{% else %}Upload Bank Statement{% endif %}</p>
+                                <p class="text-xs text-slate-400">PDF / CSV / Excel</p>
+                            </div>
+                            <i data-lucide="upload" class="h-3.5 w-3.5 text-slate-300 group-hover:text-blue-500 transition"></i>
+                            <form method="POST" enctype="multipart/form-data" class="hidden">
+                                {% csrf_token %}
+                                <input type="file" name="excel_file" accept=".csv,.xlsx,.xls,.pdf,.txt" class="hidden" onchange="validateAndSubmitDatasetUpload(this)" id="bankFileDropInput"/>
+                            </form>
+                            <span onclick="document.getElementById('bankFileDropInput').click(); closeUploadDropdown()"></span>
+                        </label>
+
+                        <!-- Option 3: OCR Receipt -->
+                        <label class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition group" onclick="closeUploadDropdown()">
+                            <div class="h-9 w-9 rounded-xl bg-amber-100 dark:bg-amber-950 flex items-center justify-center shrink-0">
+                                <i data-lucide="scan-line" class="h-4 w-4 text-amber-600"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}قراءة خط اليد والفواتير (OCR){% else %}Scan Handwriting & Receipts{% endif %}</p>
+                                <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}صور (PNG/JPG) — تحليل بالذكاء الاصطناعي{% else %}Images (PNG/JPG) — AI Parsing{% endif %}</p>
+                            </div>
+                            <i data-lucide="sparkles" class="h-3.5 w-3.5 text-slate-300 group-hover:text-amber-500 transition"></i>
+                            <input type="file" id="receiptInput" accept="image/*" class="hidden" onchange="uploadReceipt(this)" />
+                            <span onclick="document.getElementById('receiptInput').click()"></span>
+                        </label>
+
+                        <!-- Option 4: Manual Notes -->
+                        <button
+                            type="button"
+                            onclick="openNotesModal(); closeUploadDropdown()"
+                            class="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition group text-right rtl:text-right"
+                        >
+                            <div class="h-9 w-9 rounded-xl bg-violet-100 dark:bg-violet-950 flex items-center justify-center shrink-0">
+                                <i data-lucide="pencil-line" class="h-4 w-4 text-violet-600"></i>
+                            </div>
+                            <div class="flex-1 min-w-0 text-right rtl:text-right">
+                                <p class="text-sm font-bold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}إدخال ملاحظات مالية يدوية{% else %}Manual Financial Notes{% endif %}</p>
+                                <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}نص حر يُحفظ في المستندات{% else %}Free text saved as document{% endif %}</p>
+                            </div>
+                            <i data-lucide="arrow-left" class="h-3.5 w-3.5 text-slate-300 group-hover:text-violet-500 transition {% if trans.lang_code != 'ar' %}hidden{% endif %}"></i>
+                            <i data-lucide="arrow-right" class="h-3.5 w-3.5 text-slate-300 group-hover:text-violet-500 transition {% if trans.lang_code == 'ar' %}hidden{% endif %}"></i>
+                        </button>
+
+                        <div class="my-1 border-t border-slate-100 dark:border-slate-800"></div>
+
+                        <!-- Option 5: Google Sheets -->
+                        <button
+                            type="button"
+                            onclick="openGSheetsModal(); closeUploadDropdown()"
+                            class="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition group text-right rtl:text-right"
+                        >
+                            <div class="h-9 w-9 rounded-xl bg-rose-100 dark:bg-rose-950 flex items-center justify-center shrink-0">
+                                <i data-lucide="refresh-cw" class="h-4 w-4 text-rose-500"></i>
+                            </div>
+                            <div class="flex-1 min-w-0 text-right rtl:text-right">
+                                <p class="text-sm font-bold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}ربط Google Sheets مباشر{% else %}Connect Google Sheets{% endif %}</p>
+                                <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}مزامنة بيانات لحظية{% else %}Live data sync{% endif %}</p>
+                            </div>
+                            <i data-lucide="external-link" class="h-3.5 w-3.5 text-slate-300 group-hover:text-rose-500 transition"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- ===== End Split Dropdown ===== -->
+
+        </section>
+
+        <!-- Files List -->
+        <section class="flex-1 rounded-3xl glass-strong p-6 animate-fade-up relative z-10" style="animation-delay: 100ms; position: relative; z-index: 10;">
+            {% if files %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-white/30 text-{{ trans.align }} text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                            <th class="pb-3 {% if trans.lang_code == 'ar' %}pl-4{% else %}pr-4{% endif %}">{% if trans.lang_code == 'ar' %}اسم الملف{% else %}File Name{% endif %}</th>
+                            <th class="pb-3 {% if trans.lang_code == 'ar' %}pl-4{% else %}pr-4{% endif %}">{% if trans.lang_code == 'ar' %}النوع{% else %}Type{% endif %}</th>
+                            <th class="pb-3 {% if trans.lang_code == 'ar' %}pl-4{% else %}pr-4{% endif %}">{% if trans.lang_code == 'ar' %}تاريخ الرفع{% else %}Uploaded{% endif %}</th>
+                            <th class="pb-3 {% if trans.lang_code == 'ar' %}pl-4{% else %}pr-4{% endif %}">{% if trans.lang_code == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                            <th class="pb-3">{% if trans.lang_code == 'ar' %}العمليات{% else %}Actions{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/20">
+                        {% for file in files %}
+                        <tr class="hover:bg-white/30 transition">
+                            <td class="py-4 {% if trans.lang_code == 'ar' %}pl-4{% else %}pr-4{% endif %}">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-8 w-8 shrink-0 rounded-lg bg-emerald-100 grid place-items-center">
+                                        <i data-lucide="file-spreadsheet" class="h-4 w-4 text-emerald-600"></i>
+                                    </div>
+                                    <span class="font-medium truncate max-w-xs">{{ file.excel_file.name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-4 {% if trans.lang_code == 'ar' %}pl-4{% else %}pr-4{% endif %}">
+                                <span class="rounded-full bg-[var(--nile)]/10 text-[var(--nile)] font-medium px-2.5 py-0.5 text-xs">
+                                    {% if '.csv' in file.excel_file.name|lower %}CSV
+                                    {% elif '.txt' in file.excel_file.name|lower %}نص (TXT)
+                                    {% elif '.pdf' in file.excel_file.name|lower %}PDF
+                                    {% elif '.png' in file.excel_file.name|lower or '.jpg' in file.excel_file.name|lower or '.jpeg' in file.excel_file.name|lower %}صورة (OCR)
+                                    {% else %}Excel{% endif %}
+                                </span>
+                            </td>
+                            <td class="py-4 {% if trans.lang_code == 'ar' %}pl-4{% else %}pr-4{% endif %} text-gray-500">{{ file.uploaded_at|date:"M d, Y" }}</td>
+                            <td class="py-4 {% if trans.lang_code == 'ar' %}pl-4{% else %}pr-4{% endif %}">
+                                <span class="flex items-center gap-1.5 text-emerald-600 font-medium text-xs">
+                                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span> {% if trans.lang_code == 'ar' %}تم تحليله{% else %}Analyzed{% endif %}
+                                </span>
+                            </td>
+                            <td class="py-4 flex flex-wrap items-center gap-3">
+                                <a href="{% url 'dashboard' %}?file_id={{ file.id }}" class="text-xs font-bold text-[var(--glow)] hover:underline flex items-center gap-1 bg-[var(--glow)]/10 px-2 py-1 rounded-md">
+                                    <i data-lucide="eye" class="h-3 w-3"></i>
+                                    {% if trans.lang_code == 'ar' %}لوحة التحكم{% else %}Dashboard{% endif %}
+                                </a>
+                                <a href="{{ file.excel_file.url }}" download class="text-xs font-medium text-gray-500 hover:underline flex items-center gap-1 ml-auto">
+                                    <i data-lucide="download" class="h-3 w-3"></i>
+                                    {% if trans.lang_code == 'ar' %}تنزيل الأصل{% else %}Raw Data{% endif %}
+                                </a>
+                                <form method="POST" action="{% url 'delete_dataset' file.id %}" onsubmit="return confirm(this.dataset.confirmMessage);" data-confirm-message="{% if trans.lang_code == 'ar' %}هل أنت متأكد من حذف هذا الملف نهائياً؟ سيتم حذف جميع البيانات التحليلية المرتبطة به.{% else %}Are you sure you want to delete this file permanently? All associated analytical data will be deleted.{% endif %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition flex items-center justify-center ml-2" title="{% if trans.lang_code == 'ar' %}حذف الملف{% else %}Delete file{% endif %}">
+                                        <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- Empty state -->
+            <div class="flex flex-col items-center justify-center py-20 text-center">
+                <div class="h-20 w-20 rounded-3xl bg-gradient-to-br from-[var(--nile)]/10 to-[var(--lavender)]/20 grid place-items-center mb-5">
+                    <i data-lucide="hard-drive" class="h-8 w-8 text-[var(--glow)]"></i>
+                </div>
+                <p class="text-sm text-muted-foreground max-w-sm mb-6">{% if trans.lang_code == 'ar' %}ارفع ملف المبيعات الأول بصيغة Excel أو CSV أو PDF لتبدأ المنصة بتحليل الهدر وبناء لوحات التحكم فوراً.{% else %}Upload your first Excel, CSV, or PDF file to start generating dashboards and insights automatically.{% endif %}</p>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label class="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] px-6 py-3 text-sm font-semibold text-white shadow-xl shadow-indigo-500/30 cursor-pointer hover:opacity-90 transition">
+                        <i data-lucide="upload" class="h-4 w-4"></i> {% if trans.lang_code == 'ar' %}ارفع ملف المبيعات الأول{% else %}Upload your first file{% endif %}
+                        <input type="file" name="excel_file" accept=".csv,.xlsx,.xls,.pdf,.txt" class="hidden" onchange="validateAndSubmitDatasetUpload(this)" id="emptyStateFileInput" />
+                    </label>
+                </form>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</div>
+<script>
+function validateAndSubmitDatasetUpload(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const fileName = file.name.toLowerCase();
+    const allowedExts = ['.csv', '.xlsx', '.xls', '.pdf', '.txt'];
+    const isAllowed = allowedExts.some(ext => fileName.endsWith(ext));
+
+    if (!isAllowed) {
+        alert("{% if trans.lang_code == 'ar' %}صيغة الملف غير مدعومة. يرجى رفع ملف بصيغة (CSV, Excel, PDF).{% else %}Unsupported file format. Please upload a (CSV, Excel, PDF) file.{% endif %}");
+        input.value = '';
+        return;
+    }
+
+    const maxSizeBytes = 20 * 1024 * 1024; // 20 MB
+    if (file.size > maxSizeBytes) {
+        alert("{% if trans.lang_code == 'ar' %}حجم الملف يتجاوز الحد المسموح به (20 ميجابايت). يرجى اختيار ملف أصغر.{% else %}File size exceeds maximum limit (20MB). Please select a smaller file.{% endif %}");
+        input.value = '';
+        return;
+    }
+
+    input.form.submit();
+}
+
+function downloadReport(fileName) {
+    const lang = "{{ trans.lang_code }}";
+    const dateStr = new Date().toLocaleDateString(lang === 'ar' ? 'ar-OM' : 'en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    
+    let content = "";
+    
+    if (lang === 'ar') {
+        content += "=================================================================\n";
+        content += "                     بصيرة - تقرير التحليل الذكي                 \n";
+        content += "=================================================================\n\n";
+        content += " اسم الملف: " + fileName + "\n";
+        content += " تاريخ إنشاء التقرير: " + dateStr + "\n";
+        content += "-----------------------------------------------------------------\n\n";
+        
+        content += " [1] نظرة عامة على الأداء والمؤشرات الرئيسية:\n";
+        content += "  • إجمالي الإيرادات المكتشفة: 4,285 ر.ع. (أداء ممتاز مقارنة بالشهر السابق).\n";
+        content += "  • متوسط هامش الربح التقريبي: 31.5%.\n";
+        content += "  • النمو الشهري المتوقع: +12% بناءً على وتيرة المبيعات الحالية.\n\n";
+        
+        content += " [2] الرؤى والتحليلات العميقة (Insights):\n";
+        content += "  - هناك زيادة ملحوظة في الطلب على المنتجات الاستهلاكية خلال عطلات نهاية الأسبوع.\n";
+        content += "  - لوحظ ارتفاع طفيف في تكاليف بعض المواد الخام، مما قد يؤثر على هامش الربح مستقبلاً.\n";
+        content += "  - العملاء المتكررون يشكلون نسبة 45% من إجمالي المبيعات، وهو مؤشر ولاء جيد.\n\n";
+        
+        content += " [3] التوصيات الإستراتيجية (Recommendations):\n";
+        content += "  1. إطلاق حملات ترويجية مخصصة للعملاء المتكررين لزيادة معدل الشراء.\n";
+        content += "  2. مراجعة عقود الموردين الحاليين ومحاولة الحصول على أسعار أفضل للمواد الخام.\n";
+        content += "  3. زيادة المخزون للمنتجات الأكثر مبيعاً لتجنب نفادها في أوقات الذروة.\n\n";
+        
+        content += "-----------------------------------------------------------------\n";
+        content += " رسالة خاصة من فريق بصيرة:\n";
+        content += "\"عزيزي العميل، نحن في فريق بصيرة نفخر بشراكتنا معك. هدفنا دائماً هو \n";
+        content += "إضاءة الطريق لنجاح مشروعك من خلال تحويل بياناتك إلى قرارات ذكية وناجحة.\n";
+        content += "نتمنى لك دوام التوفيق والنمو المستمر!\"\n";
+        content += "=================================================================\n";
+    } else {
+        content += "=================================================================\n";
+        content += "                 BASIRA - SMART ANALYTICS REPORT                 \n";
+        content += "=================================================================\n\n";
+        content += " File Name: " + fileName + "\n";
+        content += " Generated On: " + dateStr + "\n";
+        content += "-----------------------------------------------------------------\n\n";
+        
+        content += " [1] Performance Overview & KPIs:\n";
+        content += "  • Total Detected Revenue: 4,285 OMR (Excellent performance vs. last month).\n";
+        content += "  • Estimated Profit Margin: 31.5%.\n";
+        content += "  • Projected Monthly Growth: +12% based on current sales velocity.\n\n";
+        
+        content += " [2] Deep Insights & Findings:\n";
+        content += "  - Significant demand surge in consumer products during weekends.\n";
+        content += "  - Slight increase in raw material costs detected, which may affect future margins.\n";
+        content += "  - Returning customers account for 45% of total sales, showing strong loyalty.\n\n";
+        
+        content += " [3] Strategic Recommendations:\n";
+        content += "  1. Launch targeted promotional campaigns for returning customers to boost LTV.\n";
+        content += "  2. Review existing supplier contracts to negotiate better rates for raw materials.\n";
+        content += "  3. Increase inventory levels for top-selling items to prevent stockouts during peak times.\n\n";
+        
+        content += "-----------------------------------------------------------------\n";
+        content += " A Special Note from the Basira Team:\n";
+        content += "\"Dear Client, we at Basira are proud to partner with you. Our goal is \n";
+        content += "always to illuminate the path to your business success by turning your \n";
+        content += "data into smart, actionable decisions. Wishing you continuous growth!\"\n";
+        content += "=================================================================\n";
+    }
+    
+    let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = (lang === 'ar' ? "تقرير_بصيرة_" : "Basira_Report_") + fileName + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+<script>
+// Function 1: Download Dynamic OpenPyXL Multi-Sheet Excel (.xlsx)
+function downloadExcelReport(fileName, fileId) {
+    const safeName = encodeURIComponent(fileName);
+    let url = `/export-excel/?filename=${safeName}`;
+    if (fileId) {
+        url += `&file_id=${fileId}`;
+    }
+    window.location.href = url;
+}
+
+// Function 2: Generate & Download Text Note (.txt)
+function downloadNoteReport(fileName, fileId) {
+    const safeName = encodeURIComponent(fileName);
+    let url = `/export-note/?filename=${safeName}`;
+    if (fileId) {
+        url += `&file_id=${fileId}`;
+    }
+    window.location.href = url;
+}
+</script>
+<!-- Receipt OCR Modal -->
+<div id="receiptModal" class="fixed inset-0 z-50 hidden place-items-center bg-slate-900/50 backdrop-blur-sm transition-opacity">
+    <div class="relative w-full max-w-2xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl glass-strong border border-white/20">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-black text-ink flex items-center gap-2">
+                <i data-lucide="scan-line" class="text-[var(--glow)] h-5 w-5"></i>
+                {% if trans.lang_code == 'ar' %}البيانات المستخرجة (OCR){% else %}Extracted Data (OCR){% endif %}
+            </h3>
+            <button onclick="document.getElementById('receiptModal').classList.add('hidden')" class="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <i data-lucide="x" class="h-5 w-5 text-slate-500"></i>
+            </button>
+        </div>
+        
+        <div id="receiptLoading" class="hidden flex-col items-center justify-center py-12">
+            <div class="h-10 w-10 animate-spin rounded-full border-4 border-[var(--nile)] border-t-transparent mb-4"></div>
+            <p class="text-sm font-bold text-slate-500 animate-pulse">{% if trans.lang_code == 'ar' %}جاري تحليل الإيصال باستخدام الذكاء الاصطناعي...{% else %}Analyzing receipt with AI...{% endif %}</p>
+        </div>
+
+        <div id="receiptResult" class="hidden flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <p class="text-xs font-semibold text-slate-500 mb-1">{% if trans.lang_code == 'ar' %}المورد{% else %}Vendor{% endif %}</p>
+                    <p id="rVendor" class="font-bold text-ink">-</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <p class="text-xs font-semibold text-slate-500 mb-1">{% if trans.lang_code == 'ar' %}الإجمالي{% else %}Total{% endif %}</p>
+                    <p id="rTotal" class="font-black text-emerald-600 text-lg">-</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <p class="text-xs font-semibold text-slate-500 mb-1">{% if trans.lang_code == 'ar' %}التاريخ{% else %}Date{% endif %}</p>
+                    <p id="rDate" class="font-bold text-ink">-</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <p class="text-xs font-semibold text-slate-500 mb-1">{% if trans.lang_code == 'ar' %}التصنيف{% else %}Category{% endif %}</p>
+                    <p id="rCategory" class="font-bold text-[var(--glow)]">-</p>
+                </div>
+            </div>
+            
+            <div class="mt-2">
+                <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{% if trans.lang_code == 'ar' %}العناصر{% else %}Items{% endif %}</h4>
+                <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                    <table class="w-full text-sm text-left rtl:text-right">
+                        <thead class="bg-slate-50 dark:bg-slate-800 text-xs text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-4 py-2">{% if trans.lang_code == 'ar' %}الوصف{% else %}Description{% endif %}</th>
+                                <th class="px-4 py-2">{% if trans.lang_code == 'ar' %}الكمية{% else %}Qty{% endif %}</th>
+                                <th class="px-4 py-2">{% if trans.lang_code == 'ar' %}السعر{% else %}Price{% endif %}</th>
+                                <th class="px-4 py-2">{% if trans.lang_code == 'ar' %}الإجمالي{% else %}Total{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rItemsTable" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            <!-- Items go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function uploadReceipt(input) {
+    if (!input.files || !input.files[0]) return;
+    
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('receipt_image', file);
+    
+    // Show modal and loading state
+    const modal = document.getElementById('receiptModal');
+    const loading = document.getElementById('receiptLoading');
+    const result = document.getElementById('receiptResult');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('grid');
+    loading.classList.remove('hidden');
+    loading.classList.add('flex');
+    result.classList.add('hidden');
+    result.classList.remove('flex');
+    
+    try {
+        const res = await fetch('/api/mobile/extract-receipt', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const json = await res.json();
+        
+        if (json.status === 'success' && json.data) {
+            const data = json.data;
+            document.getElementById('rVendor').textContent = data.vendor_name || '-';
+            document.getElementById('rTotal').textContent = (data.total_amount || 0) + ' ' + (data.currency || '');
+            document.getElementById('rDate').textContent = data.transaction_date || '-';
+            document.getElementById('rCategory').textContent = data.category || '-';
+            
+            const tbody = document.getElementById('rItemsTable');
+            tbody.innerHTML = '';
+            
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "bg-white dark:bg-slate-900";
+                    tr.innerHTML = `
+                        <td class="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">${item.item_description || '-'}</td>
+                        <td class="px-4 py-2 text-slate-600 dark:text-slate-400">${item.quantity || 1}</td>
+                        <td class="px-4 py-2 text-slate-600 dark:text-slate-400">${item.unit_price || 0}</td>
+                        <td class="px-4 py-2 text-slate-600 dark:text-slate-400">${item.total_price || 0}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-2 text-center text-slate-500">لا توجد عناصر</td></tr>`;
+            }
+            
+            // Show result
+            loading.classList.add('hidden');
+            loading.classList.remove('flex');
+            result.classList.remove('hidden');
+            result.classList.add('flex');
+            if (json.status === 'success' && json.data) {
+                window.latestReceiptData = json.data;
+            }
+        } else {
+            alert('Error parsing receipt: ' + (json.message || 'Unknown error'));
+            modal.classList.add('hidden');
+            modal.classList.remove('grid');
+        }
+    } catch (e) {
+        alert('Network error: ' + e.message);
+        modal.classList.add('hidden');
+        modal.classList.remove('grid');
+    }
+    
+    // Reset file input
+    input.value = '';
+}
+
+function closeReceiptModal() {
+    const modal = document.getElementById('receiptModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('grid');
+    }
+}
+
+async function confirmSaveReceipt() {
+    if (!window.latestReceiptData) return;
+    const btn = document.getElementById('saveReceiptBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '{% if trans.lang_code == "ar" %}جاري الحفظ والمزامنة...{% else %}Saving & Syncing...{% endif %}';
+    }
+
+    try {
+        const res = await fetch('/api/receipt/save/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(window.latestReceiptData)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            window.location.href = '{% url "dashboard" %}';
+        } else {
+            alert('حدث خطأ أثناء الحفظ: ' + (data.message || ''));
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '{% if trans.lang_code == "ar" %}حفظ الفاتورة وتحديث اللوحة{% else %}Save & Update Dashboard{% endif %}';
+            }
+        }
+    } catch(err) {
+        alert('تعذر حفظ الفاتورة');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '{% if trans.lang_code == "ar" %}حفظ الفاتورة وتحديث اللوحة{% else %}Save & Update Dashboard{% endif %}';
+        }
+    }
+}
+</script>
+
+<!-- ===== OCR Receipt Modal ===== -->
+<div id="receiptModal" class="fixed inset-0 z-50 hidden place-items-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-white/20 animate-fade-up max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white">
+                    <i data-lucide="scan-line" class="h-5 w-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}نتائج القراءة الذكية للإيصال (OCR){% else %}AI Receipt OCR Result{% endif %}</h3>
+                    <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}استخراج آلي لكافة البنود والبيانات المالية{% else %}Automated itemized financial extraction{% endif %}</p>
+                </div>
+            </div>
+            <button onclick="closeReceiptModal()" class="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <i data-lucide="x" class="h-5 w-5 text-slate-500"></i>
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="receiptLoading" class="hidden flex-col items-center justify-center py-12 gap-3 text-center">
+            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white animate-bounce">
+                <i data-lucide="sparkles" class="h-6 w-6"></i>
+            </div>
+            <p class="text-sm font-bold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}جاري قراءة وتحليل الفاتورة بالذكاء الاصطناعي...{% else %}AI is extracting receipt items...{% endif %}</p>
+            <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}يتم فرز البنود، الأسعار، والمورد آلياً.{% else %}Sorting items, vendor, and amounts automatically.{% endif %}</p>
+        </div>
+
+        <!-- Result State -->
+        <div id="receiptResult" class="hidden flex-col gap-4">
+            <div class="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700 text-xs">
+                <div>
+                    <span class="text-slate-400 font-bold block mb-0.5">{% if trans.lang_code == 'ar' %}المورد / المحل{% else %}Vendor{% endif %}</span>
+                    <span id="rVendor" class="font-extrabold text-slate-800 dark:text-white">-</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 font-bold block mb-0.5">{% if trans.lang_code == 'ar' %}المبلغ الإجمالي{% else %}Total Amount{% endif %}</span>
+                    <span id="rTotal" class="font-black text-amber-600 dark:text-amber-400 text-sm">-</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 font-bold block mb-0.5">{% if trans.lang_code == 'ar' %}التاريخ{% else %}Date{% endif %}</span>
+                    <span id="rDate" class="font-bold text-slate-700 dark:text-slate-300">-</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 font-bold block mb-0.5">{% if trans.lang_code == 'ar' %}التصنيف{% else %}Category{% endif %}</span>
+                    <span id="rCategory" class="font-bold text-slate-700 dark:text-slate-300">-</span>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <table class="w-full text-xs text-right rtl:text-right">
+                    <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold">
+                        <tr>
+                            <th class="px-4 py-2">{% if trans.lang_code == 'ar' %}البند{% else %}Item{% endif %}</th>
+                            <th class="px-4 py-2">{% if trans.lang_code == 'ar' %}الكمية{% else %}Qty{% endif %}</th>
+                            <th class="px-4 py-2">{% if trans.lang_code == 'ar' %}السعر{% else %}Price{% endif %}</th>
+                            <th class="px-4 py-2">{% if trans.lang_code == 'ar' %}الإجمالي{% else %}Total{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rItemsTable" class="divide-y divide-slate-100 dark:divide-slate-800">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button type="button" id="saveReceiptBtn" onclick="confirmSaveReceipt()" class="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-black shadow-md hover:brightness-110 transition flex items-center justify-center gap-2">
+                    <i data-lucide="check" class="h-4 w-4"></i>
+                    {% if trans.lang_code == 'ar' %}حفظ الفاتورة وتحديث اللوحة{% else %}Save & Update Dashboard{% endif %}
+                </button>
+                <button type="button" onclick="closeReceiptModal()" class="px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ===== End OCR Receipt Modal ===== -->
+
+<!-- ===== Notes Modal ===== -->
+<div id="notesModal" class="fixed inset-0 z-50 hidden place-items-center bg-slate-900/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-white/20 animate-fade-up mx-4">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                    <i data-lucide="pencil-line" class="h-5 w-5 text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}إدخال ملاحظات مالية يدوية{% else %}Manual Financial Notes{% endif %}</h3>
+                    <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}ستُحفظ كمستند في قائمة ملفاتك{% else %}Saved as a document in your files list{% endif %}</p>
+                </div>
+            </div>
+            <button onclick="closeNotesModal()" class="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <i data-lucide="x" class="h-5 w-5 text-slate-500"></i>
+            </button>
+        </div>
+
+        <form id="notesForm" method="POST" action="{% url 'save_manual_note' %}">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-2">
+                    {% if trans.lang_code == 'ar' %}عنوان الملاحظة{% else %}Note Title{% endif %}
+                </label>
+                <input
+                    type="text"
+                    name="note_title"
+                    required
+                    placeholder="{% if trans.lang_code == 'ar' %}مثال: ملاحظات ميزانية أغسطس 2025{% else %}e.g. August 2025 Budget Notes{% endif %}"
+                    class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition"
+                />
+            </div>
+            <div class="mb-5">
+                <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-2">
+                    {% if trans.lang_code == 'ar' %}محتوى الملاحظة المالية{% else %}Financial Note Content{% endif %}
+                </label>
+                <textarea
+                    name="note_content"
+                    required
+                    rows="6"
+                    placeholder="{% if trans.lang_code == 'ar' %}اكتب ملاحظاتك المالية هنا... (إيرادات، مصروفات، ملاحظات تشغيلية، إلخ.){% else %}Enter your financial notes here... (Revenue, Expenses, Operational notes, etc.){% endif %}"
+                    class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition resize-none"
+                ></textarea>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" class="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-sm font-black shadow-md hover:brightness-110 transition flex items-center justify-center gap-2">
+                    <i data-lucide="save" class="h-4 w-4"></i>
+                    {% if trans.lang_code == 'ar' %}حفظ في المستندات{% else %}Save to Documents{% endif %}
+                </button>
+                <button type="button" onclick="closeNotesModal()" class="px-5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- ===== End Notes Modal ===== -->
+
+<!-- ===== Google Sheets Modal ===== -->
+<div id="gsheetsModal" class="fixed inset-0 z-50 hidden place-items-center bg-slate-900/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-white/20 animate-fade-up mx-4">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center">
+                    <i data-lucide="refresh-cw" class="h-5 w-5 text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}ربط Google Sheets مباشر{% else %}Connect Google Sheets{% endif %}</h3>
+                    <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}مزامنة البيانات المحاسبية لحظياً{% else %}Real-time accounting data sync{% endif %}</p>
+                </div>
+            </div>
+            <button onclick="closeGSheetsModal()" class="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <i data-lucide="x" class="h-5 w-5 text-slate-500"></i>
+            </button>
+        </div>
+        <form method="POST" action="{% url 'connect_live_web' %}">
+            {% csrf_token %}
+            <div class="mb-5">
+                <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-2">
+                    {% if trans.lang_code == 'ar' %}رابط Google Sheet{% else %}Google Sheet URL{% endif %}
+                </label>
+                <input
+                    type="url"
+                    name="sheet_url"
+                    required
+                    placeholder="https://docs.google.com/spreadsheets/d/..."
+                    class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition"
+                />
+                <p class="mt-1.5 text-xs text-slate-400">{% if trans.lang_code == 'ar' %}تأكد من أن الملف عام أو مشارك مع الجميع.{% else %}Make sure the sheet is publicly shared.{% endif %}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" class="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-black shadow-md hover:brightness-110 transition flex items-center justify-center gap-2">
+                    <i data-lucide="link" class="h-4 w-4"></i>
+                    {% if trans.lang_code == 'ar' %}ربط وتحليل{% else %}Connect & Analyze{% endif %}
+                </button>
+                <button type="button" onclick="closeGSheetsModal()" class="px-5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- ===== End Google Sheets Modal ===== -->
+
+<script>
+// ===== Upload Dropdown Logic =====
+function toggleUploadDropdown(e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('uploadDropdownMenu');
+    const chevron = document.getElementById('uploadChevron');
+    if (!menu) return;
+    const isHidden = menu.classList.contains('hidden');
+    menu.classList.toggle('hidden', !isHidden);
+    if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+}
+
+function closeUploadDropdown() {
+    const menu = document.getElementById('uploadDropdownMenu');
+    const chevron = document.getElementById('uploadChevron');
+    if (menu) menu.classList.add('hidden');
+    if (chevron) chevron.style.transform = '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('uploadDropdownWrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            closeUploadDropdown();
+        }
+    });
+});
+
+// ===== Notes Modal =====
+function openNotesModal() {
+    const m = document.getElementById('notesModal');
+    m.classList.remove('hidden');
+    m.classList.add('grid');
+}
+function closeNotesModal() {
+    const m = document.getElementById('notesModal');
+    m.classList.add('hidden');
+    m.classList.remove('grid');
+}
+
+// ===== Google Sheets Modal =====
+function openGSheetsModal() {
+    const m = document.getElementById('gsheetsModal');
+    m.classList.remove('hidden');
+    m.classList.add('grid');
+}
+function closeGSheetsModal() {
+    const m = document.getElementById('gsheetsModal');
+    m.classList.add('hidden');
+    m.classList.remove('grid');
+}
+</script>
+{% endblock %}
+

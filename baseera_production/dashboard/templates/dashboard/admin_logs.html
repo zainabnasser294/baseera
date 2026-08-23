@@ -1,0 +1,74 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}سجلات النظام — بصيرة{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen p-3 gap-3">
+    {% include 'dashboard/sidebar.html' with active_page='admin_logs' %}
+
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Header -->
+        <section class="rounded-3xl glass px-6 py-5 flex items-center justify-between flex-wrap gap-4 animate-fade-up">
+            <div class="flex items-center gap-3">
+                <div class="grid h-11 w-11 place-items-center rounded-2xl bg-rose-500/10 text-rose-500">
+                    <i data-lucide="activity" class="h-5 w-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-ink">{% if trans.lang_code == 'ar' %}سجلات النظام (Logs){% else %}System Logs{% endif %}</h1>
+                    <p class="text-sm text-gray-500">{% if trans.lang_code == 'ar' %}مراقبة الأنشطة والعمليات التي تمت في المنصة{% else %}Monitor system activities and operations{% endif %}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logs Table -->
+        <section class="rounded-3xl glass-strong p-6 animate-fade-up" style="animation-delay: 100ms;">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-{{ trans.align }}">
+                    <thead class="text-xs text-gray-400 uppercase bg-black/5 dark:bg-white/5 rounded-t-xl">
+                        <tr>
+                            <th class="px-6 py-4 rounded-tr-xl">{% if trans.lang_code == 'ar' %}التاريخ والوقت{% else %}Timestamp{% endif %}</th>
+                            <th class="px-6 py-4">{% if trans.lang_code == 'ar' %}المستخدم{% else %}User{% endif %}</th>
+                            <th class="px-6 py-4">{% if trans.lang_code == 'ar' %}نوع العملية{% else %}Action Type{% endif %}</th>
+                            <th class="px-6 py-4 rounded-tl-xl">{% if trans.lang_code == 'ar' %}التفاصيل{% else %}Details{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="border-b border-white/10 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-mono text-gray-500" dir="ltr">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                            <td class="px-6 py-4 font-semibold text-ink">
+                                {% if log.user %}
+                                    {{ log.user.username }}
+                                {% else %}
+                                    <span class="text-gray-400">System</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 text-xs rounded-full 
+                                    {% if 'Login' in log.action_type or 'دخول' in log.action_type %}bg-blue-500/10 text-blue-500
+                                    {% elif 'Register' in log.action_type or 'تسجيل' in log.action_type %}bg-emerald-500/10 text-emerald-500
+                                    {% elif 'Upload' in log.action_type or 'رفع' in log.action_type %}bg-purple-500/10 text-purple-500
+                                    {% elif 'Payment' in log.action_type or 'دفع' in log.action_type %}bg-orange-500/10 text-orange-500
+                                    {% else %}bg-gray-500/10 text-gray-500{% endif %}">
+                                    {{ log.action_type }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 dark:text-gray-400">{{ log.details }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                                {% if trans.lang_code == 'ar' %}لا توجد سجلات بعد.{% else %}No logs found.{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}

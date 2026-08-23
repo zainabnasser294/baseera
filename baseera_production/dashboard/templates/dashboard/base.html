@@ -1,0 +1,465 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ trans.lang_code }}" dir="{{ trans.dir }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ trans.brand }}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'dashboard/img/favicon.png' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              nile: '#2b2470',
+              glow: '#7c6cf0',
+              lavender: '#b9a6f2',
+              ink: '#1a1730',
+              // keeping old colors just in case some templates still use them temporarily
+              baseeraBlue: '#2b2470',
+              baseeraIndigo: '#1a1730',
+              baseeraLavender: '#b9a6f2',
+              baseeraTeal: '#7c6cf0',
+            },
+            fontFamily: {
+              sans: ['Tajawal', 'Cairo', 'ui-sans-serif', 'system-ui', 'sans-serif']
+            },
+            borderRadius: {
+              '2xl': '20px',
+              '3xl': '28px'
+            }
+          }
+        }
+      }
+    </script>
+    
+    <!-- Google Fonts: Tajawal, Cairo, Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@400;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome & Lucide Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="{% static 'dashboard/js/lucide.js' %}"></script>
+    <script>if (typeof lucide === 'undefined') { document.write('<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"><\/script>'); }</script>
+    
+    <!-- Chart.js (Local static with CDN fallbacks) -->
+    <script src="{% static 'dashboard/js/chart.umd.min.js' %}"></script>
+    <script>if (typeof Chart === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"><\/script>'); }</script>
+    <script>if (typeof Chart === 'undefined') { document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>'); }</script>
+    <script>
+      if (typeof Chart !== 'undefined') {
+        Chart.defaults.font.family = "'Tajawal', 'Cairo', system-ui, sans-serif";
+        Chart.defaults.font.size = 12;
+      }
+    </script>
+    
+    <!-- PapaParse -->
+    <script src="{% static 'dashboard/js/papaparse.min.js' %}"></script>
+    <script>if (typeof Papa === 'undefined') { document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"><\/script>'); }</script>
+    
+    <style>
+      :root {
+        --nile: #3b2885;
+        --glow: #6366f1;
+        --lavender: #a855f7;
+        --cyan-glow: #06b6d4;
+        --foreground: #0f172a;
+        --muted-foreground: #64748b;
+        --ink: #0f172a;
+      }
+      .dark {
+        --nile: #818cf8;
+        --glow: #a78bfa;
+        --lavender: #c084fc;
+        --cyan-glow: #22d3ee;
+        --foreground: #f8fafc;
+        --muted-foreground: #94a3b8;
+        --ink: #f8fafc;
+      }
+      * { font-family: 'Tajawal', 'Cairo', ui-sans-serif, system-ui, sans-serif; }
+      
+      /* Smooth Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.05);
+      }
+      .dark ::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.6);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.35);
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(99, 102, 241, 0.65);
+      }
+
+      /* Force Western/Latin numerals (0-9) in all languages including Arabic */
+      * {
+        font-feature-settings: "lnum" 1, "tnum" 1;
+      }
+      :root {
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+      [lang="ar"] * {
+        font-family: 'Tajawal', 'Cairo', ui-sans-serif, system-ui, sans-serif;
+      }
+      [lang="ar"] *:not(input):not(textarea) {
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+      .num, [class*="stat"], [class*="value"], [class*="count"], [class*="amount"], [class*="price"], [class*="digit"], [id*="Display"], [id*="Count"], [id*="Val"] {
+        font-family: 'Outfit', 'Plus Jakarta Sans', 'Tajawal', sans-serif !important;
+        font-variant-numeric: lining-nums tabular-nums;
+        font-feature-settings: "lnum" 1, "tnum" 1;
+        unicode-bidi: plaintext;
+        letter-spacing: -0.01em;
+      }
+
+      body {
+        background:
+          radial-gradient(1000px 550px at 15% -5%, rgba(99, 102, 241, 0.16), transparent 60%),
+          radial-gradient(900px 450px at 85% 10%, rgba(168, 85, 247, 0.14), transparent 55%),
+          radial-gradient(800px 400px at 50% 90%, rgba(6, 182, 212, 0.08), transparent 50%),
+          #f8fafc;
+        color: var(--foreground);
+        min-height: 100vh;
+        transition: background-color 0.4s ease, color 0.4s ease;
+      }
+      .dark body {
+        background:
+          radial-gradient(1100px 600px at 15% -5%, rgba(99, 102, 241, 0.22), transparent 65%),
+          radial-gradient(900px 500px at 85% 15%, rgba(168, 85, 247, 0.18), transparent 60%),
+          radial-gradient(800px 450px at 50% 95%, rgba(6, 182, 212, 0.12), transparent 55%),
+          #090d16;
+        color: #f8fafc;
+      }
+      
+      .glass {
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.05);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .glass:hover {
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 12px 35px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.25);
+      }
+      .dark .glass {
+        background: rgba(15, 23, 42, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+      }
+      .dark .glass:hover {
+        background: rgba(26, 38, 66, 0.85);
+        border-color: rgba(99, 102, 241, 0.4);
+        box-shadow: 0 12px 35px rgba(99, 102, 241, 0.2);
+      }
+      
+      /* Bank Muscat Style Dot Masking for Sensitive Numeric Values */
+      .is-masked .sensitive-value,
+      .is-masked .maskable-number,
+      .is-masked .privacy-sensitive,
+      .is-masked [data-privacy="true"] {
+        -webkit-text-security: disc !important;
+        font-family: monospace, system-ui, -apple-system, sans-serif !important;
+        letter-spacing: 3px !important;
+        filter: none !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        opacity: 0.88 !important;
+        transition: none !important;
+      }
+
+      .glass-strong {
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.95);
+        box-shadow: 0 25px 60px -15px rgba(59, 40, 133, 0.18), 0 0 0 1px rgba(99, 102, 241, 0.08);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .dark .glass-strong {
+        background: rgba(15, 23, 42, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(99, 102, 241, 0.2);
+      }
+      
+      .glass-input {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(203, 213, 225, 0.8);
+        color: var(--foreground);
+        transition: all 0.3s ease;
+      }
+      .dark .glass-input {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #f8fafc;
+      }
+      .glass-input:focus {
+        border-color: var(--glow);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+        outline: none;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.08);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 45px -10px rgba(99, 102, 241, 0.16);
+        border-color: rgba(99, 102, 241, 0.3);
+      }
+      .dark .card {
+        background: rgba(15, 23, 42, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+      }
+      .dark .card:hover {
+        border-color: rgba(99, 102, 241, 0.4);
+        box-shadow: 0 20px 45px -10px rgba(99, 102, 241, 0.25);
+      }
+      
+      .text-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .dark .text-gradient {
+        background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #38bdf8 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      .sparkline-bg {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      }
+      .dark .sparkline-bg {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(99, 102, 241, 0) 70%);
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+      }
+
+      /* Global Dark Mode Text Readability Overrides */
+      .dark .text-ink {
+        color: #f8fafc !important;
+      }
+      .dark .text-slate-800,
+      .dark .text-slate-700,
+      .dark .text-slate-900,
+      .dark .text-gray-800,
+      .dark .text-gray-700,
+      .dark .text-gray-900 {
+        color: #f1f5f9 !important;
+      }
+      .dark .text-slate-600,
+      .dark .text-gray-600,
+      .dark .text-slate-500,
+      .dark .text-gray-500 {
+        color: #cbd5e1 !important;
+      }
+      .dark .text-muted-foreground {
+        color: #94a3b8 !important;
+      }
+      .dark .bg-white\/30,
+      .dark .bg-white\/40,
+      .dark .bg-white\/50,
+      .dark .bg-white\/60,
+      .dark .bg-white\/70,
+      .dark .bg-white\/80 {
+        background-color: rgba(30, 41, 59, 0.6) !important;
+      }
+      .dark .border-white\/30,
+      .dark .border-white\/40,
+      .dark .border-white\/60,
+      .dark .border-white\/70,
+      .dark .border-white\/80,
+      .dark .border-white\/90,
+      .dark .border-white {
+        border-color: rgba(255, 255, 255, 0.12) !important;
+      }
+      .dark .hover\:bg-white\/80:hover,
+      .dark .hover\:bg-white\/70:hover,
+      .dark .hover\:bg-white\/60:hover,
+      .dark .hover\:bg-white\/50:hover {
+        background-color: rgba(51, 65, 85, 0.8) !important;
+      }
+      .dark input:not([type="submit"]):not([type="button"]),
+      .dark select,
+      .dark textarea {
+        color: #f8fafc !important;
+      }
+      .dark input::placeholder,
+      .dark textarea::placeholder {
+        color: #94a3b8 !important;
+      }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-up { animation: fadeUp .5s ease both; }
+      
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      /* Bulletproof Field Icon Styles (independent of Tailwind Play CDN) */
+      .field-icon {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        stroke: #475569;
+        color: #475569;
+        z-index: 10;
+        pointer-events: none;
+        transition: stroke 0.2s ease, color 0.2s ease;
+      }
+      html[dir="rtl"] .field-icon, [dir="rtl"] .field-icon {
+        right: 16px;
+        left: auto;
+      }
+      html[dir="ltr"] .field-icon, [dir="ltr"] .field-icon {
+        left: 16px;
+        right: auto;
+      }
+      html[dir="rtl"] .field-icon-trailing, [dir="rtl"] .field-icon-trailing {
+        left: 16px;
+        right: auto;
+      }
+      html[dir="ltr"] .field-icon-trailing, [dir="ltr"] .field-icon-trailing {
+        right: 16px;
+        left: auto;
+      }
+      .dark .field-icon {
+        stroke: #cbd5e1;
+        color: #cbd5e1;
+      }
+      .group:focus-within .field-icon {
+        stroke: #181C80;
+        color: #181C80;
+      }
+      .dark .group:focus-within .field-icon {
+        stroke: #818cf8;
+        color: #818cf8;
+      }
+
+      .field-icon-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        color: #475569;
+        z-index: 10;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+      html[dir="rtl"] .field-icon-btn, [dir="rtl"] .field-icon-btn {
+        left: 16px;
+        right: auto;
+      }
+      html[dir="ltr"] .field-icon-btn, [dir="ltr"] .field-icon-btn {
+        right: 16px;
+        left: auto;
+      }
+      .dark .field-icon-btn {
+        color: #cbd5e1;
+      }
+      .field-icon-btn:hover {
+        color: #181C80;
+      }
+      .dark .field-icon-btn:hover {
+        color: #ffffff;
+      }
+    </style>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="{% if trans.lang_code == 'ar' %}font-sans{% else %}font-sans{% endif %} transition-colors duration-300 relative antialiased" dir="{{ trans.dir }}">
+    
+    <!-- Impersonation Banner -->
+    {% if request.session.impersonated_from %}
+    <div class="w-full bg-rose-600 text-white px-4 py-2 flex items-center justify-center gap-4 text-sm font-bold shadow-lg relative z-50">
+        <i data-lucide="shield-alert" class="w-5 h-5"></i>
+        <span>أنت تتصفح النظام حالياً بصلاحيات المستخدم: {{ request.user.username }}</span>
+        <a href="{% url 'stop_impersonate' %}" class="bg-black/20 hover:bg-black/30 px-3 py-1 rounded-full transition-colors ml-4 shadow-sm">
+            العودة لحساب الإدارة
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Messaging Notifications Block -->
+    {% if messages %}
+    <div class="fixed top-6 left-1/2 -translate-x-1/2 z-[99999] w-full max-w-md px-4 pointer-events-none flex flex-col gap-2">
+        {% for message in messages %}
+        <div class="toast-message pointer-events-auto flex items-center gap-3.5 p-4 rounded-3xl border border-white/80 bg-white/70 backdrop-blur-xl shadow-2xl shadow-slate-900/10 transition-all duration-300 hover:scale-[1.02] text-{{ trans.align }}" 
+             style="animation: toastSlideIn 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;">
+            
+            <!-- Icon wrapper -->
+            <div class="h-9 w-9 shrink-0 rounded-2xl flex items-center justify-center border {% if message.tags == 'success' %}bg-emerald-500/10 border-emerald-500/25 text-emerald-600{% else %}bg-rose-500/10 border-rose-500/25 text-rose-600{% endif %} shadow-sm">
+                {% if message.tags == 'success' %}
+                <i data-lucide="check-circle" class="h-4.5 w-4.5"></i>
+                {% else %}
+                <i data-lucide="alert-circle" class="h-4.5 w-4.5"></i>
+                {% endif %}
+            </div>
+
+            <!-- Text -->
+            <div class="flex-1 text-sm font-bold text-slate-800 leading-snug">
+                {{ message }}
+            </div>
+
+            <!-- Close button -->
+            <button onclick="let t = this.closest('.toast-message'); t.style.opacity='0'; t.style.transform='translateY(-15px) scale(0.95)'; setTimeout(()=>t.remove(), 300)" 
+                    class="h-7 w-7 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100/50 transition">
+                <i data-lucide="x" class="h-4 w-4"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <style>
+        @keyframes toastSlideIn {
+            0% { transform: translateY(-30px) scale(0.92); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+    </style>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+    <script>
+        // Initialize Lucide icons on page load
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

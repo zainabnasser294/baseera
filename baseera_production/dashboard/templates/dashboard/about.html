@@ -1,0 +1,69 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{{ trans.about }} — {{ trans.brand }}{% endblock %}
+
+{% block content %}
+{% include 'dashboard/navbar.html' %}
+
+<main class="mx-auto w-[min(1100px,calc(100%-2rem))] pb-20 pt-32 text-{{ trans.align }}">
+    <!-- Title / Intro -->
+    <section class="animate-fade-up text-center">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/40 px-3 py-1 text-xs font-medium text-[var(--nile)]">
+            <i data-lucide="sparkles" class="h-3.5 w-3.5"></i> {{ trans.about }}
+        </div>
+        <h1 class="mx-auto mt-5 max-w-3xl text-2xl font-extrabold leading-tight tracking-tight md:text-3xl lg:text-4xl">
+            {{ trans.about_title }}
+        </h1>
+        <p class="mx-auto mt-5 max-w-3xl text-base md:text-lg text-muted-foreground leading-relaxed">
+            {{ trans.about_desc }}
+        </p>
+    </section>
+
+
+
+    <!-- Vision commitment section -->
+    <section class="mt-16 rounded-3xl p-8 md:p-12 glass-strong">
+        <div class="grid gap-10 md:grid-cols-2 md:items-center">
+            <div>
+                <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--nile)] mb-3">
+                    <i data-lucide="globe-2" class="h-4 w-4"></i> {% if trans.lang_code == 'ar' %}رؤية عُمان 2040{% else %}Oman Vision 2040{% endif %}
+                </div>
+                <h3 class="text-3xl font-extrabold tracking-tight text-ink leading-tight">
+                    {{ trans.vision_title }}
+                </h3>
+                <p class="mt-4 text-sm text-muted-foreground leading-relaxed">
+                    {{ trans.vision_desc }}
+                </p>
+            </div>
+            <div class="flex flex-col gap-4">
+                <div class="rounded-2xl border border-white bg-white/70 p-5 shadow-sm">
+                    <div class="font-semibold text-sm mb-1">{% if trans.lang_code == 'ar' %}النمو المعزز بالبيانات{% else %}Data-driven Growth{% endif %}</div>
+                    <p class="text-xs text-muted-foreground">{% if trans.lang_code == 'ar' %}تمكين قادة المشاريع الصغيرة من قراءة السوق واتخاذ قرارات فورية.{% else %}Enabling SME owners to read the market and make instantaneous choices.{% endif %}</p>
+                </div>
+                <div class="rounded-2xl border border-white bg-white/70 p-5 shadow-sm">
+                    <div class="font-semibold text-sm mb-1">{% if trans.lang_code == 'ar' %}التحول المالي الرقمي{% else %}Digital Financial Shift{% endif %}</div>
+                    <p class="text-xs text-muted-foreground">{% if trans.lang_code == 'ar' %}تقليل التكاليف الإدارية والاعتماد الكلي على المعالجة السحابية الآمنة.{% else %}Reducing overhead operational costs by relying on secure cloud computations.{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="mt-16 rounded-3xl p-10 text-center glass-strong">
+        <h3 class="text-3xl font-extrabold tracking-tight">{% if trans.lang_code == 'ar' %}انطلق بمشروعك الآن{% else %}Build with us.{% endif %}</h3>
+        <p class="mx-auto mt-3 max-w-lg text-sm text-muted-foreground">
+            {% if trans.lang_code == 'ar' %}بصيرة جاهزة لمساعدتك في تنظيف وتحليل جداول مبيعاتك فوراً.{% else %}Baseera is ready to help you structure, clean, and verify your sales datasets today.{% endif %}
+        </p>
+        <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <a href="{% url 'contact' %}" class="rounded-full bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] px-6 py-3 text-sm font-semibold text-white shadow-xl shadow-indigo-500/30 transition hover:brightness-110">
+                {{ trans.contact }}
+            </a>
+            <a href="{% url 'register' %}" class="rounded-full border border-white/60 bg-white/50 px-6 py-3 text-sm font-semibold hover:bg-white/70 transition">
+                {{ trans.register_link }}
+            </a>
+        </div>
+    </section>
+</main>
+
+{% include 'dashboard/footer.html' %}
+{% endblock %}

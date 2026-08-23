@@ -1,0 +1,21 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}الخصوصية — {{ trans.brand }}{% endblock %}
+
+{% block content %}
+{% include 'dashboard/navbar.html' %}
+
+<main class="mx-auto w-[min(1100px,calc(100%-2rem))] pb-20 pt-32 text-{{ trans.align }}">
+    <section class="animate-fade-up">
+        <h1 class="text-3xl font-extrabold mb-6">{% if trans.lang_code == 'ar' %}سياسة الخصوصية{% else %}Privacy Policy{% endif %}</h1>
+        <div class="glass p-8 rounded-3xl text-sm leading-relaxed text-muted-foreground space-y-4">
+            <p>{% if trans.lang_code == 'ar' %}نحن في بصيرة نولي أهمية قصوى لخصوصية بياناتك المالية والمحاسبية. يتم تشفير جميع البيانات وتخزينها بشكل آمن وفق أعلى المعايير.{% else %}At Baseera, we prioritize the privacy of your financial and accounting data. All data is securely encrypted and stored according to the highest standards.{% endif %}</p>
+            <p>{% if trans.lang_code == 'ar' %}لا يتم مشاركة أرقام مشاريعك أو بيانات عملائك مع أي جهة خارجية تحت أي ظرف من الظروف.{% else %}Your project numbers and customer data are never shared with any third party under any circumstances.{% endif %}</p>
+        </div>
+    </section>
+
+
+</main>
+
+{% include 'dashboard/footer.html' %}
+{% endblock %}

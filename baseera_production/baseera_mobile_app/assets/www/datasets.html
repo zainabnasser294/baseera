@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+ <title>Datasets | مجموعات البيانات</title>
+ <link rel="stylesheet" href="styles.css">
+ <script>
+  (function () {
+   var t = localStorage.getItem("baseera-theme") || "light";
+   document.documentElement.setAttribute("data-theme", t);
+   var l = localStorage.getItem("baseera-lang") || "ar";
+   document.documentElement.setAttribute("lang", l);
+   document.documentElement.setAttribute("dir", l === "ar" ? "rtl" : "ltr");
+  })();
+ </script>
+ <link rel="icon" type="image/x-icon" href="images/logo-cropped.png">
+ <style>
+  .dataset-item-card {
+   background: rgba(255, 255, 255, 0.95);
+   backdrop-filter: blur(24px);
+   border-radius: 1.5rem;
+   padding: 1.25rem;
+   border: 1px solid rgba(226, 232, 240, 0.85);
+   box-shadow: 0 4px 20px rgba(27, 20, 75, 0.05);
+   margin-bottom: 1rem;
+   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .dataset-item-card:hover {
+   box-shadow: 0 8px 30px rgba(27, 20, 75, 0.08);
+  }
+  .btn-action-dash {
+   flex: 1;
+   background: rgba(43, 36, 112, 0.08);
+   color: #2b2470;
+   border: 1px solid rgba(43, 36, 112, 0.15);
+   padding: 0.55rem 0.8rem;
+   border-radius: 0.75rem;
+   font-size: 0.78rem;
+   font-weight: 700;
+   cursor: pointer;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 5px;
+   transition: all 0.2s ease;
+  }
+  .btn-action-dash:hover {
+   background: #2b2470;
+   color: #ffffff;
+  }
+  .btn-action-edit {
+   flex: 1;
+   background: #eff6ff;
+   color: #2563eb;
+   border: 1px solid #bfdbfe;
+   padding: 0.55rem 0.8rem;
+   border-radius: 0.75rem;
+   font-size: 0.78rem;
+   font-weight: 700;
+   cursor: pointer;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 5px;
+   transition: all 0.2s ease;
+  }
+  .btn-action-edit:hover {
+   background: #2563eb;
+   color: #ffffff;
+  }
+  .btn-action-delete {
+   background: #fef2f2;
+   color: #ef4444;
+   border: 1px solid #fecaca;
+   padding: 0.55rem 0.8rem;
+   border-radius: 0.75rem;
+   font-size: 0.78rem;
+   font-weight: 700;
+   cursor: pointer;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 5px;
+   transition: all 0.2s ease;
+  }
+  .btn-action-delete:hover {
+   background: #ef4444;
+   color: #ffffff;
+  }
+  .btn-action-download {
+   background: #f0fdf4;
+   color: #16a34a;
+   border: 1px solid #bbf7d0;
+   padding: 0.55rem 0.8rem;
+   border-radius: 0.75rem;
+   font-size: 0.78rem;
+   font-weight: 700;
+   cursor: pointer;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 5px;
+   transition: all 0.2s ease;
+  }
+  .btn-action-download:hover {
+   background: #16a34a;
+   color: #ffffff;
+  }
+  /* Edit Modal */
+  .modal-overlay {
+   display: none;
+   position: fixed;
+   inset: 0;
+   background: rgba(15, 23, 42, 0.45);
+   backdrop-filter: blur(6px);
+   z-index: 9999;
+   align-items: center;
+   justify-content: center;
+   padding: 16px;
+  }
+  .modal-overlay.open {
+   display: flex;
+  }
+  .edit-modal-box {
+   background: #ffffff;
+   border-radius: 1.5rem;
+   max-width: 480px;
+   width: 100%;
+   max-height: 85vh;
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.3);
+   animation: popInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes popInModal {
+   from { opacity: 0; transform: scale(0.92) translateY(15px); }
+   to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+ </style>
+</head>
+
+<body class="page-enter">
+
+ <div class="app-shell">
+
+  <!-- Top Header -->
+  <div class="settings-topbar" style="padding: 16px 20px 6px;">
+      <button class="icon-back-btn" onclick="window.history.back()" title="Back">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div>
+        <div class="settings-heading" data-i18n="datasetsTitle">مجموعات البيانات</div>
+        <div id="datasetsDescText" style="font-size: 0.75rem; color: #64748b; margin-top: 2px;" data-i18n="datasetsDesc">إدارة مصادر وملفات البيانات المرفوعة وتحليلها.</div>
+      </div>
+    </div>
+
+  <!-- Data List -->
+  <div id="datasets-list" style="padding: 0.5rem 1rem 5.5rem 1rem; overflow-y: auto; flex: 1;">
+   <!-- Populated dynamically -->
+  </div>
+
+  <!-- Empty State -->
+  <div class="dash-empty-state" id="dash-empty" style="display: none; margin: 2rem 1rem; text-align: center;">
+   <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#94a3b8" stroke-width="1.8" style="margin-bottom: 1rem;">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+   </svg>
+   <div class="dash-empty-title" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;" data-i18n="emptyTitle">لا توجد ملفات حالياً</div>
+   <div class="dash-empty-desc" style="font-size: 0.8rem; color: #64748b; margin: 0.5rem 0 1.25rem 0;" data-i18n="emptyDesc">ارفع ملف Excel أو CSV أو كشف حساب لبدء التحليل التلقائي.</div>
+   <button class="dash-empty-btn" onclick="window.location.href='upload.html'" style="background: #2b2470; color: white; border: none; padding: 0.65rem 1.25rem; border-radius: 0.75rem; font-weight: 700; cursor: pointer;" data-i18n="uploadFirstBtn">رفع ملف جديد</button>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="dash-fab" onclick="window.location.href='upload.html'" title="Upload Data"
+   style="position: fixed; bottom: 85px; right: 20px; width: 48px; height: 48px; border-radius: 50%; background: #2b2470; color: white; border: none; box-shadow: 0 4px 15px rgba(43, 36, 112, 0.35); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 40;">
+   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+   </svg>
+  </button>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+   <a href="dashboard.html" class="" title="الرئيسية">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+   </a>
+   <a href="insights.html" class="" title="التحليلات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+   </a>
+   <a href="chat.html" class="" title="اسأل بصيرة" style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z"/></svg>
+   </a>
+   <a href="datasets.html" class="active" title="البيانات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+   </a>
+   <a href="reports.html" class="" title="التقارير">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+   </a>
+  </nav>
+
+ </div>
+
+ <!-- Excel Edit Modal -->
+ <div class="modal-overlay" id="editExcelModal" onclick="closeEditModal(event)">
+  <div class="edit-modal-box" onclick="event.stopPropagation()">
+   <div style="padding: 14px 18px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+     <div style="width: 28px; height: 28px; border-radius: 8px; background: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px;">XLS</div>
+     <span id="editModalFileName" style="font-size: 14px; font-weight: 800; color: #1e293b;">تعديل بيانات ملف Excel</span>
+    </div>
+    <button onclick="document.getElementById('editExcelModal').classList.remove('open')" style="background: #f1f5f9; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; color: #64748b;">✕</button>
+   </div>
+
+   <div style="padding: 16px; overflow-y: auto; flex: 1;">
+    <div style="font-size: 12px; color: #64748b; margin-bottom: 12px;" id="editModalHintText">
+     يمكنك تعديل قيم البيانات أو تحديث الصفوف والأعمدة المحفوظة لملف Excel هذا:
+    </div>
+    <div id="editRowsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+     <!-- Dynamically populated edit form rows -->
+    </div>
+   </div>
+
+   <div style="padding: 12px 18px; border-top: 1px solid #f1f5f9; background: #f8fafc; display: flex; gap: 8px;">
+    <button onclick="document.getElementById('editExcelModal').classList.remove('open')" style="flex: 1; padding: 10px; background: #ffffff; border: 1px solid #e2e8f0; color: #475569; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer;">إلغاء</button>
+    <button onclick="saveExcelEdits()" style="flex: 2; padding: 10px; background: #2563eb; border: none; color: #ffffff; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer;">حفظ التعديلات 💾</button>
+   </div>
+  </div>
+ </div>
+
+ <script src="app.js"></script>
+ <script src="translations.js"></script>
+ <script src="theme.js"></script>
+ <script>
+  let activeEditingDataset = null;
+
+  // Default datasets list
+  function getDatasetsList() {
+   const storedList = localStorage.getItem('baseera_datasets_list');
+   if (storedList) {
+    try {
+     return JSON.parse(storedList);
+    } catch(e) {}
+   }
+
+   // Check single basira_dataset
+   const single = localStorage.getItem('basira_dataset');
+   if (single) {
+    try {
+     const parsed = JSON.parse(single);
+     return [parsed];
+    } catch(e) {}
+   }
+
+  return [];
+  }
+
+  function renderDatasets() {
+   const isAr = (localStorage.getItem('baseera-lang') || document.documentElement.getAttribute('lang') || 'en') === 'ar';
+   const listEl = document.getElementById('datasets-list');
+   const emptyState = document.getElementById('dash-empty');
+   const dayEl = document.getElementById('dash-day-label');
+   
+   if (dayEl) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dayEl.textContent = new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-US', options);
+   }
+
+   const datasets = getDatasetsList();
+
+   if (!datasets || datasets.length === 0) {
+    listEl.style.display = 'none';
+    emptyState.style.display = 'block';
+    return;
+   }
+
+   listEl.style.display = 'block';
+   emptyState.style.display = 'none';
+
+   listEl.innerHTML = datasets.map((ds, index) => {
+    const fileName = ds.fileName || 'dataset_' + (index + 1) + '.xlsx';
+    const lower = fileName.toLowerCase();
+    const isExcel = lower.endsWith('.xlsx') || lower.endsWith('.xls') || ds.type === 'excel';
+    const isCsv = lower.endsWith('.csv') || ds.type === 'csv';
+    const isPdf = lower.endsWith('.pdf') || ds.type === 'pdf';
+    const isImage = lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || ds.type === 'image';
+    const isBankStatement = lower.includes('statement') || lower.includes('bank');
+
+    let badgeLabel = 'CSV';
+    let badgeBg = '#f1f5f9';
+    let badgeColor = '#475569';
+    let iconBg = '#e0f2fe';
+    let iconColor = '#0284c7';
+
+    if (isExcel) {
+     badgeLabel = 'Excel';
+     badgeBg = '#dcfce7';
+     badgeColor = '#16a34a';
+     iconBg = '#dcfce7';
+     iconColor = '#16a34a';
+    } else if (isPdf || isBankStatement) {
+     badgeLabel = isBankStatement ? (isAr ? 'كشف حساب' : 'Statement') : 'PDF';
+     badgeBg = '#fee2e2';
+     badgeColor = '#dc2626';
+     iconBg = '#fee2e2';
+     iconColor = '#dc2626';
+    } else if (isImage) {
+     badgeLabel = 'Image';
+     badgeBg = '#f3e8ff';
+     badgeColor = '#9333ea';
+    }
+
+    return `
+     <div class="dataset-item-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+       <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <div style="width: 2.5rem; height: 2.5rem; background: ${iconBg}; border-radius: 0.6rem; display: flex; align-items: center; justify-content: center; color: ${iconColor}; flex-shrink: 0;">
+         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+         </svg>
+        </div>
+        <div style="font-weight: 700; font-size: 0.92rem; color: #1e293b; max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+         ${fileName}
+        </div>
+       </div>
+       <span style="background: ${badgeBg}; color: ${badgeColor}; padding: 0.25rem 0.65rem; border-radius: 1rem; font-size: 0.72rem; font-weight: 800;">
+        ${badgeLabel}
+       </span>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #64748b; margin-bottom: 1rem;">
+       <div>${ds.date || new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</div>
+       <div style="color: #059669; font-weight: 700; display: flex; align-items: center; gap: 0.3rem;">
+        <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+        <span>${isAr ? 'مُحلل ومطابق' : 'Analyzed'}</span>
+       </div>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+       <!-- Top Row: Dashboard, Download (& Edit if Excel) -->
+       <div style="display: flex; gap: 0.4rem; align-items: center; width: 100%;">
+        <button onclick="selectDatasetAndOpenDash('${ds.id || index}')" class="btn-action-dash" style="flex: 1;">
+         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+         <span>${isAr ? 'لوحة المؤشرات' : 'Dashboard'}</span>
+        </button>
+
+        <button onclick="downloadDatasetFile('${ds.id || index}', '${fileName}')" class="btn-action-download" style="flex: 1;" title="${isAr ? 'تنزيل الملف' : 'Download File'}">
+         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+         </svg>
+         <span>${isAr ? 'تنزيل' : 'Download'}</span>
+        </button>
+
+        ${isExcel ? `
+         <button onclick="openEditExcelModal('${ds.id || index}')" class="btn-action-edit" style="flex: 1;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          <span>${isAr ? 'تعديل البيانات' : 'Edit Data'}</span>
+         </button>
+        ` : ''}
+       </div>
+
+       <!-- Bottom Row: Centered Delete Button -->
+       <div style="display: flex; justify-content: center; width: 100%;">
+        <button onclick="deleteDataset('${ds.id || index}', '${fileName}')" class="btn-action-delete" style="min-width: 130px; justify-content: center;" title="${isAr ? 'حذف الملف' : 'Delete'}">
+         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+         </svg>
+         <span>${isAr ? 'حذف' : 'Delete'}</span>
+        </button>
+       </div>
+      </div>
+     </div>
+    `;
+   }).join('');
+  }
+
+  function downloadDatasetFile(id, fileName) {
+   const isAr = (document.documentElement.getAttribute('lang') || 'ar') === 'ar';
+   const datasets = getDatasetsList();
+   const ds = datasets.find((d, idx) => (d.id === id || idx == id || d.fileName === fileName));
+
+   let content = "";
+   let mimeType = "text/csv;charset=utf-8;";
+   let downloadName = fileName || "dataset.csv";
+
+   if (ds && ds.csvContent) {
+    content = ds.csvContent;
+   } else if (ds && ds.rawContent) {
+    content = ds.rawContent;
+   } else {
+    const cleanName = (fileName || 'dataset').replace(/\.[^/.]+$/, "");
+    const totalRows = (ds && ds.total_rows) ? ds.total_rows : 1420;
+    const revSum = (ds && ds.kpis && ds.kpis[0] && ds.kpis[0].sum) ? ds.kpis[0].sum : 284500;
+    const avgVal = (ds && ds.kpis && ds.kpis[0] && ds.kpis[0].avg) ? ds.kpis[0].avg : 200;
+
+    if (downloadName.toLowerCase().endsWith('.pdf')) {
+     content = `%PDF-1.4 Data Export for ${cleanName}\n`;
+     content += `Dataset Name: ${fileName}\nTotal Records: ${totalRows}\nTotal Revenue: ${revSum}\nAverage Order: ${avgVal}\n\n`;
+     content += `Transaction ID, Date, Category, Amount (OMR), Status\n`;
+     content += `TXN-1001, 2026-08-01, Sales, ${avgVal}, Completed\n`;
+     content += `TXN-1002, 2026-08-02, Service, ${Math.round(avgVal * 1.5)}, Completed\n`;
+     content += `TXN-1003, 2026-08-03, Product, ${Math.round(avgVal * 0.8)}, Completed\n`;
+     content += `TXN-1004, 2026-08-04, Subscriptions, ${Math.round(avgVal * 2.2)}, Completed\n`;
+     mimeType = "text/plain;charset=utf-8;";
+    } else {
+     if (!downloadName.toLowerCase().endsWith('.csv') && !downloadName.toLowerCase().endsWith('.xlsx') && !downloadName.toLowerCase().endsWith('.xls')) {
+      downloadName += '.csv';
+     }
+     content = `ID,Date,Item_Category,Quantity,Unit_Price_OMR,Total_Sales_OMR,Payment_Method,Status\n`;
+     content += `1,2026-08-15,Pest Control Service,5,45.00,225.00,Credit Card,Completed\n`;
+     content += `2,2026-08-16,Chemical Spray Package,12,30.00,360.00,Bank Transfer,Completed\n`;
+     content += `3,2026-08-16,Termite Inspection,3,80.00,240.00,Cash,Completed\n`;
+     content += `4,2026-08-17,Monthly Maintenance Contract,8,120.00,960.00,Corporate PO,Completed\n`;
+     content += `5,2026-08-17,Disinfection Treatment,15,25.00,375.00,Online Portal,Completed\n`;
+     content += `6,2026-08-18,Sanitation Assessment,4,55.00,220.00,Credit Card,Completed\n`;
+     content += `7,2026-08-18,Commercial Fogging,6,150.00,900.00,Bank Transfer,Completed\n`;
+    }
+   }
+
+   const blob = new Blob(["\uFEFF" + content], { type: mimeType });
+   const url = URL.createObjectURL(blob);
+   const a = document.createElement('a');
+   a.href = url;
+   a.download = downloadName;
+   document.body.appendChild(a);
+   a.click();
+   document.body.removeChild(a);
+   URL.revokeObjectURL(url);
+
+   if (typeof showToast === 'function') {
+    showToast(isAr ? `جاري تحميل الملف "${downloadName}"...` : `Downloading file "${downloadName}"...`);
+   }
+  }
+
+  function selectDatasetAndOpenDash(id) {
+   const datasets = getDatasetsList();
+   const ds = datasets.find((d, idx) => (d.id === id || idx == id));
+   if (ds) {
+    localStorage.setItem('basira_dataset', JSON.stringify(ds));
+   }
+   window.location.href = 'dashboard.html';
+  }
+
+  function deleteDataset(id, fileName) {
+   const isAr = (document.documentElement.getAttribute('lang') || 'ar') === 'ar';
+   const confirmMsg = isAr ? `هل أنت متأكد من حذف الملف "${fileName}" نهائياً من النظام؟` : `Are you sure you want to permanently delete "${fileName}"?`;
+   
+   if (confirm(confirmMsg)) {
+    let datasets = getDatasetsList();
+    datasets = datasets.filter((d, idx) => (d.id !== id && idx != id));
+    localStorage.setItem('baseera_datasets_list', JSON.stringify(datasets));
+    
+    if (datasets.length > 0) {
+     localStorage.setItem('basira_dataset', JSON.stringify(datasets[0]));
+    } else {
+     localStorage.removeItem('basira_dataset');
+    }
+
+    renderDatasets();
+    if (typeof showToast === 'function') {
+     showToast(isAr ? 'تم حذف الملف بنجاح' : 'Dataset deleted successfully');
+    }
+   }
+  }
+
+  // ---------- Excel Edit Modal Logic ----------
+  function openEditExcelModal(id) {
+   const datasets = getDatasetsList();
+   const ds = datasets.find((d, idx) => (d.id === id || idx == id));
+   if (!ds) return;
+
+   activeEditingDataset = ds;
+   const isAr = (document.documentElement.getAttribute('lang') || 'ar') === 'ar';
+   const modal = document.getElementById('editExcelModal');
+   const fileNameEl = document.getElementById('editModalFileName');
+   const rowsContainer = document.getElementById('editRowsContainer');
+
+   if (fileNameEl) fileNameEl.textContent = ds.fileName || 'Excel Dataset';
+   
+   // Default fields to edit
+   const revValue = (ds.kpis && ds.kpis[0] && ds.kpis[0].sum) ? ds.kpis[0].sum : 284500;
+   const ordersValue = ds.total_rows || 1420;
+
+   rowsContainer.innerHTML = `
+    <div>
+     <label style="font-size: 11.5px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">
+      ${isAr ? 'اسم ملف Excel:' : 'Excel File Name:'}
+     </label>
+     <input type="text" id="edit-filename-input" value="${ds.fileName || 'Sales_Data.xlsx'}" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 13px;" />
+    </div>
+
+    <div>
+     <label style="font-size: 11.5px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">
+      ${isAr ? 'إجمالي الإيرادات / المبيعات (Revenue):' : 'Total Revenue / Sales:'}
+     </label>
+     <input type="number" id="edit-revenue-input" value="${revValue}" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 13px;" />
+    </div>
+
+    <div>
+     <label style="font-size: 11.5px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">
+      ${isAr ? 'إجمالي عدد العمليات / الطلبات (Total Orders):' : 'Total Transactions / Orders:'}
+     </label>
+     <input type="number" id="edit-orders-input" value="${ordersValue}" style="width: 100%; box-sizing: border-box; padding: 8px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 13px;" />
+    </div>
+   `;
+
+   modal.classList.add('open');
+  }
+
+  function closeEditModal(e) {
+   document.getElementById('editExcelModal').classList.remove('open');
+  }
+
+  function saveExcelEdits() {
+   if (!activeEditingDataset) return;
+   const isAr = (document.documentElement.getAttribute('lang') || 'ar') === 'ar';
+   
+   const newName = document.getElementById('edit-filename-input').value.trim();
+   const newRev = parseFloat(document.getElementById('edit-revenue-input').value) || 0;
+   const newOrders = parseInt(document.getElementById('edit-orders-input').value) || 0;
+
+   if (newName) activeEditingDataset.fileName = newName;
+   activeEditingDataset.total_rows = newOrders;
+   if (!activeEditingDataset.kpis) activeEditingDataset.kpis = [{ title: 'Sales', sum: newRev, avg: Math.round(newRev / (newOrders || 1)) }];
+   else {
+    activeEditingDataset.kpis[0].sum = newRev;
+    activeEditingDataset.kpis[0].avg = Math.round(newRev / (newOrders || 1));
+   }
+
+   let datasets = getDatasetsList();
+   const idx = datasets.findIndex(d => (d.id === activeEditingDataset.id || d.fileName === activeEditingDataset.fileName));
+   if (idx !== -1) {
+    datasets[idx] = activeEditingDataset;
+   }
+   localStorage.setItem('baseera_datasets_list', JSON.stringify(datasets));
+   localStorage.setItem('basira_dataset', JSON.stringify(activeEditingDataset));
+
+   document.getElementById('editExcelModal').classList.remove('open');
+   renderDatasets();
+   
+   if (typeof showToast === 'function') {
+    showToast(isAr ? 'تم حفظ التعديلات بنجاح' : 'Excel data updated successfully');
+   }
+  }
+
+  document.addEventListener('DOMContentLoaded', renderDatasets);
+  document.addEventListener('langChanged', renderDatasets);
+ </script>
+</body>
+
+</html>

@@ -1,0 +1,365 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}مساحة عمل الوكلاء{% else %}Agents Workspace{% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen p-3 gap-3">
+    {% include 'dashboard/sidebar.html' with active_page='agents_workspace' %}
+
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        {% include 'dashboard/topbar.html' %}
+        
+        <!-- Main Workspace Area -->
+        <div class="flex-1 flex gap-3 h-[calc(100vh-80px)] overflow-hidden">
+            
+            <!-- Left Panel: Agents Roster -->
+            <div class="w-72 glass rounded-2xl p-6 flex flex-col gap-4 overflow-y-auto shadow-sm">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-white px-2">{% if trans.lang_code == 'ar' %}فريق بصيرة (Agents){% else %}Baseera Team{% endif %}</h2>
+                
+                <!-- Financial Agent -->
+                <button onclick="selectAgent('financial', 'أخضر زمردي', '#10b981', 'التحليل المالي')" class="agent-btn w-full text-start p-3 rounded-2xl hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-3 border border-transparent hover:border-emerald-200">
+                    <div class="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+                        <i data-lucide="trending-up" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}التحليل المالي{% else %}Financial Analyst{% endif %}</div>
+                        <div class="text-xs font-medium text-slate-400">@financial</div>
+                    </div>
+                </button>
+
+                <!-- Supply Chain Agent -->
+                <button onclick="selectAgent('supply_chain', 'أزرق ملكي', '#3b82f6', 'سلاسل الإمداد')" class="agent-btn w-full text-start p-3 rounded-2xl hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-3 border border-transparent hover:border-blue-200">
+                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+                        <i data-lucide="truck" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}سلاسل الإمداد والمخزون{% else %}Supply Chain{% endif %}</div>
+                        <div class="text-xs font-medium text-slate-400">@supply_chain</div>
+                    </div>
+                </button>
+
+                <!-- Pricing Agent -->
+                <button onclick="selectAgent('pricing', 'بنفسجي', '#8b5cf6', 'استراتيجية الهوامش')" class="agent-btn w-full text-start p-3 rounded-2xl hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-3 border border-transparent hover:border-purple-200">
+                    <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shadow-sm">
+                        <i data-lucide="tags" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}التسعير والهوامش{% else %}Pricing & Margins{% endif %}</div>
+                        <div class="text-xs font-medium text-slate-400">@pricing</div>
+                    </div>
+                </button>
+
+                <!-- Audit Agent -->
+                <button onclick="selectAgent('audit', 'سماوي', '#06b6d4', 'التدقيق الجنائي')" class="agent-btn w-full text-start p-3 rounded-2xl hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-3 border border-transparent hover:border-cyan-200">
+                    <div class="h-10 w-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 shadow-sm">
+                        <i data-lucide="shield-check" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}مكافحة الهدر{% else %}Forensic Audit{% endif %}</div>
+                        <div class="text-xs font-medium text-slate-400">@audit</div>
+                    </div>
+                </button>
+
+                <!-- Retention Agent -->
+                <button onclick="selectAgent('retention', 'وردي', '#f43f5e', 'استعادة العملاء')" class="agent-btn w-full text-start p-3 rounded-2xl hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-3 border border-transparent hover:border-rose-200">
+                    <div class="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 shadow-sm">
+                        <i data-lucide="heart-handshake" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}استعادة العملاء{% else %}Customer Retention{% endif %}</div>
+                        <div class="text-xs font-medium text-slate-400">@retention</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Center Panel: Dynamic Chat Window -->
+            <div class="flex-1 glass rounded-2xl flex flex-col overflow-hidden shadow-sm relative">
+                <!-- Chat Header -->
+                <div class="p-6 border-b border-white/40 dark:border-slate-800/50 flex justify-between items-center bg-white/30 dark:bg-slate-900/30">
+                    <div class="flex items-center gap-4">
+                        <div id="currentAgentIcon" class="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 shadow-sm transition-colors">
+                            <i data-lucide="bot" class="h-6 w-6"></i>
+                        </div>
+                        <div>
+                            <h3 id="currentAgentName" class="font-bold text-lg text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}مساحة العمل العامة{% else %}General Workspace{% endif %}</h3>
+                            <p id="currentAgentStatus" class="text-sm font-medium text-slate-400">{% if trans.lang_code == 'ar' %}اختر وكيلاً لتبدأ{% else %}Select an agent to begin{% endif %}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div id="chatMessages" class="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
+                    <!-- Welcome Message -->
+                    <div class="flex gap-4">
+                        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                            <i data-lucide="sparkles" class="h-5 w-5"></i>
+                        </div>
+                        <div class="bg-white/80 dark:bg-slate-800/80 rounded-2xl rounded-tl-none p-6 shadow-sm max-w-[85%]">
+                            <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                {% if trans.lang_code == 'ar' %}
+                                مرحباً! أنا المساعد التنفيذي. يمكنك التحدث معي بشكل عام، أو استدعاء أي من خبرائنا المتخصصين باستخدام الرمز <code class="font-sans font-bold">@</code> (مثال: <code class="font-sans font-bold">@financial ما هي نسبة الهدر؟</code>).
+                                {% else %}
+                                Hello! I'm your Executive Assistant. You can chat with me generally, or tag our specialized experts using <code class="font-sans font-bold">@</code> (e.g. <code class="font-sans font-bold">@financial what is the waste ratio?</code>).
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-6 bg-white/40 dark:bg-slate-900/40 border-t border-white/40 dark:border-slate-800/50">
+                    <form id="chatForm" onsubmit="sendMessage(event)" class="relative">
+                        <div class="relative flex items-center">
+                            <textarea id="chatInput" rows="1" placeholder="{% if trans.lang_code == 'ar' %}اكتب رسالتك هنا... استخدم @ لاستدعاء وكيل{% else %}Type here... use @ to tag an agent{% endif %}" class="w-full bg-white dark:bg-slate-800 border-none rounded-2xl pl-12 pr-14 py-4 text-sm font-medium shadow-sm focus:ring-2 focus:ring-indigo-500 resize-none overflow-hidden" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+                            <i data-lucide="at-sign" class="absolute left-4 top-4 h-5 w-5 text-slate-400"></i>
+                            <button type="submit" id="sendBtn" class="absolute right-2 bottom-2 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-2xl transition-colors shadow-sm disabled:opacity-50">
+                                <i data-lucide="send" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Panel: Live Mini-Dashboard Sync -->
+            <div class="w-80 glass rounded-2xl p-6 flex flex-col gap-6 overflow-y-auto shadow-sm hidden lg:flex">
+                <div class="flex items-center justify-between border-b border-slate-200/50 pb-4">
+                    <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <i data-lucide="activity" class="h-4 w-4 text-emerald-500"></i>
+                        {% if trans.lang_code == 'ar' %}مؤشرات حية{% else %}Live Sync{% endif %}
+                    </h3>
+                    <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                </div>
+                
+                <div id="liveKpis" class="flex flex-col gap-5">
+                    <div class="p-5 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+                        <div class="text-xs font-semibold text-slate-400 mb-2">{% if trans.lang_code == 'ar' %}تنبيهات الهدر النشطة{% else %}Active Waste Alerts{% endif %}</div>
+                        <div class="text-2xl font-bold text-slate-800 dark:text-white">0</div>
+                    </div>
+                    <div class="p-5 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+                        <div class="text-xs font-semibold text-slate-400 mb-2">{% if trans.lang_code == 'ar' %}التوصيات قيد الانتظار{% else %}Pending Approvals{% endif %}</div>
+                        <div class="text-2xl font-bold text-slate-800 dark:text-white">0</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    lucide.createIcons();
+    
+    let currentAgent = 'general';
+    let currentAgentColor = '#4f46e5'; // indigo
+    
+    // Auto-resize textarea
+    const tx = document.getElementById('chatInput');
+    tx.setAttribute('style', 'height:' + (tx.scrollHeight) + 'px;overflow-y:hidden;');
+    tx.addEventListener("input", OnInput, false);
+    function OnInput() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    }
+
+    function selectAgent(id, name, color, displayName) {
+        currentAgent = id;
+        currentAgentColor = color;
+        
+        // Update Header
+        document.getElementById('currentAgentName').innerText = displayName;
+        document.getElementById('currentAgentStatus').innerText = '{% if trans.lang_code == 'ar' %}متصل وجاهز{% else %}Online and ready{% endif %}';
+        
+        const iconContainer = document.getElementById('currentAgentIcon');
+        iconContainer.style.color = color;
+        iconContainer.style.backgroundColor = color + '20'; // 20% opacity
+        
+        // Update Input Placeholder
+        tx.placeholder = '{% if trans.lang_code == 'ar' %}تحدث مع {% else %}Chat with {% endif %}' + displayName + '...';
+        
+        // Visual feedback on buttons
+        document.querySelectorAll('.agent-btn').forEach(btn => {
+            btn.classList.remove('bg-white/80', 'dark:bg-slate-800/80', 'shadow-sm');
+        });
+        event.currentTarget.classList.add('bg-white/80', 'dark:bg-slate-800/80', 'shadow-sm');
+    }
+
+    function addMessageToUI(content, isUser, agentId='general', color='#4f46e5') {
+        const chatMessages = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex gap-4 ${isUser ? 'flex-row-reverse' : ''}`;
+        
+        const alignClass = isUser ? 'items-end' : 'items-start';
+        const roundedClass = isUser ? 'rounded-tr-none' : 'rounded-tl-none';
+        const bgClass = isUser ? 'bg-indigo-600 text-white' : 'bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300';
+        
+        // Render markdown-like elements simple for now
+        let htmlContent = content.replace(/\n/g, '<br>');
+        
+        // Custom UI Cards for Document Generation
+        if(htmlContent.includes('<file_proposal>')) {
+            htmlContent = `
+                <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-2xl mt-3 mb-3 shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center gap-2 mb-3 text-indigo-700 dark:text-indigo-400 font-bold">
+                        <i data-lucide="file-text" class="h-5 w-5"></i> مستند جاهز للاستعراض
+                    </div>
+                    <div class="text-sm font-medium mb-4 text-slate-600 dark:text-slate-400">بناءً على طلبك، قمت بإعداد المستند وتحويله لبطاقة استعراض لتسهيل قراءته.</div>
+                    <button class="w-full bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm border border-slate-200 dark:border-slate-700 text-sm">
+                        فتح واستعراض المستند
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Custom UI Cards for Approvals
+        if(htmlContent.includes('<approval_checkpoint>')) {
+             htmlContent = `
+                <div class="bg-white/50 dark:bg-slate-800/50 p-6 rounded-2xl mt-3 mb-3 shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center gap-2 mb-3 text-amber-600 font-bold">
+                        <i data-lucide="alert-circle" class="h-5 w-5"></i> قرار تنفيذي مطلوب
+                    </div>
+                    <div class="text-sm font-medium mb-5 text-slate-600 dark:text-slate-400">الوكيل يقترح إجراء تنفيذي وينتظر اعتمادك قبل اتخاذ أي خطوة.</div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl transition shadow-sm text-sm">موافقة وتنفيذ</button>
+                        <button class="flex-1 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold py-3 rounded-xl transition shadow-sm text-sm">تعديل</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        msgDiv.innerHTML = `
+            ${!isUser ? `
+            <div class="h-10 w-10 rounded-full flex items-center justify-center shrink-0 shadow-sm" style="background-color: ${color}20; color: ${color}">
+                <i data-lucide="bot" class="h-5 w-5"></i>
+            </div>
+            ` : ''}
+            <div class="rounded-2xl ${roundedClass} p-5 shadow-sm max-w-[85%] ${bgClass}">
+                <div class="text-sm font-medium leading-relaxed">${htmlContent}</div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(msgDiv);
+        lucide.createIcons();
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendMessage(e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if(!text) return;
+        
+        const btn = document.getElementById('sendBtn');
+        btn.disabled = true;
+        
+        // Parse @mentions to dynamically switch agent if mentioned
+        let targetAgent = currentAgent;
+        let targetColor = currentAgentColor;
+        
+        if (text.includes('@financial')) { targetAgent = 'financial'; targetColor = '#10b981'; }
+        else if (text.includes('@supply_chain')) { targetAgent = 'supply_chain'; targetColor = '#3b82f6'; }
+        else if (text.includes('@pricing')) { targetAgent = 'pricing'; targetColor = '#8b5cf6'; }
+        else if (text.includes('@audit')) { targetAgent = 'audit'; targetColor = '#06b6d4'; }
+        else if (text.includes('@retention')) { targetAgent = 'retention'; targetColor = '#f43f5e'; }
+
+        addMessageToUI(text, true);
+        input.value = '';
+        input.style.height = 'auto';
+        
+        // Create typing indicator
+        const typingId = 'typing-' + Date.now();
+        const chatMessages = document.getElementById('chatMessages');
+        const typingDiv = document.createElement('div');
+        typingDiv.id = typingId;
+        typingDiv.className = `flex gap-4 items-start`;
+        typingDiv.innerHTML = `
+            <div class="h-10 w-10 rounded-full flex items-center justify-center shrink-0 shadow-sm animate-pulse" style="background-color: ${targetColor}20; color: ${targetColor}">
+                <i data-lucide="bot" class="h-5 w-5"></i>
+            </div>
+            <div class="rounded-2xl rounded-tl-none p-5 shadow-sm bg-white/80 dark:bg-slate-800/80">
+                <div class="flex gap-1.5 h-5 items-center">
+                    <div class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style="animation-delay: 0.2s"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style="animation-delay: 0.4s"></div>
+                </div>
+            </div>
+        `;
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const response = await fetch('/api/dynamic-chat/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [{ role: 'user', content: text }],
+                    agent_id: targetAgent
+                })
+            });
+            
+            document.getElementById(typingId).remove();
+            
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullResponse = "";
+            let streamDiv = null;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.substring(6).trim();
+                        if (dataStr === '[DONE]') break;
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.type === 'text') {
+                                fullResponse += data.content;
+                                if (!streamDiv) {
+                                    // Create the container on first chunk
+                                    streamDiv = document.createElement('div');
+                                    streamDiv.className = `flex gap-4 items-start`;
+                                    streamDiv.innerHTML = `
+                                        <div class="h-10 w-10 rounded-full flex items-center justify-center shrink-0 shadow-sm" style="background-color: ${targetColor}20; color: ${targetColor}">
+                                            <i data-lucide="bot" class="h-5 w-5"></i>
+                                        </div>
+                                        <div class="rounded-2xl rounded-tl-none p-5 shadow-sm bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 max-w-[85%]">
+                                            <div class="text-sm font-medium leading-relaxed msg-content"></div>
+                                        </div>
+                                    `;
+                                    chatMessages.appendChild(streamDiv);
+                                }
+                                
+                                // Render markdown simplisticly for now
+                                let formattedResponse = fullResponse.replace(/\\n/g, '<br>');
+                                
+                                // Parse internal tags to avoid showing them to user
+                                if (formattedResponse.includes('<internal_simulation>')) {
+                                    formattedResponse = formattedResponse.replace(/<internal_simulation>[\s\S]*?(<\/internal_simulation>|$)/g, '<div class="text-xs text-slate-400 mb-3 border-r-2 border-slate-300 pr-3 font-medium">يقوم الوكيل بتحليل البيانات وبناء التوصية...</div>');
+                                }
+                                
+                                streamDiv.querySelector('.msg-content').innerHTML = formattedResponse;
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            }
+                        } catch (e) { console.error('Error parsing chunk:', e); }
+                    }
+                }
+            }
+            
+            // Re-render final message properly to catch tags
+            if (streamDiv) {
+                 streamDiv.remove();
+                 addMessageToUI(fullResponse, false, targetAgent, targetColor);
+            }
+            
+        } catch (error) {
+            document.getElementById(typingId)?.remove();
+            addMessageToUI("{% if trans.lang_code == 'ar' %}عذراً، حدث خطأ في الاتصال بالوكيل.{% else %}Error connecting to agent.{% endif %}", false, 'general', '#ef4444');
+        }
+        
+        btn.disabled = false;
+        input.focus();
+    }
+</script>
+{% endblock %}

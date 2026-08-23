@@ -1,0 +1,5 @@
+2026-08-21 06:10:22.441 +04:00 [WRN] Init called with an empty string as the DSN. Sentry SDK will be disabled.
+2026-08-21 06:10:22.952 +04:00 [INF] Now listening on: http://localhost:5000
+2026-08-21 06:10:22.954 +04:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-21 06:10:22.955 +04:00 [INF] Hosting environment: Development
+2026-08-21 06:10:22.955 +04:00 [INF] Content root path: C:\Users\USER\Desktop\baseerafinal2\backend

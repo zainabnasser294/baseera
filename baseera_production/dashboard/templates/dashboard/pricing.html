@@ -1,0 +1,185 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}باقات الاشتراكات والترقية | بصيرة{% else %}Subscriptions & Pricing | Baseera{% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen p-3 gap-3">
+    {% include 'dashboard/sidebar.html' with active_page='pricing' %}
+
+    <main class="flex-1 flex flex-col gap-4 min-w-0 text-{{ trans.align }}">
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Clean Page Header -->
+        <section class="rounded-3xl glass px-6 py-5 flex items-center justify-between flex-wrap gap-4 animate-fade-up">
+            <div class="flex items-center gap-3">
+                <div class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[var(--nile)] to-[var(--glow)] text-white shadow-md shadow-indigo-500/20">
+                    <i data-lucide="zap" class="h-5 w-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black text-ink">{% if trans.lang_code == 'ar' %}الترقية وباقات الاشتراك{% else %}Upgrade & Subscription Plans{% endif %}</h1>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">{% if trans.lang_code == 'ar' %}اختر الباقة الأنسب لاحتياجات ونمو مشروعك.{% else %}Choose the best plan for your business needs.{% endif %}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center gap-1.5">
+                    <i data-lucide="check-circle" class="h-3.5 w-3.5"></i>
+                    {% if trans.lang_code == 'ar' %}تجربة مجانية 14 يوماً{% else %}14-Day Free Trial{% endif %}
+                </span>
+            </div>
+        </section>
+
+        <!-- Pricing Cards Section -->
+        <section class="flex-1 rounded-3xl glass-strong p-6 sm:p-8 animate-fade-up" style="animation-delay: 80ms;">
+            <div class="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto items-stretch my-auto">
+                
+                <!-- 1. Free Trial Card -->
+                <div class="card rounded-3xl p-6 glass shadow-sm flex flex-col justify-between border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{% if trans.lang_code == 'ar' %}التجربة المجانية{% else %}Free Trial{% endif %}</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold">14 {% if trans.lang_code == 'ar' %}يوماً{% else %}Days{% endif %}</span>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="text-3xl font-black text-ink">0 <span class="text-sm text-slate-500 font-bold">{% if trans.lang_code == 'ar' %}ر.ع.{% else %}OMR{% endif %}</span></h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">{% if trans.lang_code == 'ar' %}استكشاف المنصة وتجربة الذكاء الاصطناعي.{% else %}Explore the platform and try AI features.{% endif %}</p>
+                        </div>
+
+                        <div class="h-px bg-slate-200/60 dark:bg-slate-800 my-4"></div>
+
+                        <ul class="space-y-3 mb-6 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300">
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}فترة تجريبية مجانية لمدة 14 يوماً{% else %}14-day free trial period{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}رفع وتحليل حتى 3 ملفات بيانات{% else %}Upload & analyze up to 3 files{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}محادثة أساسية مع المساعد "اسأل بصيرة"{% else %}Basic AI chat with Ask Basira{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}لوحة تحكم تفاعلية ومؤشرات الأداء{% else %}Interactive Dashboard & KPIs{% endif %}</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-200/50 dark:border-slate-800">
+                        <button disabled class="w-full rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-3 text-xs sm:text-sm font-bold text-center cursor-default">
+                            {% if trans.lang_code == 'ar' %}الخطة الحالية (فترة تجريبية){% else %}Current Active Plan{% endif %}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Starter Plan (7 OMR) -->
+                <div class="card rounded-3xl p-6 glass shadow-sm flex flex-col justify-between border-2 border-transparent hover:border-[var(--glow)]/50 transition relative">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-extrabold text-[var(--glow)] uppercase tracking-wider">{% if trans.lang_code == 'ar' %}باقة البداية (Starter){% else %}Starter Plan{% endif %}</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-[var(--glow)]/10 text-[var(--glow)] text-[11px] font-bold">{% if trans.lang_code == 'ar' %}مشاريع صغيرة{% else %}Small Business{% endif %}</span>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="text-3xl font-black text-ink">7 <span class="text-sm text-slate-500 font-bold">{% if trans.lang_code == 'ar' %}ر.ع. / شهر{% else %}OMR / month{% endif %}</span></h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">{% if trans.lang_code == 'ar' %}مخصصة للمشاريع والشركات الصغيرة.{% else %}Designed for small businesses with basic needs.{% endif %}</p>
+                        </div>
+
+                        <div class="h-px bg-slate-200/60 dark:bg-slate-800 my-4"></div>
+
+                        <ul class="space-y-3 mb-6 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300">
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}استفسارات ذكاء اصطناعي وتحليل مبيعات منتظم{% else %}Regular AI queries & sales analysis{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}رفع ملفات Excel و CSV وكشوف الحسابات{% else %}Excel, CSV & statement uploads{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}متابعة أهداف المبيعات الشهرية ونسب الإنجاز{% else %}Monthly sales goal tracking{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check" class="h-4 w-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تصدير تقارير ورسوم بيانية شهرية{% else %}Export monthly charts & reports{% endif %}</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-200/50 dark:border-slate-800">
+                        <form method="POST" action="{% url 'process_payment' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="plan" value="Starter">
+                            <input type="hidden" name="amount" value="7 OMR">
+                            <button type="submit" class="w-full rounded-2xl bg-white/80 dark:bg-slate-800 hover:bg-[var(--glow)] hover:text-white text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 py-3 text-xs sm:text-sm font-extrabold shadow-sm hover:shadow-md transition duration-200">
+                                {% if trans.lang_code == 'ar' %}اختيار باقة البداية (7 ر.ع.){% else %}Choose Starter (7 OMR){% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 3. Growth Plan (20 OMR) - Featured -->
+                <div class="card rounded-3xl p-6 glass-strong shadow-xl flex flex-col justify-between border-2 border-[var(--glow)] relative transform md:-translate-y-2 hover:-translate-y-3 transition duration-300">
+                    <div class="absolute -top-3.5 right-1/2 translate-x-1/2 bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-[10px] font-black uppercase tracking-widest py-1 px-4 rounded-full shadow-md">
+                        {% if trans.lang_code == 'ar' %}الأكثر طلباً والأعلى قيمة{% else %}Most Popular & Best Value{% endif %}
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-4 mt-2">
+                            <span class="text-xs font-black text-[var(--glow)] uppercase tracking-wider">{% if trans.lang_code == 'ar' %}باقة النمو (Growth){% else %}Growth Plan{% endif %}</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[11px] font-extrabold">{% if trans.lang_code == 'ar' %}شاملة كلياً{% else %}All-Inclusive{% endif %}</span>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="text-3xl sm:text-4xl font-black text-ink">20 <span class="text-sm text-slate-500 font-bold">{% if trans.lang_code == 'ar' %}ر.ع. / شهر{% else %}OMR / month{% endif %}</span></h3>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium mt-1">{% if trans.lang_code == 'ar' %}تحليلات غير محدودة وقدرات متقدمة للنمو.{% else %}Unlimited analysis & advanced insights.{% endif %}</p>
+                        </div>
+
+                        <div class="h-px bg-slate-200/60 dark:bg-slate-800 my-4"></div>
+
+                        <ul class="space-y-3 mb-6 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
+                            <li class="flex items-start gap-2.5 font-bold">
+                                <i data-lucide="check-circle-2" class="h-4 w-4 text-[var(--glow)] shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}رفع وتحليل غير محدود للبيانات والملفات{% else %}Unlimited data uploads & analysis{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5 font-bold">
+                                <i data-lucide="check-circle-2" class="h-4 w-4 text-[var(--glow)] shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}غرفة إدارة وكلاء الذكاء الاصطناعي (AI Boardroom){% else %}Full Access to AI Boardroom{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check-circle-2" class="h-4 w-4 text-[var(--glow)] shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تحليلات تنبؤية وتوقعات نمو المبيعات والأرباح{% else %}Predictive sales & profit forecasts{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check-circle-2" class="h-4 w-4 text-[var(--glow)] shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنبيهات استباقية لكشف الهدر وفرص الربحية{% else %}Proactive waste & opportunity alerts{% endif %}</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i data-lucide="check-circle-2" class="h-4 w-4 text-[var(--glow)] shrink-0 mt-0.5"></i>
+                                <span>{% if trans.lang_code == 'ar' %}أولوية في سرعة المعالجة والتقارير التنفيذية{% else %}Priority processing & executive reports{% endif %}</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-200/50 dark:border-slate-800">
+                        <form method="POST" action="{% url 'process_payment' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="plan" value="Growth">
+                            <input type="hidden" name="amount" value="20 OMR">
+                            <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] hover:opacity-95 text-white py-3.5 text-xs sm:text-sm font-black shadow-lg shadow-indigo-500/25 transition duration-200 flex items-center justify-center gap-2">
+                                <i data-lucide="zap" class="h-4 w-4"></i>
+                                <span>{% if trans.lang_code == 'ar' %}اشترك في باقة النمو (20 ر.ع.){% else %}Subscribe to Growth (20 OMR){% endif %}</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+</div>
+{% endblock %}

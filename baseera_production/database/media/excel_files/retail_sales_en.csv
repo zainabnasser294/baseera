@@ -1,0 +1,101 @@
+﻿Purchase Date,Product,Quantity,Unit Price,Total,Department
+2023-10-12,Milk,1,0.516,0.516,Grocery
+2023-04-29,Detergents,13,4.049,52.637,Grocery
+2023-06-22,Vegetables,2,4.952,9.904,Grocery
+2023-07-07,Juices,17,3.723,63.291,Grocery
+2023-08-02,Milk,15,5.571,83.565,Grocery
+2023-08-17,Rice,2,4.552,9.104,Grocery
+2023-07-08,Meat,10,8.825,88.25,Meat
+2023-11-01,Juices,4,4.57,18.28,Grocery
+2023-12-04,Fruits,13,4.538,58.994,Grocery
+2023-08-31,Meat,12,4.01,48.12,Meat
+2023-05-28,Bread,16,6.136,98.176,Bakery
+2023-01-21,Milk,9,2.145,19.305,Grocery
+2023-03-11,Fruits,19,5.46,103.74,Grocery
+2023-12-28,Canned Goods,8,8.919,71.352,Grocery
+2023-01-06,Fruits,1,2.103,2.103,Grocery
+2023-04-30,Detergents,12,10.225,122.7,Grocery
+2023-07-06,Milk,16,11.686,186.976,Grocery
+2023-10-08,Bread,19,7.571,143.849,Bakery
+2023-12-15,Bread,15,3.923,58.845,Bakery
+2023-01-04,Bread,6,11.597,69.582,Bakery
+2023-08-04,Meat,4,6.273,25.092,Meat
+2023-01-31,Canned Goods,16,9.956,159.296,Grocery
+2023-09-19,Fruits,9,10.178,91.602,Grocery
+2023-12-11,Milk,12,3.266,39.192,Grocery
+2023-05-10,Meat,1,8.279,8.279,Meat
+2023-03-08,Vegetables,1,7.576,7.576,Grocery
+2023-08-12,Bread,6,8.329,49.974,Bakery
+2023-04-28,Juices,8,2.837,22.696,Grocery
+2023-06-06,Milk,7,11.14,77.98,Grocery
+2023-12-04,Rice,7,3.287,23.009,Grocery
+2023-07-19,Meat,3,5.736,17.208,Meat
+2023-10-25,Canned Goods,18,6.935,124.83,Grocery
+2023-01-23,Detergents,20,8.327,166.54,Grocery
+2023-11-25,Milk,8,0.522,4.176,Grocery
+2023-06-29,Detergents,8,6.196,49.568,Grocery
+2023-12-03,Rice,10,9.515,95.15,Grocery
+2023-09-07,Chicken,6,2.612,15.672,Meat
+2023-12-05,Milk,3,2.641,7.923,Grocery
+2023-08-21,Meat,20,10.558,211.16,Meat
+2023-03-26,Milk,13,4.918,63.934,Grocery
+2023-08-28,Fruits,10,3.826,38.26,Grocery
+2023-06-25,Canned Goods,17,10.164,172.788,Grocery
+2023-03-24,Canned Goods,15,5.399,80.985,Grocery
+2023-05-02,Detergents,14,3.506,49.084,Grocery
+2023-10-29,Fruits,13,3.993,51.909,Grocery
+2023-09-03,Canned Goods,10,3.136,31.36,Grocery
+2023-01-17,Bread,15,10.036,150.54,Bakery
+2023-04-10,Rice,8,11.483,91.864,Grocery
+2023-08-25,Detergents,1,0.585,0.585,Grocery
+2023-10-21,Juices,4,5.316,21.264,Grocery
+2023-03-17,Chicken,14,9.088,127.232,Meat
+2023-10-29,Vegetables,1,11.036,11.036,Grocery
+2023-04-04,Meat,18,5.077,91.386,Meat
+2023-03-30,Canned Goods,14,1.536,21.504,Grocery
+2023-11-28,Milk,11,7.965,87.615,Grocery
+2023-05-18,Vegetables,6,10.702,64.212,Grocery
+2023-06-29,Chicken,11,7.42,81.62,Meat
+2023-11-25,Fruits,20,1.35,27.0,Grocery
+2023-12-23,Fruits,13,6.004,78.052,Grocery
+2023-05-02,Chicken,2,1.51,3.02,Meat
+2023-01-13,Bread,18,6.814,122.652,Bakery
+2023-02-08,Detergents,12,2.992,35.904,Grocery
+2023-06-05,Milk,4,2.451,9.804,Grocery
+2023-07-23,Chicken,11,8.983,98.813,Meat
+2023-07-02,Vegetables,4,8.281,33.124,Grocery
+2023-09-14,Canned Goods,10,3.308,33.08,Grocery
+2023-12-31,Detergents,4,8.822,35.288,Grocery
+2023-03-30,Bread,17,5.957,101.269,Bakery
+2023-02-18,Fruits,17,2.647,44.999,Grocery
+2023-01-07,Chicken,20,11.32,226.4,Meat
+2023-06-07,Fruits,19,6.195,117.705,Grocery
+2023-12-14,Bread,19,8.16,155.04,Bakery
+2023-09-15,Detergents,7,4.102,28.714,Grocery
+2023-03-11,Canned Goods,8,1.636,13.088,Grocery
+2023-04-11,Canned Goods,11,6.597,72.567,Grocery
+2023-12-25,Juices,14,2.206,30.884,Grocery
+2023-08-31,Meat,13,7.965,103.545,Meat
+2023-06-06,Detergents,12,4.387,52.644,Grocery
+2023-07-30,Canned Goods,4,7.339,29.356,Grocery
+2023-01-02,Milk,6,5.308,31.848,Grocery
+2023-01-30,Meat,11,6.061,66.671,Meat
+2023-12-16,Chicken,18,5.298,95.364,Meat
+2023-04-20,Detergents,19,8.641,164.179,Grocery
+2023-12-24,Juices,19,7.417,140.923,Grocery
+2023-02-08,Detergents,11,0.946,10.406,Grocery
+2023-01-04,Detergents,19,5.48,104.12,Grocery
+2023-02-23,Fruits,4,9.748,38.992,Grocery
+2023-11-28,Vegetables,12,11.03,132.36,Grocery
+2023-02-26,Milk,20,8.201,164.02,Grocery
+2023-07-25,Milk,19,9.969,189.411,Grocery
+2023-07-28,Juices,17,2.65,45.05,Grocery
+2023-03-28,Vegetables,4,1.846,7.384,Grocery
+2023-03-11,Canned Goods,8,3.028,24.224,Grocery
+2023-06-15,Chicken,14,9.57,133.98,Meat
+2023-01-21,Chicken,14,2.159,30.226,Meat
+2023-04-06,Milk,3,4.882,14.646,Grocery
+2023-01-20,Milk,9,3.702,33.318,Grocery
+2023-05-08,Meat,3,7.664,22.992,Meat
+2023-04-23,Detergents,15,4.138,62.07,Grocery
+2023-02-18,Bread,9,0.566,5.094,Bakery

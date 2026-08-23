@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Turn Spreadsheets into Intelligent Decisions</title>
+<link rel="stylesheet" href="styles.css">
+<script>(function(){var t=localStorage.getItem("baseera-theme")||"light";document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("baseera-lang")||"en";document.documentElement.setAttribute("lang",l);document.documentElement.setAttribute("dir",l==="ar"?"rtl":"ltr");})();</script>
+<script>
+ window.BASEERA_TRANSLATIONS = {
+  apphomeHeading: {
+   en: 'Turn Spreadsheets into <span class="accent-text">intelligent decisions.</span>',
+   ar: 'حوّل جداول البيانات إلى <span class="accent-text">قرارات ذكية.</span>'
+  },
+  signInBtn: { en: 'Sign In', ar: 'تسجيل الدخول' },
+  getStartedBtn: { en: 'Get Started &#8594;', ar: 'ابدأ الآن &#8592;' }
+ };
+</script>
+</head>
+<body>
+
+<div class="entry-shell">
+
+ <div class="floating-orb" style="width:36px; height:36px; top:60px; left:36px; background:#6fd6ff; opacity:0.5; animation-duration:7s;"></div>
+ <div class="floating-orb" style="width:56px; height:56px; top:44px; right:30px; background:#bcd9ff; opacity:0.6; animation-duration:9s;"></div>
+ <div class="floating-orb" style="width:70px; height:70px; bottom:230px; left:-20px; background:radial-gradient(circle at 35% 35%, #ffffff, #6fd6ff); opacity:0.9; animation-duration:8s;"></div>
+ <div class="floating-orb" style="width:46px; height:46px; bottom:250px; right:26px; background:#6fd6ff; opacity:0.5; animation-duration:6.5s;"></div>
+
+ <div class="apphome-center">
+  <h1 class="apphome-heading" data-i18n="apphomeHeading">Turn Spreadsheets into <span class="accent-text">intelligent decisions.</span></h1>
+ </div>
+
+ <div class="apphome-actions">
+  <button class="apphome-signin-btn" type="button" data-i18n="signInBtn" onclick="window.location.href='login.html'">Sign In</button>
+  <button class="apphome-getstarted-btn" type="button" data-i18n="getStartedBtn" onclick="window.location.href='register.html'">
+   Get Started <span>&#8594;</span>
+  </button>
+ </div>
+
+</div>
+
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+<script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const username = localStorage.getItem('basira_username');
+  if (username) {
+    window.location.href = 'dashboard.html';
+  }
+ });
+</script>
+</body>
+</html>

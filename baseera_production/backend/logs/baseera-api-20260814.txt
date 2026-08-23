@@ -1,0 +1,4 @@
+2026-08-14 17:20:51.993 +04:00 [INF] Now listening on: http://localhost:5000
+2026-08-14 17:20:52.046 +04:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-14 17:20:52.047 +04:00 [INF] Hosting environment: Development
+2026-08-14 17:20:52.047 +04:00 [INF] Content root path: C:\Users\saraa\Downloads\baseera\baseera - Copy 2\baseera - Copy\backend

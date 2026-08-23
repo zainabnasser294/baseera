@@ -1,0 +1,18 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+.env
+.env.*
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.DS_Store
+
+# Build outputs
+build/
+*.egg-info/

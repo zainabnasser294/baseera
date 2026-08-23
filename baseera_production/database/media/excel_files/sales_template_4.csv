@@ -1,0 +1,4 @@
+store_name,product_sku,transaction_date,quantity,unit_price
+Store A,SKU001,2024-01-01,10,100.00
+Store B,SKU002,2024-01-02,5,50.00
+Store A,SKU001,2024-01-03,20,100.00

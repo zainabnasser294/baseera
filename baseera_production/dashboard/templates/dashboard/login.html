@@ -1,0 +1,189 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{{ trans.login_link }} — {{ trans.brand }}{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+    }
+    .animate-shake {
+        animation: shake 0.4s ease-in-out;
+    }
+    input::-ms-reveal,
+    input::-ms-clear,
+    input::-webkit-contacts-auto-fill-button,
+    input::-webkit-credentials-auto-fill-button {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+</style>
+
+<div class="{% if trans.lang_code == 'ar' %}font-['Tajawal']{% endif %} relative flex min-h-screen items-center justify-center px-4 py-14 text-{{ trans.align }} bg-[radial-gradient(circle_at_50%_30%,_#e2e1f5_0%,_#D0CFEC_100%)] dark:bg-[radial-gradient(circle_at_50%_30%,_#0f172a_0%,_#020617_100%)]">
+    
+    <!-- Theme Toggle -->
+    <button id="themeToggle" class="absolute top-6 {% if trans.lang_code == 'ar' %}left-6{% else %}right-6{% endif %} p-3 rounded-full bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/80 dark:border-white/10 shadow-sm hover:scale-110 transition-all z-50">
+        <svg id="themeIcon" class="h-5 w-5 text-slate-700 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </button>
+
+    <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div class="absolute -left-32 -top-32 h-[40rem] w-[40rem] rounded-full bg-[#181C80]/10 blur-[120px] animate-pulse [animation-duration:8s]"></div>
+        <div class="absolute -right-32 -bottom-32 h-[40rem] w-[40rem] rounded-full bg-[#181C80]/15 blur-[120px] animate-pulse [animation-duration:10s]"></div>
+    </div>
+
+    <!-- Glassmorphic Card -->
+    <div id="loginCard" class="w-full max-w-md animate-fade-up rounded-[2.5rem] p-10 backdrop-blur-2xl border transition-all duration-300 bg-white/75 dark:bg-slate-900/80 border-white/80 dark:border-slate-700/50 shadow-[0_20px_50px_rgba(24,28,128,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        
+        <a href="{% url 'welcome' %}" class="flex items-center justify-center gap-3 mb-4 hover:scale-105 transition-transform duration-300 animate-fade-up" style="animation-delay: 50ms;">
+            <div class="p-2 rounded-2xl bg-white/80 dark:bg-white/10 shadow-sm border border-white/80 dark:border-white/5 backdrop-blur-md">
+                <img src="{% static 'dashboard/img/logo.png' %}" alt="Basira Logo" class="h-10 w-auto object-contain">
+            </div>
+            <span class="text-3xl font-extrabold tracking-tight text-[#181C80] dark:text-white">{% if trans.lang_code == 'ar' %}بصيرة{% else %}Baseera{% endif %}</span>
+        </a>
+
+        <div class="text-center animate-fade-up" style="animation-delay: 100ms;">
+            <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-[#181C80] dark:text-white">{{ trans.login_title }}</h1>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">{{ trans.login_desc }}</p>
+        </div>
+
+        <form id="loginForm" method="POST" class="mt-8 space-y-5 animate-fade-up" style="animation-delay: 150ms;" onsubmit="return validateForm(event)">
+            {% csrf_token %}
+            
+            <!-- Username Input -->
+            <div class="relative group" id="userGroup">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <input type="text" id="username" name="username" required placeholder="{{ trans.username_lbl }}" oninput="checkInput(this, 'userCheck')"
+                    class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-12 text-right{% else %}pl-12 pr-12 text-left{% endif %} text-sm outline-none backdrop-blur-md transition-all placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-[#181C80] focus:shadow-[0_0_20px_rgba(24,28,128,0.15)] focus:ring-1 focus:ring-[#181C80]" />
+                <svg id="userCheck" class="field-icon field-icon-trailing text-emerald-500 opacity-0 transition-opacity scale-75" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+
+            <!-- Password Input -->
+            <div class="relative group" id="passGroup">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="11" width="14" height="9" rx="2"></rect>
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
+                </svg>
+                <input type="password" id="password" name="password" required placeholder="{{ trans.password_lbl }}" 
+                    class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-12 text-right{% else %}pl-12 pr-12 text-left{% endif %} text-sm outline-none backdrop-blur-md transition-all placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:border-[#181C80] focus:shadow-[0_0_20px_rgba(24,28,128,0.15)] focus:ring-1 focus:ring-[#181C80]" />
+                <button type="button" onclick="togglePassword()" class="field-icon-btn">
+                    <svg id="eyeIcon" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Remember me & Forgot Password -->
+            <div class="flex items-center justify-between text-xs pt-1">
+                <label class="flex items-center gap-2 text-slate-600 dark:text-slate-400 cursor-pointer hover:text-[#181C80] dark:hover:text-white transition-colors">
+                    <input type="checkbox" class="h-4 w-4 rounded-md border-white/60 bg-white/50 accent-[#181C80] cursor-pointer transition-all focus:ring-[#181C80]" checked />
+                    <span class="font-medium">{% if trans.lang_code == 'ar' %}تذكرني{% else %}Remember me{% endif %}</span>
+                </label>
+                <a href="{% url 'password_reset' %}" class="font-bold text-[#181C80] hover:underline transition-colors">{% if trans.lang_code == 'ar' %}هل نسيت كلمة المرور؟{% else %}Forgot password?{% endif %}</a>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" style="background: #181C80;" class="group relative inline-flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-bold text-white shadow-xl shadow-[#181C80]/30 transition-all duration-300 hover:bg-[#121564] hover:-translate-y-0.5 overflow-hidden">
+                <span class="relative flex items-center gap-2">
+                    {{ trans.login_btn }}
+                    {% if trans.lang_code == 'ar' %}
+                    <svg class="h-4 w-4 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    {% else %}
+                    <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    {% endif %}
+                </span>
+            </button>
+        </form>
+
+
+        <div class="mt-8 text-center text-sm text-slate-600 dark:text-slate-400 animate-fade-up" style="animation-delay: 300ms;">
+            {{ trans.no_account }} <a href="{% url 'register' %}" class="font-bold text-[#181C80] hover:underline transition-colors">{{ trans.register_now }}</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Theme Toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    
+    function updateThemeIcon() {
+        if (document.documentElement.classList.contains('dark')) {
+            themeIcon.setAttribute('data-lucide', 'sun');
+            themeIcon.classList.replace('text-slate-700', 'text-amber-400');
+        } else {
+            themeIcon.setAttribute('data-lucide', 'moon');
+            themeIcon.classList.replace('text-amber-400', 'text-slate-700');
+        }
+        lucide.createIcons();
+    }
+    
+    themeToggle.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        if (document.documentElement.classList.contains('dark')) {
+            localStorage.setItem('theme', 'dark');
+        } else {
+            localStorage.setItem('theme', 'light');
+        }
+        updateThemeIcon();
+    });
+    // Init icon on load
+    updateThemeIcon();
+
+    // Password Toggle
+    function togglePassword() {
+        const input = document.getElementById('password');
+        const icon = document.getElementById('eyeIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+        } else {
+            input.type = 'password';
+            icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+        }
+    }
+
+    // Input Validation (Checkmark)
+    function checkInput(input, checkId) {
+        const check = document.getElementById(checkId);
+        if (input.value.length > 2) {
+            check.classList.remove('opacity-0', 'scale-75');
+            check.classList.add('opacity-100', 'scale-100');
+        } else {
+            check.classList.add('opacity-0', 'scale-75');
+            check.classList.remove('opacity-100', 'scale-100');
+        }
+    }
+
+    // Form Shake Validation
+    function validateForm(e) {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+        const card = document.getElementById('loginCard');
+        
+        // Simulating error if empty (though 'required' attribute handles this usually, we can force shake)
+        if (!user || !pass) {
+            e.preventDefault();
+            card.classList.remove('animate-shake');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('animate-shake');
+            card.classList.add('border-rose-500', 'shadow-[0_0_30px_rgba(244,63,94,0.3)]');
+            setTimeout(() => {
+                card.classList.remove('border-rose-500', 'shadow-[0_0_30px_rgba(244,63,94,0.3)]');
+            }, 1000);
+            return false;
+        }
+        return true;
+    }
+</script>
+{% endblock %}

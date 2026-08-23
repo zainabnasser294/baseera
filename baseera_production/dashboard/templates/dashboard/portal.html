@@ -1,0 +1,398 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}مرحباً بك في بصيرة — ابدأ رحلتك{% else %}Welcome to Basira — Get Started{% endif %}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center p-4 min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100/60 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div class="w-full max-w-xl">
+
+        <!-- Card -->
+        <div class="glass rounded-3xl p-8 animate-fade-up shadow-xl shadow-slate-900/10 border border-white/80 dark:border-slate-800" style="animation-delay: 80ms;">
+
+            <!-- Header -->
+            <div class="text-center mb-7">
+                <div class="mx-auto mb-4 h-16 w-16 rounded-2xl overflow-hidden shadow-lg shadow-indigo-500/20"
+                    style="animation: pop .5s cubic-bezier(.34,1.56,.64,1) both; animation-delay: 200ms;">
+                    <img src="{% static 'dashboard/img/logo.png' %}" alt="Basira Logo" class="h-full w-full object-contain" />
+                </div>
+                <!-- Progress dots -->
+                <div class="flex items-center justify-center gap-2 mb-4">
+                    <div class="h-2 w-2 rounded-full bg-[var(--nile)]"></div>
+                    <div class="h-2 w-2 rounded-full bg-[var(--nile)]"></div>
+                    <div class="h-2 w-2 rounded-full bg-[var(--glow)]/40"></div>
+                </div>
+                <h1 class="text-xl font-extrabold text-slate-800 dark:text-white mb-1.5">
+                    {% if trans.lang_code == 'ar' %}
+                        مساحة العمل جاهزة
+                    {% else %}
+                        Workspace Created
+                    {% endif %}
+                </h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                    {% if trans.lang_code == 'ar' %}
+                        مرحباً بك{% if user.is_authenticated %}، {{ user.username }}{% endif %}. اختر مصدر بياناتك المالية لتبدأ التحليل الفوري.
+                    {% else %}
+                        Welcome{% if user.is_authenticated %}, {{ user.username }}{% endif %}. Choose your financial data source to start instant analysis.
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Verified Row -->
+            <div class="flex items-center gap-3 rounded-2xl bg-white/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 px-4 py-3 mb-5">
+                <div class="h-8 w-8 shrink-0 rounded-full bg-emerald-100 dark:bg-emerald-900/50 grid place-items-center">
+                    <i data-lucide="check" class="h-4 w-4 text-emerald-600"></i>
+                </div>
+                <div class="text-{{ trans.align }}">
+                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200">{% if trans.lang_code == 'ar' %}تم التحقق من الحساب{% else %}Account verified{% endif %}</p>
+                    <p class="text-xs text-slate-400">{% if user.is_authenticated %}{{ user.email }}{% else %}you@company.om{% endif %}</p>
+                </div>
+            </div>
+
+            <!-- Template Download Card -->
+            <div class="flex items-center gap-3 rounded-2xl bg-white/70 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-600 px-4 py-3 mb-4">
+                <div class="h-8 w-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-700 grid place-items-center">
+                    <i data-lucide="file-down" class="h-4 w-4 text-slate-500 dark:text-slate-300"></i>
+                </div>
+                <div class="flex-1 text-{{ trans.align }}">
+                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200">{% if trans.lang_code == 'ar' %}نموذج بصيرة الجاهز{% else %}Basira Ready Template{% endif %}</p>
+                    <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}حمّل النموذج، عبّئ بياناتك، ثم ارفعه هنا{% else %}Download, fill your data, then upload it here{% endif %}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a href="{% static 'dashboard/templates/basira_template.xlsx' %}" download="نموذج_بصيرة.xlsx"
+                       class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition">
+                        <i data-lucide="file-spreadsheet" class="h-3.5 w-3.5"></i>
+                        Excel
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success Banner -->
+            <div id="successBanner" class="hidden mb-5 flex items-center gap-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-800 px-4 py-3">
+                <div class="h-8 w-8 shrink-0 rounded-full bg-indigo-100 dark:bg-indigo-900 grid place-items-center animate-spin">
+                    <i data-lucide="loader" class="h-4 w-4 text-indigo-600"></i>
+                </div>
+                <p class="text-xs font-semibold text-indigo-700 dark:text-indigo-300" id="successBannerText">
+                    {% if trans.lang_code == 'ar' %}جاري معالجة البيانات...{% else %}Processing data...{% endif %}
+                </p>
+            </div>
+
+            <!-- Section Label -->
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 {% if trans.lang_code == 'ar' %}text-right{% else %}text-left{% endif %}">
+                {% if trans.lang_code == 'ar' %}مصادر إدخال البيانات المالية{% else %}Financial Data Input Sources{% endif %}
+            </p>
+
+            <!-- Options Dropdown Component -->
+            <div class="space-y-2.5 mb-6">
+                <!-- Dropdown Wrapper -->
+                <div class="relative" id="dataSourceDropdownWrapper">
+                    
+                    <!-- Collapsed Trigger Button -->
+                    <button type="button" id="dataSourceDropdownTrigger" 
+                            onclick="toggleDataSourceDropdown()" 
+                            class="w-full flex items-center gap-3 rounded-2xl bg-white/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700 px-4 py-3 text-{{ trans.align }} hover:border-[var(--glow)]/50 hover:bg-white dark:hover:bg-slate-800 transition-all duration-200 shadow-sm cursor-pointer group">
+                        
+                        <!-- Icon Container -->
+                        <div id="selectedOptionIcon" class="h-8 w-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-700 grid place-items-center transition-all">
+                            <i data-lucide="layers" class="h-4 w-4 text-slate-600 dark:text-slate-300 group-hover:text-[var(--glow)] transition"></i>
+                        </div>
+                        
+                        <!-- Text Container -->
+                        <div class="flex-1 text-{{ trans.align }} overflow-hidden">
+                            <p id="selectedOptionTitle" class="text-sm font-semibold text-slate-800 dark:text-white truncate">
+                                {% if trans.lang_code == 'ar' %}اختر مصدر البيانات المالية{% else %}Choose Financial Data Source{% endif %}
+                            </p>
+                            <p id="selectedOptionSubtext" class="text-xs text-slate-400 truncate">
+                                {% if trans.lang_code == 'ar' %}انقر لعرض مصادر الإدخال المتاحة{% else %}Click to view available data sources{% endif %}
+                            </p>
+                        </div>
+                        
+                        <!-- Dropdown Chevron Arrow -->
+                        <i id="dropdownChevron" data-lucide="chevron-down" class="h-4 w-4 text-slate-400 group-hover:text-[var(--glow)] transition-transform duration-300 shrink-0"></i>
+                    </button>
+
+                    <!-- Hidden Forms for file inputs -->
+                    <form method="POST" enctype="multipart/form-data" id="salesForm">
+                        {% csrf_token %}
+                        <input type="file" name="excel_file" accept=".xlsx,.xls,.csv,.txt,image/*" class="hidden" id="salesInput"
+                            data-msg="{% if trans.lang_code == 'ar' %}جاري تحليل ملف المبيعات...{% else %}Analyzing sales file...{% endif %}"
+                            onchange="handleFileUpload(this, 'salesForm', this.dataset.msg)" />
+                    </form>
+                    <form method="POST" enctype="multipart/form-data" id="bankForm">
+                        {% csrf_token %}
+                        <input type="file" name="excel_file" accept=".pdf,.csv,.xlsx,.xls,.txt,image/*" class="hidden" id="bankInput"
+                            data-msg="{% if trans.lang_code == 'ar' %}جاري قراءة كشف الحساب...{% else %}Reading bank statement...{% endif %}"
+                            onchange="handleFileUpload(this, 'bankForm', this.dataset.msg)" />
+                    </form>
+
+                    <!-- Expanded Dropdown Menu List -->
+                    <div id="dataSourceDropdownMenu" 
+                         class="hidden overflow-hidden transition-all duration-300 ease-in-out mt-2 space-y-1.5 rounded-2xl bg-white/95 dark:bg-slate-800/95 border border-slate-200/90 dark:border-slate-700 p-2 shadow-xl backdrop-blur-md z-30 relative">
+                        
+                        <!-- Option 1: Excel/CSV/TXT -->
+                        <div class="data-option flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-100/80 dark:hover:bg-slate-700/60 transition-all duration-150 cursor-pointer group"
+                             onclick="selectDataSource('salesInput', '{% if trans.lang_code == 'ar' %}رفع ملف بيانات / نصوص (Excel/CSV/TXT){% else %}Upload Data/Text (Excel/CSV/TXT){% endif %}', '{% if trans.lang_code == 'ar' %}مبيعات، مصاريف، ملاحظات مبعثرة{% else %}Sales, expenses, or scattered notes{% endif %}', 'upload')">
+                            <div class="h-8 w-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-700 grid place-items-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/50 transition">
+                                <i data-lucide="upload" class="h-4 w-4 text-slate-600 dark:text-slate-300 group-hover:text-[var(--glow)] transition"></i>
+                            </div>
+                            <div class="flex-1 text-{{ trans.align }}">
+                                <p class="text-sm font-semibold text-slate-800 dark:text-white group-hover:text-[var(--glow)] transition">{% if trans.lang_code == 'ar' %}رفع ملف بيانات / نصوص (Excel/CSV/TXT){% else %}Upload Data/Text (Excel/CSV/TXT){% endif %}</p>
+                                <p class="text-xs text-slate-400 mt-0.5">{% if trans.lang_code == 'ar' %}مبيعات، مصاريف، ملاحظات مبعثرة{% else %}Sales, expenses, or scattered notes{% endif %}</p>
+                            </div>
+                            <i data-lucide="{% if trans.lang_code == 'ar' %}arrow-left{% else %}arrow-right{% endif %}" class="h-4 w-4 text-slate-300 group-hover:text-[var(--glow)] transition shrink-0"></i>
+                        </div>
+
+                        <!-- Option 2: Bank Statement (PDF/CSV) -->
+                        <div class="data-option flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-100/80 dark:hover:bg-slate-700/60 transition-all duration-150 cursor-pointer group"
+                             onclick="selectDataSource('bankInput', '{% if trans.lang_code == 'ar' %}رفع كشف حساب بنكي (PDF/CSV){% else %}Upload Bank Statement (PDF/CSV){% endif %}', '{% if trans.lang_code == 'ar' %}قراءة آلية للبيانات المالية بالذكاء الاصطناعي{% else %}Automated AI reading of financial data{% endif %}', 'landmark')">
+                            <div class="h-8 w-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-700 grid place-items-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/50 transition">
+                                <i data-lucide="landmark" class="h-4 w-4 text-slate-600 dark:text-slate-300 group-hover:text-[var(--glow)] transition"></i>
+                            </div>
+                            <div class="flex-1 text-{{ trans.align }}">
+                                <p class="text-sm font-semibold text-slate-800 dark:text-white group-hover:text-[var(--glow)] transition">{% if trans.lang_code == 'ar' %}رفع كشف حساب بنكي (PDF/CSV){% else %}Upload Bank Statement (PDF/CSV){% endif %}</p>
+                                <p class="text-xs text-slate-400 mt-0.5">{% if trans.lang_code == 'ar' %}قراءة آلية للبيانات المالية بالذكاء الاصطناعي{% else %}Automated AI reading of financial data{% endif %}</p>
+                            </div>
+                            <i data-lucide="{% if trans.lang_code == 'ar' %}arrow-left{% else %}arrow-right{% endif %}" class="h-4 w-4 text-slate-300 group-hover:text-[var(--glow)] transition shrink-0"></i>
+                        </div>
+
+                        <!-- Option 3: Manual Notes -->
+                        <div class="data-option flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-100/80 dark:hover:bg-slate-700/60 transition-all duration-150 cursor-pointer group"
+                             onclick="selectDataSource('notes', '{% if trans.lang_code == 'ar' %}إدخال ملاحظات يدوياً{% else %}Enter Manual Financial Notes{% endif %}', '{% if trans.lang_code == 'ar' %}حقل نصي حر للتحليل الفوري{% else %}Free text field for instant analysis{% endif %}', 'pencil-line')">
+                            <div class="h-8 w-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-700 grid place-items-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/50 transition">
+                                <i data-lucide="pencil-line" class="h-4 w-4 text-slate-600 dark:text-slate-300 group-hover:text-[var(--glow)] transition"></i>
+                            </div>
+                            <div class="flex-1 text-{{ trans.align }}">
+                                <p class="text-sm font-semibold text-slate-800 dark:text-white group-hover:text-[var(--glow)] transition">{% if trans.lang_code == 'ar' %}إدخال ملاحظات يدوياً{% else %}Enter Manual Financial Notes{% endif %}</p>
+                                <p class="text-xs text-slate-400 mt-0.5">{% if trans.lang_code == 'ar' %}حقل نصي حر للتحليل الفوري{% else %}Free text field for instant analysis{% endif %}</p>
+                            </div>
+                            <i data-lucide="{% if trans.lang_code == 'ar' %}arrow-left{% else %}arrow-right{% endif %}" class="h-4 w-4 text-slate-300 group-hover:text-[var(--glow)] transition shrink-0"></i>
+                        </div>
+
+                        <!-- Option 4: Accounting Integration -->
+                        <div class="data-option flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-slate-100/80 dark:hover:bg-slate-700/60 transition-all duration-150 cursor-pointer group opacity-80"
+                             onclick="selectDataSource('integration', '{% if trans.lang_code == 'ar' %}الربط المحاسبي (QuickBooks / POS){% else %}Accounting Integration (QuickBooks / POS){% endif %}', '{% if trans.lang_code == 'ar' %}مزامنة المعاملات تلقائياً{% else %}Automatically sync transactions{% endif %}', 'refresh-cw')">
+                            <div class="h-8 w-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-700 grid place-items-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/50 transition">
+                                <i data-lucide="refresh-cw" class="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-[var(--glow)] transition"></i>
+                            </div>
+                            <div class="flex-1 text-{{ trans.align }}">
+                                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--glow)] transition">{% if trans.lang_code == 'ar' %}الربط المحاسبي (QuickBooks / POS){% else %}Accounting Integration (QuickBooks / POS){% endif %}</p>
+                                <p class="text-xs text-slate-400 mt-0.5">{% if trans.lang_code == 'ar' %}مزامنة المعاملات تلقائياً{% else %}Automatically sync transactions{% endif %}</p>
+                            </div>
+                            <i data-lucide="{% if trans.lang_code == 'ar' %}arrow-left{% else %}arrow-right{% endif %}" class="h-4 w-4 text-slate-300 group-hover:text-[var(--glow)] transition shrink-0"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step: Explore Dashboard (locked until upload) -->
+                <div class="flex items-center gap-3 rounded-2xl bg-white/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 px-4 py-3 opacity-50">
+                    <div class="h-8 w-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-700 grid place-items-center">
+                        <i data-lucide="layout-dashboard" class="h-4 w-4 text-slate-400"></i>
+                    </div>
+                    <div class="text-{{ trans.align }}">
+                        <p class="text-sm font-semibold text-slate-600 dark:text-slate-400">{% if trans.lang_code == 'ar' %}استكشاف لوحة التحكم{% else %}Explore your dashboard{% endif %}</p>
+                        <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}تنشأ تلقائياً بعد رفع البيانات{% else %}Auto-generated once data is uploaded{% endif %}</p>
+                    </div>
+                </div>
+
+            </div>
+            <!-- End Options Dropdown Component -->
+
+            <!-- CTA -->
+            <a id="dashboardBtn" href="{% url 'dashboard' %}"
+                class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] py-3 text-sm font-semibold text-white hover:opacity-95 transition shadow-xl shadow-indigo-500/30 mb-3">
+                {% if trans.lang_code == 'ar' %}
+                    الانتقال للوحة التحكم
+                    <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                {% else %}
+                    Go to Dashboard
+                    <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                {% endif %}
+            </a>
+
+            <a href="{% url 'dashboard' %}" class="block text-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+               onclick="localStorage.setItem('hasUploadedData', 'false'); localStorage.removeItem('basira_dataset');">
+                {% if trans.lang_code == 'ar' %}تخطي الآن{% else %}Skip for now{% endif %}
+            </a>
+
+        </div>
+    </div>
+</div>
+
+<!-- Notes Modal -->
+<div id="portalNotesModal" class="fixed inset-0 z-[9999] hidden place-items-center bg-slate-900/50 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-white/20 animate-fade-up mx-4">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-[var(--nile)] to-[var(--glow)] flex items-center justify-center">
+                    <i data-lucide="pencil-line" class="h-4 w-4 text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}إدخال ملاحظات مالية{% else %}Enter Financial Notes{% endif %}</h3>
+                    <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}تُحفظ في مستنداتك وتُحلَّل فوراً{% else %}Saved to your documents and analyzed instantly{% endif %}</p>
+                </div>
+            </div>
+            <button onclick="closePortalNotesModal()" class="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <i data-lucide="x" class="h-5 w-5 text-slate-400"></i>
+            </button>
+        </div>
+        <form id="portalNotesForm" method="POST" action="{% url 'save_manual_note' %}">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="text-xs font-semibold text-slate-600 dark:text-slate-300 block mb-2">{% if trans.lang_code == 'ar' %}عنوان الملاحظة{% else %}Note Title{% endif %}</label>
+                <input type="text" name="note_title" required
+                    placeholder="{% if trans.lang_code == 'ar' %}مثال: ملاحظات ميزانية أغسطس 2025{% else %}e.g. August 2025 Budget Notes{% endif %}"
+                    class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition" />
+            </div>
+            <div class="mb-5">
+                <label class="text-xs font-semibold text-slate-600 dark:text-slate-300 block mb-2">{% if trans.lang_code == 'ar' %}محتوى الملاحظة{% else %}Note Content{% endif %}</label>
+                <textarea name="note_content" required rows="5"
+                    placeholder="{% if trans.lang_code == 'ar' %}اكتب ملاحظاتك المالية هنا... (إيرادات، مصروفات، ملاحظات تشغيلية){% else %}Enter your financial notes here...{% endif %}"
+                    class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition resize-none"></textarea>
+            </div>
+            <input type="hidden" name="next" value="{% url 'dashboard' %}">
+            <div class="flex items-center gap-3">
+                <button type="submit" class="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-sm font-semibold shadow-md hover:brightness-110 transition flex items-center justify-center gap-2">
+                    <i data-lucide="save" class="h-4 w-4"></i>
+                    {% if trans.lang_code == 'ar' %}حفظ والانتقال للوحة التحكم{% else %}Save & Go to Dashboard{% endif %}
+                </button>
+                <button type="button" onclick="closePortalNotesModal()" class="px-5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Integration Modal -->
+<div id="portalIntegrationModal" class="fixed inset-0 z-[9999] hidden place-items-center bg-slate-900/50 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-white/20 animate-fade-up mx-4">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-[var(--nile)] to-[var(--glow)] flex items-center justify-center">
+                    <i data-lucide="refresh-cw" class="h-4 w-4 text-white"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 dark:text-white">{% if trans.lang_code == 'ar' %}ربط Google Sheets{% else %}Connect Google Sheets{% endif %}</h3>
+                    <p class="text-xs text-slate-400">{% if trans.lang_code == 'ar' %}مزامنة بيانات محاسبية لحظية{% else %}Real-time accounting data sync{% endif %}</p>
+                </div>
+            </div>
+            <button onclick="closePortalIntegrationModal()" class="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <i data-lucide="x" class="h-5 w-5 text-slate-400"></i>
+            </button>
+        </div>
+        <form method="POST" action="{% url 'connect_live_web' %}">
+            {% csrf_token %}
+            <div class="mb-5">
+                <label class="text-xs font-semibold text-slate-600 dark:text-slate-300 block mb-2">{% if trans.lang_code == 'ar' %}رابط Google Sheet{% else %}Google Sheet URL{% endif %}</label>
+                <input type="url" name="sheet_url" required
+                    placeholder="https://docs.google.com/spreadsheets/d/..."
+                    class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[var(--glow)]/20 focus:border-[var(--glow)] transition" />
+                <p class="mt-1.5 text-xs text-slate-400">{% if trans.lang_code == 'ar' %}تأكد من أن الملف مشارك مع الجميع.{% else %}Make sure the sheet is publicly shared.{% endif %}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" class="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-sm font-semibold shadow-md hover:brightness-110 transition flex items-center justify-center gap-2">
+                    <i data-lucide="link" class="h-4 w-4"></i>
+                    {% if trans.lang_code == 'ar' %}ربط وتحليل{% else %}Connect & Analyze{% endif %}
+                </button>
+                <button type="button" onclick="closePortalIntegrationModal()" class="px-5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+@keyframes pop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    100% { transform: scale(1);   opacity: 1; }
+}
+</style>
+
+<script>
+function toggleDataSourceDropdown() {
+    const menu = document.getElementById('dataSourceDropdownMenu');
+    const chevron = document.getElementById('dropdownChevron');
+    if (!menu) return;
+    const isHidden = menu.classList.contains('hidden');
+    if (isHidden) {
+        menu.classList.remove('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
+    } else {
+        menu.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+    }
+}
+
+function selectDataSource(type, title, subtext, iconName) {
+    const titleEl = document.getElementById('selectedOptionTitle');
+    const subtextEl = document.getElementById('selectedOptionSubtext');
+    const iconContainer = document.getElementById('selectedOptionIcon');
+    
+    if (titleEl) titleEl.textContent = title;
+    if (subtextEl) subtextEl.textContent = subtext;
+    if (iconContainer) {
+        iconContainer.innerHTML = `<i data-lucide="${iconName}" class="h-4 w-4 text-[var(--glow)]"></i>`;
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    toggleDataSourceDropdown();
+
+    if (type === 'salesInput') {
+        const inp = document.getElementById('salesInput');
+        if (inp) inp.click();
+    } else if (type === 'bankInput') {
+        const inp = document.getElementById('bankInput');
+        if (inp) inp.click();
+    } else if (type === 'notes') {
+        openPortalNotesModal();
+    } else if (type === 'integration') {
+        openPortalIntegrationModal();
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('dataSourceDropdownWrapper');
+    const menu = document.getElementById('dataSourceDropdownMenu');
+    const chevron = document.getElementById('dropdownChevron');
+    if (wrapper && !wrapper.contains(e.target) && menu && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+    }
+});
+
+function handleFileUpload(input, formId, loadingMsg) {
+    if (!input.files || !input.files[0]) return;
+    const banner = document.getElementById('successBanner');
+    const bannerText = document.getElementById('successBannerText');
+    bannerText.textContent = loadingMsg;
+    banner.classList.remove('hidden');
+    banner.classList.add('flex');
+    document.querySelectorAll('.data-option').forEach(el => {
+        el.style.opacity = '0.4';
+        el.style.pointerEvents = 'none';
+    });
+    document.getElementById(formId).submit();
+}
+
+function openPortalNotesModal() {
+    const m = document.getElementById('portalNotesModal');
+    m.classList.remove('hidden'); m.classList.add('grid');
+}
+function closePortalNotesModal() {
+    const m = document.getElementById('portalNotesModal');
+    m.classList.add('hidden'); m.classList.remove('grid');
+}
+function openPortalIntegrationModal() {
+    const m = document.getElementById('portalIntegrationModal');
+    m.classList.remove('hidden'); m.classList.add('grid');
+}
+function closePortalIntegrationModal() {
+    const m = document.getElementById('portalIntegrationModal');
+    m.classList.add('hidden'); m.classList.remove('grid');
+}
+</script>
+
+{% endblock %}

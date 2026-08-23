@@ -1,0 +1,60 @@
+name: Baseera Enterprise CI/CD
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-backend:
+    name: Build & Test .NET Backend
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+    - name: Restore dependencies
+      run: dotnet restore backend/BaseeraAPI.csproj
+    - name: Build
+      run: dotnet build backend/BaseeraAPI.csproj --no-restore
+    - name: Test
+      run: dotnet test backend/BaseeraAPI.csproj --no-build --verbosity normal
+
+  build-flutter:
+    name: Build Flutter App
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+    - name: Install dependencies
+      run: flutter pub get
+      working-directory: ./baseera_mobile_app
+    - name: Build Web
+      run: flutter build web
+      working-directory: ./baseera_mobile_app
+
+  docker-compose-check:
+    name: Validate Docker Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test Docker Compose Build
+      run: docker compose config
+
+  deploy:
+    name: Deploy to Production
+    needs: [build-backend, build-flutter, docker-compose-check]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - name: Deployment Placeholder
+      run: |
+        echo "Deployment script goes here."
+        echo "Example: ssh into production server and run docker-compose up -d"

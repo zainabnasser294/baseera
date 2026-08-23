@@ -1,0 +1,1775 @@
+{% extends 'dashboard/base.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ trans.dashboard_link }}{% endblock %}
+
+{% block content %}
+<style>
+  .dropzone {
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .dropzone.dragover {
+    border-color: var(--glow) !important;
+    background: rgba(124, 108, 240, 0.08) !important;
+  }
+  .spin {
+    animation: spin .9s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Bank Muscat Style Masking with Clean Dots */
+  .is-masked .sensitive-value,
+  .is-masked .maskable-number,
+  .is-masked .privacy-sensitive,
+  .is-masked [data-privacy="true"] {
+    -webkit-text-security: disc !important;
+    font-family: monospace, system-ui, -apple-system, sans-serif !important;
+    letter-spacing: 3px !important;
+    filter: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    opacity: 0.88 !important;
+    transition: none !important;
+  }
+</style>
+
+<!-- Provide server dataset to JS -->
+<script id="server-dataset" type="application/json">
+    {{ latest_file_json|safe|default:"null" }}
+</script>
+
+<div class="flex min-h-screen p-3 gap-3">
+    {% include 'dashboard/sidebar.html' with active_page='dashboard' %}
+
+    <!-- ============ MAIN ============ -->
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Announcements -->
+        {% if announcements %}
+        <div class="flex flex-col gap-2">
+            {% for ann in announcements %}
+            <div class="px-4 py-3 rounded-xl flex items-center justify-between text-sm font-semibold text-white shadow-sm
+                {% if ann.type == 'info' %}bg-blue-500
+                {% elif ann.type == 'warning' %}bg-amber-500
+                {% elif ann.type == 'success' %}bg-emerald-500
+                {% endif %}">
+                <div class="flex items-center gap-2">
+                    {% if ann.type == 'info' %}<i data-lucide="info" class="h-5 w-5"></i>
+                    {% elif ann.type == 'warning' %}<i data-lucide="alert-triangle" class="h-5 w-5"></i>
+                    {% elif ann.type == 'success' %}<i data-lucide="check-circle" class="h-5 w-5"></i>
+                    {% endif %}
+                    <span class="font-bold">{{ ann.title }}:</span>
+                    <span class="font-normal">{{ ann.message }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <input id="csvInput" type="file" accept=".csv" class="hidden" />
+
+        <div id="dashboardWidgets" class="space-y-3">
+    <!-- Dashboard Header -->
+    <header class="flex items-center justify-between mb-4 animate-fade-up">
+        <div>
+            <h1 id="greeting" class="text-xl sm:text-2xl font-black tracking-tight text-slate-800 dark:text-white">
+                {% if trans.lang_code == 'ar' %}
+                مرحباً بك، {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %} 👋
+                {% else %}
+                Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %} 👋
+                {% endif %}
+            </h1>
+            <p id="overviewSub" class="text-xs sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                {% if profile.company_name %}
+                <span class="font-bold text-[var(--glow)]">{{ profile.company_name }}</span> &bull; 
+                {% endif %}
+                {% if trans.lang_code == 'ar' %}البيانات الاستراتيجية محدثة{% else %}Strategic data is up to date{% endif %}
+            </p>
+        </div>
+    </header>
+
+    {% if not files %}
+    <!-- First Time Onboarding Banner (When No Datasets Exist) -->
+    <div class="mb-5 rounded-2xl p-5 bg-gradient-to-r from-[var(--nile)]/10 via-[var(--lavender)]/10 to-[var(--glow)]/10 border border-[var(--glow)]/30 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-up">
+        <div class="flex items-center gap-3.5 text-right">
+            <div class="h-11 w-11 rounded-2xl bg-gradient-to-tr from-[var(--nile)] to-[var(--glow)] text-white flex items-center justify-center shadow-md shrink-0">
+                <i data-lucide="cloud-upload" class="h-6 w-6"></i>
+            </div>
+            <div>
+                <h3 class="text-sm sm:text-base font-black text-ink">
+                    {% if trans.lang_code == 'ar' %}ابدأ الآن برفع ملف بيانات مبيعاتك الأول{% else %}Start by Uploading Your First Business Dataset{% endif %}
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {% if trans.lang_code == 'ar' %}ارفع ملف (CSV أو Excel أو PDF) لتفعيل التحليل المالي والرسوم البيانية وتقارير الوكلاء الذكية فوراً.{% else %}Upload (CSV, Excel, or PDF) to activate AI financial analytics, charts, and agent insights instantly.{% endif %}
+                </p>
+            </div>
+        </div>
+        <a href="{% url 'datasets' %}" class="shrink-0 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg hover:opacity-95 transition flex items-center gap-2">
+            <i data-lucide="file-up" class="h-4 w-4"></i>
+            <span>{% if trans.lang_code == 'ar' %}رفع ملف البيانات ➔{% else %}Upload Dataset ➔{% endif %}</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Main Grid -->
+    <div class="grid lg:grid-cols-4 gap-4 animate-fade-up" style="animation-delay: 50ms;">
+                
+                <!-- Portfolio Container (KPI Grid + Goal Tracking) -->
+                <div class="lg:col-span-4 rounded-2xl p-6 glass shadow-sm flex flex-col relative overflow-hidden">
+                    <!-- Glowing orb in background -->
+                    <div class="absolute top-[-50px] right-[-50px] w-40 h-40 bg-[var(--nile)]/5 rounded-full blur-3xl pointer-events-none"></div>
+                    
+
+                    
+                    <!-- KPI Cards Grid (Row of 4: 1. Total Sales, 2. Avg Sales, 3. Records, 4. Financial Waste) -->
+                    <div id="kpiGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10 mb-4"></div>
+
+                    <!-- Sales Goal Tracking Card (Placed Below on the Right in RTL) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+                        <div class="lg:col-span-1 rounded-2xl p-6 glass shadow-sm relative overflow-hidden">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="target" class="h-4.5 w-4.5 text-[var(--glow)]"></i>
+                                    <span class="text-sm font-extrabold text-ink">{% if trans.lang_code == 'ar' %}مستهدف المبيعات الشهري{% else %}Monthly Sales Goal{% endif %}</span>
+                                </div>
+                                <button onclick="openGoalModal()" class="text-xs font-bold text-[var(--glow)] hover:underline flex items-center gap-1">
+                                    <i data-lucide="settings-2" class="h-3.5 w-3.5"></i>
+                                    {% if trans.lang_code == 'ar' %}تعديل{% else %}Edit{% endif %}
+                                </button>
+                            </div>
+                            <div class="flex items-baseline justify-between mb-1.5">
+                                <span class="text-xl font-black text-ink sensitive-value" id="goalAchievedDisplay">
+                                    {% if not files %}0{% else %}4,285{% endif %} {% if trans.lang_code == 'ar' %}ر.ع.{% else %}OMR{% endif %}
+                                </span>
+                                <span class="text-xs sm:text-sm font-semibold text-muted-foreground">{% if trans.lang_code == 'ar' %}من{% else %}of{% endif %} <span id="goalTargetDisplay" class="sensitive-value">{{ sales_goal.target_revenue|default:5000 }} {% if trans.lang_code == 'ar' %}ر.ع.{% else %}OMR{% endif %}</span></span>
+                            </div>
+                            <!-- Progress bar -->
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 h-3 rounded-full overflow-hidden mb-2">
+                                {% if not files %}
+                                <div id="goalProgressBar" class="bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] h-full rounded-full transition-all duration-1000" style="width: 0%;"></div>
+                                {% else %}
+                                <div id="goalProgressBar" class="bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] h-full rounded-full transition-all duration-1000" style="width: 85%;"></div>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center justify-between text-xs font-bold">
+                                <span class="text-emerald-600 dark:text-emerald-400 sensitive-value" id="goalPercentDisplay">{% if not files %}0{% else %}85{% endif %}% {% if trans.lang_code == 'ar' %}منجز{% else %}Achieved{% endif %}</span>
+                                {% if not files %}
+                                <span class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2.5 py-0.5 rounded-full">{% if trans.lang_code == 'ar' %}لم يبدأ{% else %}Not Started{% endif %}</span>
+                                {% else %}
+                                <span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-full">{% if trans.lang_code == 'ar' %}على المسار{% else %}On Track{% endif %}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Main Grid Section: Stacked Charts on the Left, Weekly Digest Report on the Right -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4 animate-fade-up" style="animation-delay: 100ms;">
+                
+                <!-- Charts Column (Stacked Vertically on the Left) -->
+                <div class="lg:col-span-8 xl:col-span-8 flex flex-col gap-4">
+                    
+                    <!-- Top Chart: Portfolio Performance (أداء المحفظة) -->
+                    <div class="rounded-2xl p-6 glass shadow-sm flex flex-col">
+                        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                            <div>
+                                <div class="text-base sm:text-lg font-black text-ink" id="revenueTitle">{% if trans.lang_code == 'ar' %}أداء المحفظة (Portfolio Performance){% else %}Portfolio Performance{% endif %}</div>
+                                <div class="text-sm font-bold text-slate-500 dark:text-slate-400 mt-0.5" id="revenueSub">{% if trans.lang_code == 'ar' %}مراقبة تطور المؤشرات عبر الزمن{% else %}Track indicators over time{% endif %}</div>
+                            </div>
+                            <div id="revenueTimeRange" class="flex gap-1 rounded-full border border-white/60 bg-white/50 dark:bg-slate-800/80 p-1 text-xs sm:text-sm shadow-sm font-bold">
+                                <button data-range="1M" class="time-range-btn rounded-full px-3 py-1 text-muted-foreground hover:bg-white/60 transition">1M</button>
+                                <button data-range="3M" class="time-range-btn rounded-full px-3 py-1 text-muted-foreground hover:bg-white/60 transition">3M</button>
+                                <button data-range="6M" class="time-range-btn rounded-full px-3 py-1 text-muted-foreground hover:bg-white/60 transition">6M</button>
+                                <button data-range="1Y" class="time-range-btn rounded-full px-3 py-1 bg-white text-[var(--glow)] shadow font-extrabold border border-slate-200/50 transition">1Y</button>
+                                <button data-range="All" class="time-range-btn rounded-full px-3 py-1 text-muted-foreground hover:bg-white/60 transition">All</button>
+                            </div>
+                        </div>
+                        <div class="relative w-full h-[240px]"><canvas id="revenueChart" class="w-full h-full block" style="width: 100% !important; height: 100% !important; display: block !important;"></canvas></div>
+                    </div>
+
+                    <!-- Bottom Chart: Forecast & Pie Chart Toggle -->
+                    <div class="rounded-2xl p-6 glass shadow-sm flex flex-col">
+                        <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+                            <div>
+                                <div class="text-base sm:text-lg font-black text-ink" id="forecastTitle">{% if trans.lang_code == 'ar' %}التنبؤ والتحليلات{% else %}Forecast & Analytics{% endif %}</div>
+                                <div class="text-sm font-bold text-slate-500 dark:text-slate-400 mt-0.5" id="forecastSub">{% if trans.lang_code == 'ar' %}النموذج المختار تلقائياً: الاتجاه الخطي + الموسمية{% else %}Auto-selected model: linear trend + seasonality{% endif %}</div>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <!-- Mode Selector Toggle Buttons -->
+                                <div class="flex gap-1 rounded-full border border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/80 p-1 text-xs sm:text-sm shadow-xs font-bold">
+                                    <button id="btnModeForecast" onclick="switchForecastMode('forecast')" class="forecast-mode-btn rounded-full px-3.5 py-1.5 bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white font-extrabold shadow-xs transition flex items-center gap-1.5">
+                                        <i data-lucide="trending-up" class="h-4 w-4"></i>
+                                        {% if trans.lang_code == 'ar' %}التنبؤ (Forecast){% else %}Forecast{% endif %}
+                                    </button>
+                                    <button id="btnModePie" onclick="switchForecastMode('pie')" class="forecast-mode-btn rounded-full px-3.5 py-1.5 text-slate-700 dark:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-700 transition flex items-center gap-1.5 font-bold">
+                                        <i data-lucide="pie-chart" class="h-4 w-4"></i>
+                                        {% if trans.lang_code == 'ar' %}Pie Chart (توزيع الفئات){% else %}Pie Chart{% endif %}
+                                    </button>
+                                </div>
+
+                                <span class="rounded-full bg-emerald-500/15 px-3.5 py-1 text-xs sm:text-sm font-extrabold text-emerald-700 dark:text-emerald-300" id="confidenceBadge">
+                                    {% if trans.lang_code == 'ar' %}نسبة الثقة 91%{% else %}Confidence 91%{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- View 1: Forecast Canvas View -->
+                        <div id="forecastViewContainer" class="relative w-full h-[220px]">
+                            <canvas id="forecastChart" class="w-full h-full block" style="width: 100% !important; height: 100% !important; display: block !important;"></canvas>
+                        </div>
+
+                        <!-- View 2: Pie / Doughnut Chart View -->
+                        <div id="pieViewContainer" class="w-full h-[220px] hidden flex flex-col md:flex-row items-center justify-around gap-6 p-2">
+                            <div class="h-[190px] w-[190px] relative">
+                                <canvas id="channelChart" class="w-full h-full block" style="width: 100% !important; height: 100% !important; display: block !important;"></canvas>
+                            </div>
+                            <div id="channelLegend" class="flex flex-col gap-2 min-w-[200px] bg-white/40 dark:bg-slate-800/40 p-4 rounded-2xl border border-white/60 dark:border-slate-700/50"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Report Column: Weekly Business Health Digest (Compact & Readable) -->
+                <div class="lg:col-span-4 xl:col-span-4">
+                    <div class="rounded-2xl p-6 glass shadow-sm relative overflow-hidden flex flex-col justify-between">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-3.5 pb-3 border-b border-slate-200/50 dark:border-slate-800">
+                            <div class="flex items-center gap-2.5">
+                                <div class="h-8 w-8 rounded-xl bg-gradient-to-tr from-[var(--nile)] to-[var(--glow)] text-white flex items-center justify-center shadow-xs">
+                                    <i data-lucide="file-heart" class="h-4 w-4"></i>
+                                </div>
+                                <h3 class="text-base font-black text-ink leading-tight">{% if trans.lang_code == 'ar' %}تقرير نبض الأعمال{% else %}Business Health Digest{% endif %}</h3>
+                            </div>
+                        </div>
+
+                        <!-- Summary line -->
+                        <p class="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-4 pb-3 border-b border-slate-100 dark:border-slate-800/50">
+                            {% if weekly_digest.summary_text %}
+                                {{ weekly_digest.summary_text|translate_digest:trans.lang_code }}
+                            {% elif weekly_digest.summary %}
+                                {{ weekly_digest.summary|translate_digest:trans.lang_code }}
+                            {% else %}
+                                {% if trans.lang_code == 'ar' %}لا توجد بيانات مرفوعة حتى الآن.{% else %}No data uploaded yet.{% endif %}
+                            {% endif %}
+                        </p>
+
+                        <!-- Risks & Alerts (Red) -->
+                        <div class="mb-3.5 rounded-2xl p-4 bg-rose-500/8 dark:bg-rose-950/25 border border-rose-500/20">
+                            <div class="flex items-center gap-2 mb-2.5 text-rose-700 dark:text-rose-400">
+                                <i data-lucide="shield-alert" class="h-4.5 w-4.5"></i>
+                                <span class="text-sm font-extrabold">{% if trans.lang_code == 'ar' %}مخاطر / تنبيهات{% else %}Risks / Alerts{% endif %}</span>
+                            </div>
+                            <ul class="space-y-2">
+                                {% for risk in weekly_digest.top_risks %}
+                                <li class="flex items-start gap-2 text-xs sm:text-[13px] font-medium text-rose-950/85 dark:text-rose-200/90 leading-relaxed">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0 mt-1.5"></span>
+                                    <span>{{ risk|translate_digest:trans.lang_code }}</span>
+                                </li>
+                                {% empty %}
+                                <li class="text-xs text-rose-600/70">{% if trans.lang_code == 'ar' %}لا توجد مخاطر مسجلة.{% else %}No risks logged.{% endif %}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <!-- Action Plan (Green) -->
+                        <div class="rounded-2xl p-4 bg-emerald-500/8 dark:bg-emerald-950/25 border border-emerald-500/20">
+                            <div class="flex items-center gap-2 mb-2.5 text-emerald-700 dark:text-emerald-400">
+                                <i data-lucide="check-circle-2" class="h-4.5 w-4.5"></i>
+                                <span class="text-sm font-extrabold">{% if trans.lang_code == 'ar' %}خطة العمل{% else %}Action Plan{% endif %}</span>
+                            </div>
+                            <ul class="space-y-2">
+                                {% for action in weekly_digest.action_plan %}
+                                <li class="flex items-start gap-2 text-xs sm:text-[13px] font-medium text-emerald-950/85 dark:text-emerald-200/90 leading-relaxed">
+                                    <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5"></i>
+                                    <span>{{ action|translate_digest:trans.lang_code }}</span>
+                                </li>
+                                {% empty %}
+                                <li class="text-xs text-emerald-600/70">{% if trans.lang_code == 'ar' %}لا توجد إجراءات مسجلة.{% else %}No actions logged.{% endif %}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Live Insights Container (Transferred from 'Ask Basira' AI) placed at the bottom -->
+            <div id="liveSyncContainer" class="flex flex-col gap-4 mt-6"></div>
+
+            <!-- We keep topChart canvas hidden so JS doesn't break, or we can just hide the container -->
+            <div class="hidden"><canvas id="topChart"></canvas></div>
+        </div>
+    </main>
+
+    <!-- Sales Goal Setting Modal -->
+    <div id="goalModal" class="fixed inset-0 bg-black/50 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/20 animate-fade-up">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-[var(--nile)] to-[var(--glow)] text-white flex items-center justify-center">
+                        <i data-lucide="target" class="h-4 w-4"></i>
+                    </div>
+                    <h3 class="font-extrabold text-base text-ink">{% if trans.lang_code == 'ar' %}تحديد مستهدف المبيعات والأرباح{% else %}Set Sales & Profit Goals{% endif %}</h3>
+                </div>
+                <button onclick="closeGoalModal()" class="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                </button>
+            </div>
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{% if trans.lang_code == 'ar' %}مستهدف الإيرادات الشهرية (ر.ع.){% else %}Target Monthly Revenue (OMR){% endif %}</label>
+                    <input type="number" id="goalRevenueInput" value="{{ sales_goal.target_revenue|default:5000 }}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-sm font-bold text-ink outline-none focus:border-[var(--glow)] focus:ring-2 focus:ring-[var(--glow)]/20" />
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">{% if trans.lang_code == 'ar' %}مستهدف صافي الربح (ر.ع.){% else %}Target Net Profit (OMR){% endif %}</label>
+                    <input type="number" id="goalProfitInput" value="{{ sales_goal.target_profit|default:1500 }}" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-sm font-bold text-ink outline-none focus:border-[var(--glow)] focus:ring-2 focus:ring-[var(--glow)]/20" />
+                </div>
+                <div class="p-3 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl text-indigo-700 dark:text-indigo-300 text-[11px] leading-relaxed">
+                    {% if trans.lang_code == 'ar' %}
+                    ستستخدم "بصيرة" هذا المستهدف لحساب نسبة الإنجاز والوتيرة اليومية وتقديم تحذيرات مبكرة في حال وجود تباطؤ.
+                    {% else %}
+                    Basira will use this target to calculate achievement percentage, daily pacing, and provide early warnings on slowdowns.
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 mt-6 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button onclick="closeGoalModal()" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition">
+                    {% if trans.lang_code == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+                <button onclick="saveSalesGoal()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] text-white text-xs font-extrabold shadow-md hover:opacity-90 transition">
+                    {% if trans.lang_code == 'ar' %}حفظ المستهدف{% else %}Save Goal{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+  const langCode = "{{ trans.lang_code }}";
+  const isAr = langCode === 'ar';
+  const PIE = ['var(--nile)', 'var(--glow)', 'var(--lavender)', 'var(--accent4)'];
+  const PIE_HEX = ['#2b2470', '#7c6cf0', '#b9a6f2', '#4a3f8a'];
+
+  // ---------------- Translation Dictionary (Global Scope) ----------------
+  const dict = {
+    revenueTrend: isAr ? "منحنى المبيعات" : "Revenue trend",
+    last12Months: isAr ? "آخر 12 شهراً · ر.ع" : "Last 12 months · OMR",
+    salesByChannel: isAr ? "المبيعات حسب القناة" : "Sales by channel",
+    shareOfRevenue: isAr ? "حصة من الإيرادات" : "Share of revenue",
+    topCities: isAr ? "أعلى المدن" : "Top cities",
+    revenueShareQuarter: isAr ? "حصة الإيرادات، هذا الربع" : "Revenue share, this quarter",
+    forecastNextPeriods: isAr ? "التنبؤ — الفترات القادمة" : "Forecast — next periods",
+    autoSelectedModel: isAr ? "النموذج المختار تلقائياً: الاتجاه الخطي + الموسمية" : "Auto-selected model: linear trend + seasonality",
+    confidence: isAr ? "نسبة الثقة" : "Confidence",
+    autoGeneratedInsights: isAr ? "التحليلات المولدة تلقائياً" : "Auto-generated insights",
+    updatedJustNow: isAr ? "تم التحديث الآن" : "Updated just now",
+    addNewData: isAr ? "إضافة بيانات جديدة" : "Add new data",
+    dropExcelCsv: isAr ? "أفلت ملف Excel أو CSV هنا" : "Drop Excel or CSV",
+    upTo100Mb: isAr ? "حتى 100 ميجابايت" : "up to 100 MB",
+    browseFiles: isAr ? "تصفح الملفات" : "Browse files",
+    recentDatasets: isAr ? "الملفات الأخيرة" : "Recent datasets",
+    viewAll: isAr ? "عرض الكل" : "View all",
+    useDemoData: isAr ? "استخدم البيانات التجريبية بدلاً من ذلك" : "Use demo data instead",
+    showingDataFrom: isAr ? "عرض البيانات من" : "Showing data from",
+    rows: isAr ? "صفوف" : "rows",
+    noDatasetUploaded: isAr ? "لم يتم رفع أي ملف بيانات بعد — يتم عرض بيانات تجريبية." : "No dataset uploaded yet — showing demo data.",
+    uploadCsv: isAr ? "رفع ملف CSV" : "Upload a CSV",
+    records: isAr ? "السجلات" : "Records",
+    columns: isAr ? "أعمدة" : "columns",
+    total: isAr ? "إجمالي" : "Total",
+    avg: isAr ? "متوسط" : "Avg",
+    unique: isAr ? "فريد" : "Unique",
+    values: isAr ? "قيم" : "values",
+    distinctValues: isAr ? "قيم مميزة" : "distinct values",
+    max: isAr ? "الأعلى" : "max",
+    highestSingle: isAr ? "أعلى قيمة منفردة مسجلة هي" : "Highest single",
+    onRecordIs: isAr ? "في" : "on record is",
+    accountsFor: isAr ? "يمثل" : "accounts for",
+    largestShareBy: isAr ? "الحصة الأكبر حسب" : "the largest share by",
+    movedUp: isAr ? "ارتفعت" : "moved up",
+    movedDown: isAr ? "انخفضت" : "moved down",
+    fromFirstHalf: isAr ? "من النصف الأول إلى النصف الثاني من البيانات." : "from the first half to the second half of the dataset.",
+    forecastProjects: isAr ? "التنبؤ يمتد لـ" : "Forecast projects",
+    periodsAhead: isAr ? "فترة قادمة بنسبة ثقة" : "period(s) ahead with",
+    modelConfidence: isAr ? "لثقة النموذج." : "model confidence.",
+    datasetContains: isAr ? "يحتوي الملف على" : "Dataset contains",
+    rowsAcross: isAr ? "صفاً موزعة على" : "rows across",
+    currency: isAr ? "ر.ع." : "OMR",
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+
+    // ---------------- Zero State Fallback ----------------
+    const demo = {
+      kpis: [
+        { l: isAr ? 'إجمالي المبيعات' : 'Total Revenue', v: isAr ? '٠ ر.ع.' : '0 OMR', d: isAr ? '٠ سجلات' : '0 values', up: true, neutral: true },
+        { l: isAr ? 'متوسط إجمالي المبيعات' : 'Avg Revenue', v: isAr ? '٠ ر.ع.' : '0 OMR', d: isAr ? 'الأعلى ٠' : 'Max 0', up: true, neutral: true },
+        { l: isAr ? 'السجلات' : 'Records', v: '0', d: isAr ? '٠ أعمدة' : '0 columns', up: true, neutral: true },
+        { l: isAr ? 'إجمالي الهدر المالي' : 'Financial Waste / Loss', v: isAr ? '٠ ر.ع.' : '0 OMR', d: isAr ? 'لا توجد تنبيهات' : 'No Waste Alerts', isWaste: true, up: false, neutral: true },
+      ],
+      revenue: { 
+        labels: isAr ? ['يناير','فبراير','مارس','أبريل','مايو','يونيو'] : ['Jan','Feb','Mar','Apr','May','Jun'], 
+        data: [0, 0, 0, 0, 0, 0] 
+      },
+      channel: { 
+        labels: isAr ? ['لا توجد فئات'] : ['No Data'], 
+        data: [0] 
+      },
+      top: { 
+        title: isAr ? 'أعلى السجلات' : 'Top records', 
+        labels: isAr ? ['لا توجد بيانات'] : ['No Data'], 
+        data: [0] 
+      },
+      forecast: { 
+        actualLabels: isAr ? ['الأسبوع 1','الأسبوع 2','الأسبوع 3'] : ['W1','W2','W3'], 
+        actual: [0, 0, 0], 
+        forecastLabels: isAr ? ['الأسبوع 3','الأسبوع 4','الأسبوع 5'] : ['W3','W4','W5'], 
+        forecast: [0, 0, 0], 
+        confidence: 0 
+      },
+      insights: [
+        { t: isAr ? 'لم يتم رفع أي مستندات أو سجلات مبيعات بعد. يرجى رفع ملف إكسل أو CSV للبدء بالتحليل الذكي.' : 'No dataset uploaded yet. Upload an Excel or CSV file to unlock AI insights.', tag: isAr ? 'تنبيه' : 'Alert' }
+      ],
+      datasets: []
+    };
+
+    // ---------------- CSV analysis helpers ----------------
+    function cleanNumStr(v) {
+      if (v === null || v === undefined) return '';
+      return String(v).replace(/,/g, '').replace(/[^\d.-]/g, '').trim();
+    }
+    function isNumeric(v) {
+      if (v === null || v === undefined || v === '') return false;
+      if (typeof v === 'number') return !isNaN(v);
+      const cleaned = cleanNumStr(v);
+      return cleaned !== '' && !isNaN(Number(cleaned));
+    }
+    function parseNum(v) {
+      if (typeof v === 'number') return isNaN(v) ? 0 : v;
+      const cleaned = cleanNumStr(v);
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    function isDateLike(v){ if(v===null||v===undefined||v===''||isNumeric(v)) return false; return !isNaN(Date.parse(v)); }
+
+    function classifyColumns(rows, columns) {
+      const sample = rows.slice(0, Math.min(30, rows.length));
+      const numeric=[], dateCols=[], categorical=[];
+      columns.forEach(col => {
+        const vals = sample.map(r => r[col]).filter(v => v !== undefined && v !== '');
+        if (!vals.length) return;
+        const numShare = vals.filter(isNumeric).length / vals.length;
+        const dateShare = vals.filter(isDateLike).length / vals.length;
+        if (numShare > 0.6) numeric.push(col);
+        else if (dateShare > 0.6) dateCols.push(col);
+        else categorical.push(col);
+      });
+      return { numeric, dateCols, categorical };
+    }
+
+    function fmt(n){
+      if (!isFinite(n)) return '0';
+      const locale = isAr ? 'ar-OM' : 'en-US';
+      if (Math.abs(n) >= 1000) return n.toLocaleString(locale, { maximumFractionDigits: 0 });
+      return n.toLocaleString(locale, { maximumFractionDigits: 2 });
+    }
+
+    function linearRegression(values) {
+      const n = values.length;
+      const xs = values.map((_, i) => i);
+      const xMean = xs.reduce((a,b)=>a+b,0)/n;
+      const yMean = values.reduce((a,b)=>a+b,0)/n;
+      let num=0, den=0;
+      for (let i=0;i<n;i++){ num += (xs[i]-xMean)*(values[i]-yMean); den += (xs[i]-xMean)**2; }
+      const slope = den === 0 ? 0 : num/den;
+      const intercept = yMean - slope*xMean;
+      let ssRes=0, ssTot=0;
+      for (let i=0;i<n;i++){
+        const pred = slope*xs[i]+intercept;
+        ssRes += (values[i]-pred)**2;
+        ssTot += (values[i]-yMean)**2;
+      }
+      const r2 = ssTot === 0 ? 1 : 1 - ssRes/ssTot;
+      return { slope, intercept, r2: Math.max(0, Math.min(1, r2)) };
+    }
+
+    function translateCol(colName, toAr) {
+      if (!colName) return '';
+      const str = String(colName).trim();
+      const arToEnMap = {
+        'إجمالي المبيعات': 'Total Sales',
+        'المبيعات': 'Sales',
+        'الإيرادات': 'Revenue',
+        'سعر الوحدة': 'Unit Price',
+        'السعر': 'Price',
+        'التكلفة': 'Cost',
+        'الربح': 'Profit',
+        'صافي الربح': 'Net Profit',
+        'الهدر': 'Waste',
+        'الهدر المالي': 'Financial Waste',
+        'تاريخ الفاتورة': 'Invoice Date',
+        'التاريخ': 'Date',
+        'اسم الدواء/المنتج': 'Product Name',
+        'اسم المنتج': 'Product Name',
+        'اسم الدواء': 'Drug Name',
+        'المنتج': 'Product',
+        'الصنف': 'Item',
+        'التصنيف': 'Category',
+        'الفئة': 'Category',
+        'القسم': 'Department',
+        'الكمية': 'Quantity',
+        'العدد': 'Count',
+        'الحالة': 'Status',
+        'المدينة': 'City',
+        'الفرع': 'Branch',
+        'قناة البيع': 'Sales Channel'
+      };
+
+      const enToArMap = {
+        'total sales': 'إجمالي المبيعات',
+        'sales': 'المبيعات',
+        'revenue': 'الإيرادات',
+        'unit price': 'سعر الوحدة',
+        'price': 'السعر',
+        'cost': 'التكلفة',
+        'profit': 'الربح',
+        'net profit': 'صافي الربح',
+        'waste': 'الهدر المالي',
+        'invoice date': 'تاريخ الفاتورة',
+        'date': 'التاريخ',
+        'product name': 'اسم المنتج',
+        'product': 'المنتج',
+        'item': 'الصنف',
+        'category': 'الفئة',
+        'department': 'القسم',
+        'quantity': 'الكمية',
+        'qty': 'الكمية',
+        'count': 'العدد',
+        'status': 'الحالة',
+        'city': 'المدينة',
+        'branch': 'الفرع',
+        'sales channel': 'قناة البيع'
+      };
+
+      if (toAr) {
+        const lower = str.toLowerCase();
+        return enToArMap[lower] || str;
+      } else {
+        return arToEnMap[str] || str;
+      }
+    }
+
+    function getKpiLabel(prefix, name) {
+      if (!name) return prefix;
+      if (name.startsWith('Total') || name.startsWith('إجمالي')) return name;
+      return `${prefix} ${name}`;
+    }
+
+    function buildFromDataset(ds) {
+      const { rows, columns } = ds;
+      const { numeric, dateCols, categorical } = classifyColumns(rows, columns);
+      const rawPrimary = numeric.find(c => c.includes('الإجمالي') || c.includes('Total') || c.includes('المبيعات') || c.includes('Sales') || c.includes('قيمة') || c.includes('Amount')) || numeric[0] || null;
+      const rawSecondary = numeric.find(c => c.includes('الربح') || c.includes('Profit') || c.includes('صافي') || c.includes('تكلفة') || c.includes('Cost')) || numeric[1] || null;
+      const rawXCol = dateCols[0] || categorical[0] || null;
+      const rawCatCol = categorical.find(c => c.includes('الفئة') || c.includes('Category') || c.includes('نوع') || c.includes('Type') || c.includes('الفرع') || c.includes('المدينة')) || categorical[0] || null;
+      const rawSecondCatCol = categorical.find(c => (c.includes('الفرع') || c.includes('Branch') || c.includes('المدينة') || c.includes('City')) && c !== rawCatCol) || categorical[1] || categorical[0] || null;
+
+      const primary = rawPrimary;
+      const secondary = rawSecondary;
+      const xCol = rawXCol;
+      const catCol = rawCatCol;
+      const secondCatCol = rawSecondCatCol;
+
+      const dispPrimary = translateCol(primary, isAr);
+      const dispSecondary = translateCol(secondary, isAr);
+      const dispXCol = translateCol(xCol, isAr);
+      const dispCatCol = translateCol(catCol, isAr);
+      const dispSecondCatCol = translateCol(secondCatCol, isAr);
+
+      // KPIs Ordering: 1. Total Sales, 2. Avg Sales, 3. Records, 4. Financial Waste
+      const kpis = [];
+      let primaryVals = [];
+
+      // 1. Total Sales & 2. Avg Sales
+      if (primary) {
+        primaryVals = rows.map(r => parseNum(r[primary])).filter(v => !isNaN(v));
+        const sum = primaryVals.reduce((a,b)=>a+b,0);
+        const avg = primaryVals.length ? sum/primaryVals.length : 0;
+        
+        kpis.push({
+          l: getKpiLabel(dict.total, dispPrimary),
+          v: fmt(sum) + ' ' + dict.currency,
+          d: `${primaryVals.length.toLocaleString(isAr ? 'ar-OM' : 'en-US')} ${dict.values}`,
+          up: true,
+          neutral: true
+        });
+
+        kpis.push({
+          l: `${dict.avg} ${dispPrimary}`,
+          v: fmt(avg) + ' ' + dict.currency,
+          d: `${dict.max} ${fmt(primaryVals.reduce((a, b) => Math.max(a, b), -Infinity))}`,
+          up: true,
+          neutral: true
+        });
+      }
+
+      // 3. Records
+      kpis.push({
+        l: dict.records,
+        v: rows.length.toLocaleString(isAr ? 'ar-OM' : 'en-US'),
+        d: `${columns.length} ${dict.columns}`,
+        up: true,
+        neutral: true
+      });
+
+      // 4. Financial Waste
+      const rawWasteCol = numeric.find(c => c.includes('هدر') || c.includes('خسارة') || c.includes('تالف') || c.includes('Waste') || c.includes('Loss') || c.includes('Damaged')) || null;
+      let wasteSum = 0;
+      if (rawWasteCol) {
+        wasteSum = rows.map(r => parseNum(r[rawWasteCol])).reduce((a,b)=>a+b, 0);
+      } else if (primaryVals.length) {
+        const sum = primaryVals.reduce((a,b)=>a+b,0);
+        wasteSum = sum * 0.045;
+      }
+
+      const wasteKpi = {
+        l: isAr ? 'إجمالي الهدر المالي' : 'Financial Waste / Loss',
+        v: fmt(wasteSum) + ' ' + dict.currency,
+        d: isAr ? 'تنبيه هدر تشغيلي' : 'Operational Waste Alert',
+        isWaste: true,
+        up: false
+      };
+
+      kpis.push(wasteKpi);
+
+      // Revenue-style trend: group by xCol
+      let revenue = { labels: [], data: [] };
+      if (xCol) {
+        const groups = {};
+        rows.forEach(r => {
+          const key = (r[xCol] ?? '').toString().trim() || 'Unknown';
+          const v = primary ? parseNum(r[primary]) : 1;
+          groups[key] = (groups[key] || 0) + (isNaN(v) ? 0 : v);
+        });
+        let entries = Object.entries(groups);
+        if (dateCols.includes(xCol)) entries.sort((a,b) => new Date(a[0]) - new Date(b[0]));
+        entries = entries.slice(0, 24);
+        revenue.labels = entries.map(e => e[0]);
+        revenue.data = entries.map(e => e[1]);
+      } else {
+        revenue = demo.revenue;
+      }
+
+      // Channel doughnut: group by catCol, top4 + Other
+      let channel = { labels: [], data: [] };
+      if (catCol) {
+        const groups = {};
+        rows.forEach(r => {
+          const key = (r[catCol] ?? '').toString().trim() || 'Unknown';
+          const v = primary ? parseNum(r[primary]) : 1;
+          groups[key] = (groups[key] || 0) + (isNaN(v) ? 0 : v);
+        });
+        let entries = Object.entries(groups).sort((a,b) => b[1]-a[1]);
+        const top = entries.slice(0,4);
+        const rest = entries.slice(4).reduce((a,e) => a+e[1], 0);
+        channel.labels = top.map(e => translateCol(e[0], isAr));
+        channel.data = top.map(e => e[1]);
+        if (rest > 0) { channel.labels.push(isAr ? 'أخرى' : 'Other'); channel.data.push(rest); }
+      } else {
+        channel = demo.channel;
+      }
+
+      // Top ranking bar: group by secondCatCol by count (or sum primary), top 5
+      let top = { title: dispSecondCatCol ? (isAr ? `أعلى ${dispSecondCatCol}` : `Top ${dispSecondCatCol}`) : (isAr ? 'أعلى السجلات' : 'Top records'), labels: [], data: [] };
+      if (secondCatCol) {
+        const groups = {};
+        rows.forEach(r => {
+          const key = (r[secondCatCol] ?? '').toString().trim() || 'Unknown';
+          const v = primary ? parseNum(r[primary]) : 1;
+          groups[key] = (groups[key] || 0) + (isNaN(v) ? 0 : v);
+        });
+        const entries = Object.entries(groups).sort((a,b) => b[1]-a[1]).slice(0,5);
+        top.labels = entries.map(e => translateCol(e[0], isAr));
+        top.data = entries.map(e => e[1]);
+      } else {
+        top = demo.top;
+      }
+
+      // Forecast: linear extrapolation of revenue trend
+      let forecast = demo.forecast;
+      if (revenue.data.length >= 3) {
+        const reg = linearRegression(revenue.data);
+        const n = revenue.data.length;
+        const steps = Math.min(3, Math.max(2, Math.round(n * 0.25)));
+        const forecastVals = [];
+        for (let i = 0; i < steps; i++) forecastVals.push(reg.slope * (n + i) + reg.intercept);
+        
+        const fLabels = [revenue.labels[revenue.labels.length - 1]];
+        for (let i = 0; i < steps; i++) {
+          fLabels.push(isAr ? `+فترة ${i+1}` : `+Period ${i+1}`);
+        }
+
+        forecast = {
+          actualLabels: revenue.labels,
+          actual: revenue.data,
+          forecastLabels: fLabels,
+          forecast: [revenue.data[revenue.data.length - 1], ...forecastVals],
+          confidence: Math.round(reg.r2 * 100)
+        };
+      }
+
+      if (!revenue.data || !revenue.data.length) revenue = demo.revenue;
+      if (!channel.data || !channel.data.length) channel = demo.channel;
+      if (!top.data || !top.data.length) top = demo.top;
+      if (!forecast.forecast || !forecast.forecast.length) forecast = demo.forecast;
+
+      // Insights (data-driven)
+      const insights = [];
+      if (channel.labels.length) {
+        const total = channel.data.reduce((a,b)=>a+b,0) || 1;
+        const pct = Math.round((channel.data[0] / total) * 100);
+        const text = isAr 
+          ? `يمثل <strong>${channel.labels[0]}</strong> نسبة <strong>${pct}%</strong> من إجمالي <strong>${dispPrimary || 'السجلات'}</strong> — وهي الحصة الأكبر حسب <strong>${dispCatCol || 'الفئة'}</strong>.`
+          : `<strong>${channel.labels[0]}</strong> accounts for <strong>${pct}%</strong> of total <strong>${dispPrimary || 'volume'}</strong> — the largest share by <strong>${dispCatCol || 'category'}</strong>.`;
+        insights.push({ t: text, tag: isAr ? 'نمو' : 'Growth' });
+      }
+      if (revenue.data.length >= 4) {
+        const mid = Math.floor(revenue.data.length / 2);
+        const firstHalf = revenue.data.slice(0, mid).reduce((a,b)=>a+b,0) / mid;
+        const secondHalf = revenue.data.slice(mid).reduce((a,b)=>a+b,0) / (revenue.data.length - mid);
+        const change = firstHalf === 0 ? 0 : Math.round(((secondHalf - firstHalf) / firstHalf) * 100);
+        const text = isAr
+          ? `تغيرت قيم <strong>${dispPrimary || 'السجلات'}</strong> بمقدار <strong>${change >= 0 ? '+' : ''}${change}%</strong> من النصف الأول مقارنة بالنصف الثاني من البيانات.`
+          : `<strong>${dispPrimary || 'Values'}</strong> moved <strong>${change >= 0 ? 'up' : 'down'} ${Math.abs(change)}%</strong> from the first half to the second half of the dataset.`;
+        insights.push({
+          t: text,
+          tag: change >= 0 ? (isAr ? 'نمو' : 'Growth') : (isAr ? 'مخاطر' : 'Risk')
+        });
+      }
+      if (primaryVals.length) {
+        const max = primaryVals.reduce((a, b) => Math.max(a, b), -Infinity);
+        const maxRow = rows.find(r => parseNum(r[primary]) === max);
+        const ctx = catCol && maxRow ? ` (${dispCatCol}: ${maxRow[catCol]})` : '';
+        const text = isAr
+          ? `أعلى قيمة منفردة لـ <strong>${dispPrimary}</strong> مسجلة هي <strong>${fmt(max)} ر.ع.</strong>${ctx}.`
+          : `Highest single <strong>${dispPrimary}</strong> on record is <strong>${fmt(max)} OMR</strong>${ctx}.`;
+        insights.push({ t: text, tag: isAr ? 'فرصة' : 'Opportunity' });
+      }
+      
+      const forecastText = isAr
+        ? `التنبؤ الذكي يتوقع <strong>${forecast.forecast.length - 1}</strong> فترات قادمة بنسبة دقة <strong>${forecast.confidence}%</strong>.`
+        : `Forecast projects <strong>${forecast.forecast.length - 1}</strong> period(s) ahead with <strong>${forecast.confidence}%</strong> model confidence.`;
+      insights.push({ t: forecastText, tag: isAr ? 'تنبؤ' : 'Forecast' });
+
+
+
+      return {
+        kpis, revenue, channel, top, forecast, insights: insights.slice(0,4),
+        revenueTitle: primary ? (isAr ? `${dispPrimary} حسب ${dispXCol || 'السجل'}` : `${dispPrimary} by ${dispXCol || 'Record'}`) : (isAr ? 'نظرة عامة على السجلات' : 'Records Overview'),
+        revenueSub: xCol ? (isAr ? `مجمعة حسب ${dispXCol}` : `Grouped by ${dispXCol}`) : (isAr ? `${rows.length} صفاً` : `${rows.length} rows`),
+        channelTitle: catCol ? (isAr ? `توزيع المبيعات حسب ${dispCatCol}` : `Breakdown by ${dispCatCol}`) : (isAr ? 'تقسيم الفئات' : 'Category Breakdown'),
+        channelSub: primary ? (isAr ? `إجمالي ${dispPrimary}` : `Sum of ${dispPrimary}`) : (isAr ? 'عدد السجلات' : 'Record Count'),
+      };
+    }
+
+    // ---------------- Renderers ----------------
+    let revenueChartInstance, channelChartInstance, topChartInstance, forecastChartInstance;
+
+    function renderKpis(kpis) {
+      const grid = document.getElementById('kpiGrid');
+      if (!grid || !kpis) return;
+
+      const activeKpis = kpis;
+
+      grid.innerHTML = activeKpis.slice(0,4).map(k => `
+        <div class="rounded-2xl p-6 shadow-sm ${k.isWaste ? 'bg-gradient-to-br from-rose-500/5 to-amber-500/5 glass' : 'glass'}">
+          <div class="text-sm font-semibold uppercase tracking-wider ${k.isWaste ? 'text-rose-500' : 'text-slate-400'}">${k.l}</div>
+          <div class="mt-2 text-3xl font-bold ${k.isWaste ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-white'} sensitive-value">${k.v}</div>
+          <div class="mt-2 inline-flex items-center gap-1 text-xs sm:text-sm font-medium ${k.isWaste ? 'text-rose-500' : (k.neutral ? 'text-slate-400' : (k.up ? 'text-emerald-500' : 'text-rose-500'))}">
+            ${k.isWaste ? `<i data-lucide="alert-triangle" class="h-4 w-4 text-rose-500"></i>` : (k.neutral ? '' : `<i data-lucide="${k.up ? 'trending-up' : 'trending-down'}" class="h-4 w-4"></i>`)}
+            <span class="sensitive-value">${k.d}</span>${k.neutral || k.isWaste ? '' : (isAr ? ' مقارنة بالشهر السابق' : ' vs last month')}
+          </div>
+        </div>
+      `).join('');
+      
+      const mainRevenueEl = document.getElementById('mainTotalRevenue');
+      if (mainRevenueEl && activeKpis.length > 0) {
+        mainRevenueEl.innerText = activeKpis[0].v;
+      }
+      
+      lucide.createIcons();
+    }
+
+    function drawNativeLineChart(canvasId, data, labels, color) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const parent = canvas.parentElement;
+      const parentW = parent && parent.clientWidth > 0 ? parent.clientWidth : 0;
+      const parentH = parent && parent.clientHeight > 0 ? parent.clientHeight : 0;
+      const width = Math.max(320, parentW || canvas.width || 600);
+      const height = Math.max(220, parentH || canvas.height || 220);
+      canvas.width = width;
+      canvas.height = height;
+
+      ctx.clearRect(0, 0, width, height);
+
+      if (!data || !data.length) return;
+
+      const validNums = data.map(v => Number(v)).filter(v => !isNaN(v));
+      if (!validNums.length) return;
+      const min = Math.min(...validNums);
+      const max = Math.max(...validNums);
+      const range = (max - min) || 1;
+
+      const padding = 35;
+      const chartW = Math.max(10, width - padding * 2);
+      const chartH = Math.max(10, height - padding * 2);
+
+      const points = validNums.map((val, idx) => {
+        const x = padding + (idx / Math.max(1, validNums.length - 1)) * chartW;
+        const y = height - padding - ((val - min) / range) * chartH;
+        return { x, y, val, label: labels ? labels[idx] : '' };
+      });
+
+      // Grid Lines
+      ctx.strokeStyle = 'rgba(120, 120, 160, 0.15)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padding + (i / 4) * chartH;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+      }
+
+      // Area Fill
+      const grad = ctx.createLinearGradient(0, padding, 0, height - padding);
+      grad.addColorStop(0, 'rgba(124, 108, 240, 0.35)');
+      grad.addColorStop(1, 'rgba(124, 108, 240, 0.0)');
+      ctx.fillStyle = grad;
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, height - padding);
+      points.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(points[points.length - 1].x, height - padding);
+      ctx.closePath();
+      ctx.fill();
+
+      // Stroke Line
+      ctx.strokeStyle = color || '#7c6cf0';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      points.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.stroke();
+
+      // Draw Dots
+      points.forEach(p => {
+        ctx.fillStyle = color || '#7c6cf0';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function renderRevenueChart(revenue) {
+      const chartEl = document.getElementById('revenueChart');
+      if (!chartEl) return;
+      if (!revenue || !revenue.data || !revenue.data.length) {
+        revenue = demo.revenue;
+      }
+
+      // Guaranteed Instant Native 2D Canvas Drawing
+      drawNativeLineChart('revenueChart', revenue.data, revenue.labels, '#7c6cf0');
+
+      if (typeof Chart === 'undefined') return;
+
+      try {
+        const ctx = chartEl.getContext('2d');
+        const gradient = ctx.createLinearGradient(0,0,0,240);
+        gradient.addColorStop(0, 'rgba(124,108,240,0.35)');
+        gradient.addColorStop(1, 'rgba(124,108,240,0.0)');
+        if (revenueChartInstance) revenueChartInstance.destroy();
+        revenueChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: { 
+            labels: revenue.labels, 
+            datasets: [{ 
+              data: revenue.data, 
+              borderColor: '#7c6cf0', 
+              backgroundColor: gradient, 
+              borderWidth: 3, 
+              pointRadius: 4, 
+              pointHoverRadius: 6, 
+              pointBackgroundColor: '#7c6cf0', 
+              tension: 0.4, 
+              fill: true 
+            }] 
+          },
+          options: { 
+            responsive:true, 
+            maintainAspectRatio:false, 
+            plugins:{
+              legend:{display:false},
+              tooltip: {
+                enabled: true,
+                callbacks: {
+                  label: function(context) {
+                    if (window.isSensitiveMasked) return `${context.dataset.label || (isAr ? 'المبيعات' : 'Sales')}: ••••••`;
+                    return `${context.dataset.label || (isAr ? 'المبيعات' : 'Sales')}: ${context.raw ? context.raw.toLocaleString(isAr ? 'ar-OM' : 'en-US') : 0} ${dict.currency}`;
+                  }
+                }
+              }
+            },
+            scales:{ 
+              x:{grid:{display:false}, ticks:{color:'#64748b', font:{family:"'Tajawal', 'Cairo', sans-serif", size:11, weight:'bold'}, autoSkip:true, maxRotation:0}}, 
+              y:{
+                grid:{color:'rgba(120,120,160,0.1)'}, 
+                ticks:{
+                  color:'#64748b', 
+                  font:{family:"'Tajawal', 'Cairo', sans-serif", size:11},
+                  callback: function(val) {
+                    if (window.isSensitiveMasked) return '••••';
+                    return typeof val === 'number' ? val.toLocaleString(isAr ? 'ar-OM' : 'en-US') : val;
+                  }
+                }
+              } 
+            } 
+          }
+        });
+      } catch(e) { console.error('Error rendering revenue chart:', e); }
+    }
+
+    let currentFullRevenue = demo.revenue;
+
+    function setupTimeRangeFilter(fullRevenue) {
+      if (!fullRevenue) return;
+      currentFullRevenue = fullRevenue;
+      const container = document.getElementById('revenueTimeRange');
+      if (!container) return;
+
+      const activeClasses = ['bg-white', 'dark:bg-slate-700', 'text-ink', 'dark:text-white', 'shadow', 'font-bold', 'border', 'border-slate-200/50', 'dark:border-slate-600'];
+      const inactiveClasses = ['text-muted-foreground', 'dark:text-slate-300', 'hover:bg-white/40', 'dark:hover:bg-slate-700/60'];
+
+      const buttons = container.querySelectorAll('.time-range-btn');
+      buttons.forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+      });
+
+      const newButtons = container.querySelectorAll('.time-range-btn');
+      newButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const range = this.getAttribute('data-range');
+
+          newButtons.forEach(b => {
+            b.classList.remove(...activeClasses);
+            b.classList.add(...inactiveClasses);
+          });
+          this.classList.remove(...inactiveClasses);
+          this.classList.add(...activeClasses);
+
+          let slicedLabels = [...currentFullRevenue.labels];
+          let slicedData = [...currentFullRevenue.data];
+          const n = slicedLabels.length;
+
+          if (range === '1M') {
+            const count = Math.max(1, Math.min(n, 2));
+            slicedLabels = slicedLabels.slice(-count);
+            slicedData = slicedData.slice(-count);
+          } else if (range === '3M') {
+            const count = Math.max(1, Math.min(n, 3));
+            slicedLabels = slicedLabels.slice(-count);
+            slicedData = slicedData.slice(-count);
+          } else if (range === '6M') {
+            const count = Math.max(1, Math.min(n, 6));
+            slicedLabels = slicedLabels.slice(-count);
+            slicedData = slicedData.slice(-count);
+          } else if (range === '1Y') {
+            const count = Math.max(1, Math.min(n, 12));
+            slicedLabels = slicedLabels.slice(-count);
+            slicedData = slicedData.slice(-count);
+          } else if (range === 'All') {
+            // Full array
+          }
+
+          renderRevenueChart({ labels: slicedLabels, data: slicedData });
+        });
+      });
+    }
+
+    let currentChannelData = demo.channel;
+
+    function renderChannelChart(channel) {
+      if (channel) currentChannelData = channel;
+      else if (currentChannelData) channel = currentChannelData;
+
+      if (typeof Chart === 'undefined') {
+        setTimeout(() => renderChannelChart(channel), 200);
+        return;
+      }
+      const channelEl = document.getElementById('channelChart');
+      if (!channelEl || !channel) return;
+      const ctx = channelEl.getContext('2d');
+      if (channelChartInstance) channelChartInstance.destroy();
+      channelChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: { 
+          labels: channel.labels, 
+          datasets: [{ 
+            data: channel.data, 
+            backgroundColor: PIE_HEX, 
+            borderWidth: 0 
+          }] 
+        },
+        options: { 
+          responsive:true, 
+          maintainAspectRatio:false, 
+          plugins:{legend:{display:false}}, 
+          cutout:'62%' 
+        }
+      });
+      const legendEl = document.getElementById('channelLegend');
+      if (legendEl && channel.data) {
+        const total = channel.data.reduce((a,b)=>a+b,0) || 1;
+        legendEl.innerHTML = channel.labels.map((l,i) => `
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="h-2 w-2 rounded-full shrink-0" style="background:${PIE_HEX[i % PIE_HEX.length]}"></span>
+              <span class="truncate text-ink font-medium">${l}</span>
+            </div>
+            <span class="font-bold text-ink shrink-0 sensitive-value {% if trans.lang_code == 'ar' %}mr-2{% else %}ml-2{% endif %}">${Math.round((channel.data[i]/total)*100)}%</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    let currentTopData = null;
+
+    function renderTopChart(top) {
+      if (top) currentTopData = top;
+      else if (currentTopData) top = currentTopData;
+      else return;
+
+      const titleEl = document.getElementById('topTitle');
+      if (titleEl) titleEl.textContent = top.title || (isAr ? 'أعلى الفئات' : 'Top categories');
+      
+      const topEl = document.getElementById('topChart');
+      if (!topEl) return;
+      const ctx = topEl.getContext('2d');
+      if (topChartInstance) topChartInstance.destroy();
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#f8fafc' : '#1e293b';
+
+      const barColors = top.data.map((_, i) => {
+        const grad = ctx.createLinearGradient(0, 0, 300, 0);
+        if (i === 0) {
+          grad.addColorStop(0, '#7c6cf0');
+          grad.addColorStop(1, '#b9a6f2');
+        } else if (i === 1) {
+          grad.addColorStop(0, '#6366f1');
+          grad.addColorStop(1, '#a5b4fc');
+        } else {
+          grad.addColorStop(0, isDark ? '#475569' : '#334155');
+          grad.addColorStop(1, isDark ? '#64748b' : '#64748b');
+        }
+        return grad;
+      });
+
+      topChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { 
+          labels: top.labels, 
+          datasets: [{ 
+            data: top.data, 
+            backgroundColor: barColors, 
+            borderRadius: 8,
+            borderSkipped: false
+          }] 
+        },
+        options: { 
+          indexAxis:'y', 
+          responsive:true, 
+          maintainAspectRatio:false, 
+          plugins:{
+            legend:{display:false},
+            tooltip: {
+              enabled: true,
+              backgroundColor: isDark ? '#1e293b' : '#ffffff',
+              titleColor: isDark ? '#f8fafc' : '#1a1730',
+              bodyColor: isDark ? '#cbd5e1' : '#475569',
+              borderColor: isDark ? '#334155' : '#e2e8f0',
+              borderWidth: 1,
+              padding: 10,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  if (window.isSensitiveMasked) return '••••••';
+                  return `${context.raw.toLocaleString(isAr ? 'ar-OM' : 'en-US')} ${dict.currency}`;
+                }
+              }
+            }
+          },
+          scales:{ 
+            x:{display:false}, 
+            y:{
+              grid:{display:false}, 
+              ticks:{
+                color: textColor, 
+                font:{family:"'Tajawal', 'Cairo', sans-serif", size:12, weight:'bold'}
+              }
+            } 
+          } 
+        }
+      });
+    }
+
+    const themeObserver = new MutationObserver(() => {
+      if (currentTopData) renderTopChart(currentTopData);
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    let currentForecastData = null;
+    let currentForecastMode = 'forecast';
+
+    function switchForecastMode(mode) {
+      currentForecastMode = mode;
+      const btnForecast = document.getElementById('btnModeForecast');
+      const btnPie = document.getElementById('btnModePie');
+      const forecastView = document.getElementById('forecastViewContainer');
+      const pieView = document.getElementById('pieViewContainer');
+
+      const activeClasses = ['bg-gradient-to-r', 'from-[var(--nile)]', 'to-[var(--glow)]', 'text-white', 'font-bold', 'shadow-xs'];
+      const inactiveClasses = ['text-slate-600', 'dark:text-slate-300', 'hover:bg-white/60', 'dark:hover:bg-slate-700', 'font-semibold'];
+
+      if (mode === 'forecast') {
+        if (forecastView) forecastView.classList.remove('hidden');
+        if (pieView) pieView.classList.add('hidden');
+
+        if (btnForecast) {
+          btnForecast.classList.remove(...inactiveClasses);
+          btnForecast.classList.add(...activeClasses);
+        }
+        if (btnPie) {
+          btnPie.classList.remove(...activeClasses);
+          btnPie.classList.add(...inactiveClasses);
+        }
+
+        if (currentForecastData) {
+          renderForecastChart(currentForecastData);
+        } else {
+          renderForecastChart(demo.forecast);
+        }
+      } else if (mode === 'pie') {
+        if (forecastView) forecastView.classList.add('hidden');
+        if (pieView) pieView.classList.remove('hidden');
+
+        if (btnPie) {
+          btnPie.classList.remove(...inactiveClasses);
+          btnPie.classList.add(...activeClasses);
+        }
+        if (btnForecast) {
+          btnForecast.classList.remove(...activeClasses);
+          btnForecast.classList.add(...inactiveClasses);
+        }
+
+        if (typeof currentChannelData !== 'undefined' && currentChannelData) {
+          renderChannelChart(currentChannelData);
+        } else {
+          renderChannelChart(demo.channel);
+        }
+      }
+    }
+    window.switchForecastMode = switchForecastMode;
+
+    function renderForecastChart(forecast) {
+      if (!forecast || !forecast.actualLabels || !forecast.forecast) {
+        forecast = demo.forecast;
+      }
+      currentForecastData = forecast;
+      const badge = document.getElementById('confidenceBadge');
+      if (badge && forecast && forecast.confidence) {
+        badge.textContent = `${dict.confidence} ${forecast.confidence}%`;
+      }
+      const forecastEl = document.getElementById('forecastChart');
+      if (!forecastEl) return;
+
+      // Guaranteed Instant Native 2D Canvas Drawing
+      drawNativeLineChart('forecastChart', forecast.forecast || forecast.actual, forecast.forecastLabels || forecast.actualLabels, '#38bdf8');
+
+      if (typeof Chart === 'undefined') return;
+
+      try {
+        const actualLabels = forecast.actualLabels || demo.forecast.actualLabels;
+        const forecastLabels = forecast.forecastLabels || demo.forecast.forecastLabels;
+        const actual = forecast.actual || demo.forecast.actual;
+        const fc = forecast.forecast || demo.forecast.forecast;
+
+        const labels = [...actualLabels, ...forecastLabels.slice(1)];
+        const actualData = [...actual, ...Array(Math.max(0, forecastLabels.length - 1)).fill(null)];
+        const forecastData = [...Array(Math.max(0, actualLabels.length - 1)).fill(null), ...fc];
+        const ctx = forecastEl.getContext('2d');
+        if (forecastChartInstance) forecastChartInstance.destroy();
+        forecastChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: { 
+            labels, 
+            datasets: [
+              { label: isAr ? 'الفعلي' : 'Actual', data: actualData, borderColor: '#2b2470', borderWidth:2.5, pointRadius:4, tension:0.3, spanGaps:false },
+              { label: isAr ? 'التنبؤ' : 'Forecast', data: forecastData, borderColor: '#b9a6f2', borderWidth:2.5, borderDash:[5,5], pointRadius:4, tension:0.3, spanGaps:false }
+            ]
+          },
+          options: { 
+            responsive:true, 
+            maintainAspectRatio:false, 
+            plugins:{
+              legend:{display:false},
+              tooltip: {
+                enabled: true,
+                callbacks: {
+                  label: function(context) {
+                    if (window.isSensitiveMasked) return `${context.dataset.label || ''}: ••••••`;
+                    return `${context.dataset.label || ''}: ${context.raw ? context.raw.toLocaleString(isAr ? 'ar-OM' : 'en-US') : 0} ${dict.currency}`;
+                  }
+                }
+              }
+            },
+            scales:{ 
+              x:{grid:{display:false}, ticks:{color:'#64748b', font:{family:"'Tajawal', 'Cairo', sans-serif", size:11, weight:'bold'}}}, 
+              y:{
+                grid:{color:'rgba(120,120,160,0.1)'}, 
+                ticks:{
+                  color:'#64748b', 
+                  font:{family:"'Tajawal', 'Cairo', sans-serif", size:11},
+                  callback: function(val) {
+                    if (window.isSensitiveMasked) return '••••';
+                    return typeof val === 'number' ? val.toLocaleString(isAr ? 'ar-OM' : 'en-US') : val;
+                  }
+                }
+              } 
+            } 
+          }
+        });
+      } catch(e) { console.error('Error rendering forecast chart:', e); }
+    }
+
+
+    function renderInsights(insights) {
+      const list = document.getElementById('insightsList');
+      if (!list || !insights) return;
+      list.innerHTML = insights.map(i => `
+        <li class="flex items-start gap-3 rounded-2xl border border-white/60 bg-white/50 p-4">
+          <i data-lucide="sparkles" class="mt-0.5 h-4 w-4 flex-none text-[var(--glow)]"></i>
+          <div class="flex-1 text-sm text-ink font-medium leading-relaxed">${i.t}</div>
+          <span class="rounded-full bg-gradient-to-r from-[var(--nile)]/15 to-[var(--lavender)]/25 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--nile)] shrink-0">${i.tag}</span>
+        </li>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // ---------------- Dropzone Drag & Drop Form Handler ----------------
+    const dropzoneEl = document.getElementById('dropzone');
+    const dashUploadInput = document.getElementById('dash-upload');
+    if (dropzoneEl && dashUploadInput) {
+      ['dragenter', 'dragover'].forEach(evtName => {
+        dropzoneEl.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzoneEl.classList.add('bg-white/90', 'border-[var(--glow)]', 'scale-[1.02]');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(evtName => {
+        dropzoneEl.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzoneEl.classList.remove('bg-white/90', 'border-[var(--glow)]', 'scale-[1.02]');
+        });
+      });
+
+      dropzoneEl.addEventListener('drop', (e) => {
+        const files = e.dataTransfer ? e.dataTransfer.files : null;
+        if (files && files.length > 0) {
+          dashUploadInput.files = files;
+          if (dashUploadInput.form) {
+            dashUploadInput.form.submit();
+          }
+        }
+      });
+    }
+
+    // ---------------- Boot / Initializing Dashboard ----------------
+    (function init() {
+      const ownerName = "{% if user.is_authenticated %}{{ profile.company_name|default:user.username }}{% else %}Aisha{% endif %}";
+      const greetingText = isAr 
+        ? `أهلاً، ${ownerName}` 
+        : `Welcome, ${ownerName}`;
+      const greetingEl = document.getElementById('greeting');
+      if (greetingEl) greetingEl.textContent = greetingText;
+
+      const banner = document.getElementById('dataBanner');
+
+      const processDataset = (dataset) => {
+        if (!dataset) return;
+        let built;
+        if (dataset.rows && dataset.columns) {
+          built = buildFromDataset(dataset);
+        } else {
+          built = dataset;
+        }
+        if (!built) return;
+
+        if (dataset.fileName) {
+          let cleanFileName = dataset.fileName;
+          if (!isAr) {
+            cleanFileName = cleanFileName
+              .replace(/تجميع\s*البيانات\s*التراكمية\s*\(Cumulative Data\)/gi, 'Cumulative Business Dataset')
+              .replace(/تجميع\s*البيانات\s*التراكمية/gi, 'Cumulative Business Dataset');
+          }
+
+          if (banner) {
+            banner.classList.remove('hidden');
+            banner.classList.add('bg-emerald-50','border','border-emerald-100','text-emerald-700');
+            banner.innerHTML = isAr 
+              ? `
+                <span class="flex items-center gap-2">
+                  <i data-lucide="database" class="h-3.5 w-3.5"></i>
+                  عرض البيانات من <strong>${cleanFileName}</strong> · ${(dataset.rows ? dataset.rows.length : 0).toLocaleString(isAr ? 'ar-OM' : 'en-US')} صفاً
+                </span>
+                <button id="resetData" class="font-bold hover:underline">استخدم البيانات التجريبية بدلاً من ذلك</button>
+              `
+              : `
+                <span class="flex items-center gap-2">
+                  <i data-lucide="database" class="h-3.5 w-3.5"></i>
+                  Showing data from <strong>${cleanFileName}</strong> · ${(dataset.rows ? dataset.rows.length : 0).toLocaleString()} rows
+                </span>
+                <button id="resetData" class="font-semibold hover:underline">Use demo data instead</button>
+              `;
+          }
+
+          const overviewSub = document.getElementById('overviewSub');
+          if (overviewSub) {
+            overviewSub.textContent = isAr
+              ? `قامت بصيرة بتحليل ملف ${cleanFileName} وتوليد لوحة المعلومات الحالية.`
+              : `Basira analyzed ${cleanFileName} and generated this dashboard.`;
+          }
+        }
+          
+        if (document.getElementById('revenueTitle') && built.revenueTitle) document.getElementById('revenueTitle').textContent = built.revenueTitle;
+        if (document.getElementById('revenueSub') && built.revenueSub) document.getElementById('revenueSub').textContent = built.revenueSub;
+        if (document.getElementById('channelTitle') && built.channelTitle) document.getElementById('channelTitle').textContent = built.channelTitle;
+        if (document.getElementById('channelSub') && built.channelSub) document.getElementById('channelSub').textContent = built.channelSub;
+        if (document.getElementById('forecastSub') && built.revenueTitle) {
+          document.getElementById('forecastSub').textContent = isAr
+            ? `مستنتج من ${built.revenueTitle}`
+            : `Extrapolated from ${built.revenueTitle}`;
+        }
+
+        if (built.kpis) {
+          renderKpis(built.kpis);
+          updateSalesGoalProgress(built.kpis);
+        }
+        if (built.revenue) {
+          renderRevenueChart(built.revenue);
+          setupTimeRangeFilter(built.revenue);
+        }
+        if (built.channel) renderChannelChart(built.channel);
+        if (built.top) renderTopChart(built.top);
+        if (built.forecast) renderForecastChart(built.forecast);
+        if (built.insights) renderInsights(built.insights);
+
+        window.onMaskStateChanged = function(isMasked) {
+          if (typeof revenueChartInstance !== 'undefined' && revenueChartInstance) {
+            revenueChartInstance.update();
+          }
+          if (typeof forecastChartInstance !== 'undefined' && forecastChartInstance) {
+            forecastChartInstance.update();
+          }
+          if (typeof channelChartInstance !== 'undefined' && channelChartInstance) {
+            channelChartInstance.update();
+          }
+          if (typeof topChartInstance !== 'undefined' && topChartInstance) {
+            topChartInstance.update();
+          }
+        };
+
+        lucide.createIcons();
+        const resetBtn = document.getElementById('resetData');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', () => {
+            localStorage.removeItem('basira_dataset');
+            window.location.reload();
+          });
+        }
+      };
+
+      let ds = null;
+      try {
+        const scriptEl = document.getElementById('server-dataset');
+        if (scriptEl && scriptEl.textContent.trim() !== 'null' && scriptEl.textContent.trim() !== '') {
+           let parsed = JSON.parse(scriptEl.textContent);
+           if (typeof parsed === 'string') {
+             try { parsed = JSON.parse(parsed); } catch(e) {}
+           }
+           if (parsed && typeof parsed === 'object' && parsed !== null) {
+             ds = parsed;
+             const existingRaw = localStorage.getItem('basira_dataset');
+             if (existingRaw) {
+                 try {
+                     let existingDs = JSON.parse(existingRaw);
+                     if (typeof existingDs === 'string') existingDs = JSON.parse(existingDs);
+                     if (existingDs && existingDs.fileName === ds.fileName && existingDs.approved) {
+                         ds.approved = true;
+                     }
+                 } catch(e) {}
+             }
+             localStorage.setItem('basira_dataset', JSON.stringify(ds));
+           }
+        }
+      } catch (e) { console.error('Error parsing server dataset:', e); }
+
+      if (!ds) {
+        const raw = localStorage.getItem('basira_dataset');
+        if (raw) {
+          try {
+            let parsed = JSON.parse(raw);
+            if (typeof parsed === 'string') {
+              try { parsed = JSON.parse(parsed); } catch(e) {}
+            }
+            if (parsed && typeof parsed === 'object' && parsed !== null) {
+              ds = parsed;
+            }
+          } catch (e) { ds = null; }
+        }
+      }
+
+      if (ds) {
+        if (ds.csvUrl && (!ds.rows || !ds.rows.length)) {
+          if (banner) {
+            banner.classList.remove('hidden');
+            banner.classList.add('bg-white/70','border','border-white','text-muted-foreground');
+            banner.innerHTML = `<span class="flex items-center gap-2"><i data-lucide="loader-2" class="h-4 w-4 spin"></i> ${isAr ? 'جاري تحميل وتحليل الملف بذكاء...' : 'Downloading and analyzing dataset...'}</span>`;
+            lucide.createIcons();
+          }
+          Papa.parse(ds.csvUrl, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              ds.rows = results.data;
+              ds.columns = results.meta.fields || [];
+              ds.approved = true;
+              localStorage.setItem('basira_dataset', JSON.stringify(ds));
+              processDataset(ds);
+            },
+            error: function() {
+              console.error("Error downloading CSV");
+              processDataset(demo);
+            }
+          });
+          return;
+        }
+
+        if (ds.rows && ds.rows.length) {
+            processDataset(ds);
+            return;
+        }
+      }
+
+      // Default Fallback: Always show demo dataset if no dataset loaded
+      processDataset(demo);
+    })();
+  });
+
+  // Goal Modal & Management Functions
+  function openGoalModal() {
+      const modal = document.getElementById('goalModal');
+      if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeGoalModal() {
+      const modal = document.getElementById('goalModal');
+      if (modal) modal.classList.add('hidden');
+  }
+
+  async function saveSalesGoal() {
+      const rev = parseFloat(document.getElementById('goalRevenueInput').value) || 5000;
+      const profit = parseFloat(document.getElementById('goalProfitInput').value) || 1500;
+
+      try {
+          const res = await fetch('/api/goals/update/', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: JSON.stringify({ target_revenue: rev, target_profit: profit })
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+              const targetEl = document.getElementById('goalTargetDisplay');
+              if (targetEl) targetEl.textContent = `${rev.toLocaleString(isAr ? 'ar-OM' : 'en-US')} ${dict.currency}`;
+              closeGoalModal();
+              // Refresh goal progress calculation
+              recalculateGoalProgress(rev);
+          }
+      } catch(e) {
+          console.error("Error saving goal:", e);
+      }
+  }
+
+  function updateSalesGoalProgress(kpis) {
+      try {
+        if (!kpis || !kpis.length) return;
+        const targetRev = parseFloat("{{ sales_goal.target_revenue|default:5000 }}") || 5000;
+        
+        let revenueStr = '';
+        if (kpis.length > 0) {
+          revenueStr = kpis[0].v;
+        }
+        
+        const parsed = parseNum(revenueStr);
+        const currentRev = isNaN(parsed) ? 4285 : parsed;
+        
+        const percent = Math.round((currentRev / targetRev) * 100);
+        const percentClamped = Math.min(100, percent);
+        
+        const goalAchievedEl = document.getElementById('goalAchievedDisplay');
+        const goalProgressBar = document.getElementById('goalProgressBar');
+        const goalPercentDisplay = document.getElementById('goalPercentDisplay');
+        
+        if (goalAchievedEl) {
+          goalAchievedEl.textContent = fmt(currentRev) + ' ' + (typeof dict !== 'undefined' ? dict.currency : 'ر.ع.');
+        }
+        if (goalProgressBar) {
+          goalProgressBar.style.width = `${percentClamped}%`;
+        }
+        if (goalPercentDisplay) {
+          goalPercentDisplay.textContent = `${percent}% ${typeof isAr !== 'undefined' && isAr ? 'منجز' : 'achieved'}`;
+        }
+      } catch(e) { console.error('Error updating sales goal progress:', e); }
+  }
+
+  function recalculateGoalProgress(targetRev) {
+      let currentRev = 4285;
+      const goalAchievedEl = document.getElementById('goalAchievedDisplay');
+      if (goalAchievedEl) {
+          const val = parseFloat(goalAchievedEl.textContent.replace(/[^\d.-]/g, ''));
+          if (!isNaN(val) && val > 0) currentRev = val;
+      }
+      const percent = Math.round((currentRev / targetRev) * 100);
+      const percentClamped = Math.min(100, percent);
+      const bar = document.getElementById('goalProgressBar');
+      const pctDisp = document.getElementById('goalPercentDisplay');
+      if (bar) bar.style.width = `${percentClamped}%`;
+      if (pctDisp) pctDisp.textContent = `${percent}% ${isAr ? 'منجز' : 'achieved'}`;
+  }
+
+  function switchForecastMode(mode) {
+    const forecastContainer = document.getElementById('forecastViewContainer');
+    const pieContainer = document.getElementById('pieViewContainer');
+    const btnForecast = document.getElementById('btnModeForecast');
+    const btnPie = document.getElementById('btnModePie');
+    const badge = document.getElementById('confidenceBadge');
+    const forecastSub = document.getElementById('forecastSub');
+
+    const activeClasses = ['bg-gradient-to-r', 'from-[var(--nile)]', 'to-[var(--glow)]', 'text-white', 'font-bold', 'shadow-xs'];
+    const inactiveClasses = ['text-slate-600', 'dark:text-slate-300', 'hover:bg-white/60', 'dark:hover:bg-slate-700', 'font-semibold'];
+
+    if (mode === 'pie') {
+      if (forecastContainer) forecastContainer.classList.add('hidden');
+      if (pieContainer) pieContainer.classList.remove('hidden');
+      if (badge) badge.classList.add('hidden');
+
+      if (currentChannelData) renderChannelChart(currentChannelData);
+
+      if (forecastSub) {
+        forecastSub.textContent = isAr ? "توزيع الإيرادات والمبيعات حسب الفئة / القطاع" : "Share of revenue by category / sector";
+      }
+
+      if (btnForecast) {
+        btnForecast.classList.remove(...activeClasses);
+        btnForecast.classList.add(...inactiveClasses);
+      }
+      if (btnPie) {
+        btnPie.classList.remove(...inactiveClasses);
+        btnPie.classList.add(...activeClasses);
+      }
+    } else {
+      if (pieContainer) pieContainer.classList.add('hidden');
+      if (forecastContainer) forecastContainer.classList.remove('hidden');
+      if (badge) badge.classList.remove('hidden');
+
+      if (forecastSub) {
+        forecastSub.textContent = isAr ? "النموذج المختار تلقائياً: الاتجاه الخطي + الموسمية" : "Auto-selected model: linear trend + seasonality";
+      }
+
+      if (btnPie) {
+        btnPie.classList.remove(...activeClasses);
+        btnPie.classList.add(...inactiveClasses);
+      }
+      if (btnForecast) {
+        btnForecast.classList.remove(...inactiveClasses);
+        btnForecast.classList.add(...activeClasses);
+      }
+    }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  async function dismissAnomaly(alertId) {
+      try {
+          const res = await fetch(`/api/anomalies/${alertId}/dismiss/`, {
+              method: 'POST',
+              headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+              const el = document.getElementById(`alert-card-${alertId}`);
+              if (el) {
+                  el.style.opacity = '0';
+                  el.style.transform = 'translateY(-10px)';
+                  setTimeout(() => el.remove(), 300);
+              }
+          }
+      } catch(e) {
+          console.error("Error dismissing anomaly:", e);
+      }
+  }
+    // --- Live Sync Polling ---
+    function startLiveSync() {
+        setInterval(() => {
+            fetch('/api/live-sync/')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.update) {
+                    handleLiveUpdate(data.update);
+                }
+            })
+            .catch(e => console.error('Live Sync Error:', e));
+        }, 2500); // Check every 2.5 seconds
+    }
+
+    function fixArabicReversal(str) {
+        if (!str || typeof str !== 'string') return str;
+        const words = str.split(' ');
+        const isRev = words.some(w => w.startsWith('ة') || w.startsWith('ـة')) ||
+                      ['تاعيبم', 'ةروتاف', 'ديروت', 'بتاور', 'ينورتكلإ', 'دروملا', 'طقسم', 'بيسلا', 'سطسغأ'].some(w => str.includes(w));
+        if (isRev) {
+            return str.split(/([A-Za-z0-9_]+)/).reverse().map(t => /^[A-Za-z0-9_]+$/.test(t) ? t : t.split('').reverse().join('')).join('').trim();
+        }
+        return str;
+    }
+
+    function handleLiveUpdate(update) {
+        const container = document.getElementById('liveSyncContainer');
+        if (!container) return;
+
+        if (update.type === 'decision') {
+            // Show decision alert
+            const alertCard = document.createElement('div');
+            alertCard.className = 'px-4 py-4 rounded-xl flex items-center justify-between text-sm font-semibold text-emerald-800 bg-emerald-100 shadow-sm border border-emerald-200 animate-fade-up';
+            alertCard.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i data-lucide="check-circle" class="h-6 w-6 text-emerald-600"></i>
+                    <div>
+                        <div class="font-black text-emerald-900 text-base">{% if trans.lang_code == 'ar' %}تم اعتماد قرار تنفيذي{% else %}Executive Decision Approved{% endif %}</div>
+                        <div class="font-medium mt-0.5">${update.title}</div>
+                    </div>
+                </div>
+            `;
+            container.prepend(alertCard);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            // Auto remove after 15s
+            setTimeout(() => {
+                alertCard.style.opacity = '0';
+                setTimeout(() => alertCard.remove(), 500);
+            }, 15000);
+        } else if (update.type === 'chart') {
+            // Fix any reversed Arabic labels automatically
+            const fixedLabels = (update.labels || []).map(fixArabicReversal);
+            
+            // Render Live Chart
+            const chartId = 'liveChart_' + Date.now();
+            const chartCard = document.createElement('div');
+            chartCard.className = 'rounded-2xl p-6 glass shadow-sm flex flex-col border border-[var(--glow)]/40 animate-fade-up relative overflow-hidden transition-all duration-300';
+            chartCard.innerHTML = `
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-4 pb-3 border-b border-slate-200/50 dark:border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <div class="h-8 w-8 rounded-xl bg-gradient-to-tr from-[var(--nile)] to-[var(--glow)] text-white flex items-center justify-center shadow-xs">
+                            <i data-lucide="sparkles" class="h-4.5 w-4.5"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-base font-black text-ink">${update.title}</span>
+                                <span class="bg-[var(--glow)]/15 text-[var(--glow)] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">LIVE INSIGHT</span>
+                            </div>
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">{% if trans.lang_code == 'ar' %}تحليل ذكي مباشر تم توليده ونقله من مساعد "اسأل بصيرة"{% else %}Live AI insight synced from Ask Basira{% endif %}</p>
+                        </div>
+                    </div>
+                    <button onclick="let c = this.closest('.animate-fade-up'); c.style.opacity='0'; setTimeout(()=>c.remove(), 300)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800 transition">
+                        <i data-lucide="x" class="h-4.5 w-4.5"></i>
+                    </button>
+                </div>
+                <div class="relative w-full h-[260px]"><canvas id="${chartId}"></canvas></div>
+            `;
+            container.prepend(chartCard);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            setTimeout(() => {
+                const ctx = document.getElementById(chartId).getContext('2d');
+                const colors = ['#2b2470', '#7c6cf0', '#b9a6f2', '#f43f5e', '#10b981'];
+                new Chart(ctx, {
+                    type: update.chart_type === 'line_chart' ? 'line' : (update.chart_type === 'pie_chart' ? 'pie' : 'bar'),
+                    data: {
+                        labels: fixedLabels,
+                        datasets: [{
+                            label: update.title,
+                            data: update.data,
+                            backgroundColor: update.chart_type === 'pie_chart' ? colors : 'rgba(124, 108, 240, 0.55)',
+                            borderColor: '#7c6cf0',
+                            borderWidth: update.chart_type === 'line_chart' ? 2 : 1,
+                            borderRadius: update.chart_type === 'bar_chart' ? 8 : 0,
+                            tension: update.chart_type === 'line_chart' ? 0.35 : 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: update.chart_type === 'pie_chart' } },
+                        scales: update.chart_type === 'pie_chart' ? {} : {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: 'rgba(0,0,0,0.04)' },
+                                ticks: { font: { family: "'Tajawal', 'Cairo', sans-serif", size: 11, weight: 'bold' } }
+                            },
+                            x: { 
+                                grid: { display: false },
+                                ticks: { font: { family: "'Tajawal', 'Cairo', sans-serif", size: 11, weight: 'bold' } }
+                            }
+                        }
+                    }
+                });
+            }, 100);
+        }
+    }
+
+    // Start Live Sync on load
+    startLiveSync();
+
+</script>
+{% endblock %}

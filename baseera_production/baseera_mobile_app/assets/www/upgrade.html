@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+ <title>Upgrade & Plans | الترقية وباقات الاشتراك</title>
+ <link rel="stylesheet" href="styles.css">
+ <script>
+  (function () {
+   var t = localStorage.getItem("baseera-theme") || "light";
+   document.documentElement.setAttribute("data-theme", t);
+   var l = localStorage.getItem("baseera-lang") || "ar";
+   document.documentElement.setAttribute("lang", l);
+   document.documentElement.setAttribute("dir", l === "ar" ? "rtl" : "ltr");
+  })();
+ </script>
+ <link rel="icon" type="image/x-icon" href="images/logo-cropped.png">
+ <style>
+  .package-card {
+   background: rgba(255, 255, 255, 0.95);
+   backdrop-filter: blur(24px);
+   border-radius: 1.5rem;
+   padding: 1.25rem;
+   border: 1px solid rgba(226, 232, 240, 0.85);
+   box-shadow: 0 4px 20px rgba(27, 20, 75, 0.05);
+   margin-bottom: 1.25rem;
+   position: relative;
+   overflow: hidden;
+   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .package-card.popular {
+   border: 2px solid #6366f1;
+   box-shadow: 0 10px 35px rgba(99, 102, 241, 0.18);
+  }
+  .badge-popular {
+   position: absolute;
+   top: 14px;
+   left: 14px;
+   background: linear-gradient(135deg, #4f46e5 0%, #7c6cf0 100%);
+   color: white;
+   font-size: 10px;
+   font-weight: 800;
+   padding: 4px 10px;
+   border-radius: 12px;
+  }
+  [dir="ltr"] .badge-popular {
+   left: auto;
+   right: 14px;
+  }
+  .feature-list {
+   list-style: none;
+   padding: 0;
+   margin: 1rem 0;
+   display: flex;
+   flex-direction: column;
+   gap: 0.6rem;
+  }
+  .feature-list li {
+   display: flex;
+   align-items: flex-start;
+   gap: 8px;
+   font-size: 12.5px;
+   color: #334155;
+   line-height: 1.4;
+  }
+  .feature-list svg {
+   width: 16px;
+   height: 16px;
+   color: #10b981;
+   flex-shrink: 0;
+   margin-top: 2px;
+  }
+  .btn-plan {
+   width: 100%;
+   padding: 0.75rem;
+   border-radius: 0.85rem;
+   font-size: 13.5px;
+   font-weight: 800;
+   border: none;
+   cursor: pointer;
+   transition: all 0.2s ease;
+   text-align: center;
+   display: block;
+   box-sizing: border-box;
+  }
+  .btn-plan.current {
+   background: #f1f5f9;
+   color: #64748b;
+   cursor: default;
+  }
+  .btn-plan.starter {
+   background: #ffffff;
+   border: 1.5px solid #cbd5e1;
+   color: #1e293b;
+  }
+  .btn-plan.growth {
+   background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%);
+   color: #ffffff;
+   box-shadow: 0 4px 15px rgba(124, 108, 240, 0.4);
+  }
+ 
+/* Hide all browser scrollbars & scroll arrows */
+* {
+ scrollbar-width: none !important;
+ -ms-overflow-style: none !important;
+}
+*::-webkit-scrollbar,
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+ display: none !important;
+ width: 0px !important;
+ height: 0px !important;
+ background: transparent !important;
+ -webkit-appearance: none !important;
+}
+
+ </style>
+</head>
+
+<body class="page-enter">
+
+ <div class="app-shell">
+
+  <!-- Topbar Header -->
+  <div class="settings-topbar" style="background: transparent; border: none; box-shadow: none;" style="padding: 16px 20px 6px; background: transparent; border: none; box-shadow: none;">
+   <button class="icon-back-btn" onclick="window.history.back()" title="Back">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </button>
+   <div>
+    <div class="settings-heading" id="titleText">الترقية وباقات الاشتراك</div>
+    <div style="font-size: 11px; color: #64748b;" id="subtitleText">اختر الباقة الأنسب لاحتياجات ونمو مشروعك</div>
+   </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <div style="padding: 14px 14px 90px 14px; overflow-y: auto; flex: 1;">
+
+   <!-- 1. Free Trial Package -->
+   <div class="package-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+     <span style="font-size: 15px; font-weight: 900; color: #1e293b;" id="p1Title">التجربة المجانية</span>
+     <span style="background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 10px;" id="p1Tag">14 يوماً</span>
+    </div>
+    <div style="font-size: 24px; font-weight: 900; color: #1e293b; margin-bottom: 4px;">
+     0 <span style="font-size: 13px; color: #64748b; font-weight: 700;">ر.ع.</span>
+    </div>
+    <div style="font-size: 11.5px; color: #64748b; margin-bottom: 10px;" id="p1Desc">استكشاف المنصة وتجربة الذكاء الاصطناعي.</div>
+    <ul class="feature-list">
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f1_1">فترة تجريبية مجانية لمدة 14 يوماً</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f1_2">رفع وتحليل حتى 3 ملفات بيانات</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f1_3">محادثة أساسية مع المساعد "اسأل بصيرة"</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f1_4">لوحة تحكم تفاعلية ومؤشرات الأداء</span></li>
+    </ul>
+    <button class="btn-plan current" disabled id="btn1">الخطة الحالية (فترة تجريبية)</button>
+   </div>
+
+   <!-- 2. Starter Package -->
+   <div class="package-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+     <span style="font-size: 15px; font-weight: 900; color: #1e293b;" id="p2Title">باقة البداية (STARTER)</span>
+     <span style="background: rgba(99, 102, 241, 0.1); color: #4f46e5; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 10px;" id="p2Tag">مشاريع صغيرة</span>
+    </div>
+    <div style="font-size: 24px; font-weight: 900; color: #1e293b; margin-bottom: 4px;">
+     7 <span style="font-size: 13px; color: #64748b; font-weight: 700;">ر.ع. / شهر</span>
+    </div>
+    <div style="font-size: 11.5px; color: #64748b; margin-bottom: 10px;" id="p2Desc">مخصصة للمشاريع والشركات الصغيرة.</div>
+    <ul class="feature-list">
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f2_1">استفسارات ذكاء اصطناعي وتحليل مبيعات منتظم</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f2_2">رفع ملفات Excel و CSV وكشوف الحسابات</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f2_3">متابعة أهداف المبيعات الشهرية ونسب الإنجاز</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f2_4">تصدير تقارير ورسوم بيانية شهرية</span></li>
+    </ul>
+    <button class="btn-plan starter" onclick="subscribePlan('Starter', '7 OMR')" id="btn2">اختيار باقة البداية (7 ر.ع.)</button>
+   </div>
+
+   <!-- 3. Growth Package (Most Popular) -->
+   <div class="package-card popular">
+    <span class="badge-popular" id="popularBadge">الأكثر طلباً والأعلى قيمة</span>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; margin-top: 16px;">
+     <span style="font-size: 16px; font-weight: 900; color: #2b2470;" id="p3Title">باقة النمو (GROWTH)</span>
+     <span style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 10px;" id="p3Tag">شاملة كلياً</span>
+    </div>
+    <div style="font-size: 26px; font-weight: 900; color: #2b2470; margin-bottom: 4px;">
+     20 <span style="font-size: 13px; color: #64748b; font-weight: 700;">ر.ع. / شهر</span>
+    </div>
+    <div style="font-size: 11.5px; color: #64748b; margin-bottom: 10px;" id="p3Desc">تحليلات غير محدودة وقدرات متقدمة للنمو.</div>
+    <ul class="feature-list">
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f3_1">رفع وتحليل غير محدود للبيانات والملفات</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f3_2">غرفة إدارة وكلاء الذكاء الاصطناعي (Boardroom)</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f3_3">تحليلات تنبؤية وتوقعات نمو المبيعات والأرباح</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f3_4">تنبيهات استباقية لكشف الهدر وفرص الربحية</span></li>
+     <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span id="f3_5">أولوية في سرعة المعالجة والتقارير التنفيذية</span></li>
+    </ul>
+    <button class="btn-plan growth" onclick="subscribePlan('Growth', '20 OMR')" id="btn3"> اشترك في باقة النمو (20 ر.ع.)</button>
+   </div>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+   <a href="dashboard.html" class="" title="الرئيسية">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+   </a>
+   <a href="insights.html" class="" title="التحليلات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+   </a>
+   <a href="chat.html" class="" title="اسأل بصيرة" style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z"/></svg>
+   </a>
+   <a href="datasets.html" class="" title="البيانات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+   </a>
+   <a href="reports.html" class="" title="التقارير">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+   </a>
+  </nav>
+
+ </div>
+
+ <script src="app.js"></script>
+ <script>
+  const isAr = (localStorage.getItem('baseera-lang') || document.documentElement.getAttribute('lang') || 'en') === 'ar';
+
+  function applyLocale() {
+   if (!isAr) {
+    document.getElementById('titleText').textContent = 'Upgrade & Plans';
+    document.getElementById('subtitleText').textContent = 'Choose the best plan for your project growth';
+    
+    document.getElementById('p1Title').textContent = 'Free Trial';
+    document.getElementById('p1Tag').textContent = '14 Days';
+    document.getElementById('p1Desc').textContent = 'Explore platform features and experience AI models.';
+    document.getElementById('f1_1').textContent = '14-day free trial period';
+    document.getElementById('f1_2').textContent = 'Upload and analyze up to 3 datasets';
+    document.getElementById('f1_3').textContent = 'Basic chat with "Ask Baseera" Assistant';
+    document.getElementById('f1_4').textContent = 'Interactive dashboard & KPI tracking';
+    document.getElementById('btn1').textContent = 'Current Plan (Trial)';
+
+    document.getElementById('p2Title').textContent = 'STARTER Plan';
+    document.getElementById('p2Tag').textContent = 'Small Business';
+    document.getElementById('p2Desc').textContent = 'Designed for small projects and growing businesses.';
+    document.getElementById('f2_1').textContent = 'Regular AI queries & sales performance tracking';
+    document.getElementById('f2_2').textContent = 'Upload Excel, CSV, and bank statement files';
+    document.getElementById('f2_3').textContent = 'Track monthly targets & completion rates';
+    document.getElementById('f2_4').textContent = 'Export monthly reports & trend charts';
+    document.getElementById('btn2').textContent = 'Select Starter Plan (7 OMR)';
+
+    document.getElementById('popularBadge').textContent = 'Most Popular & Best Value';
+    document.getElementById('p3Title').textContent = 'GROWTH Plan';
+    document.getElementById('p3Tag').textContent = 'All-Inclusive';
+    document.getElementById('p3Desc').textContent = 'Unlimited analysis and advanced executive capabilities.';
+    document.getElementById('f3_1').textContent = 'Unlimited data & file analysis';
+    document.getElementById('f3_2').textContent = 'AI Boardroom & multi-agent debate mode';
+    document.getElementById('f3_3').textContent = 'Predictive analytics & sales growth forecasts';
+    document.getElementById('f3_4').textContent = 'Proactive leak alerts & profit optimization';
+    document.getElementById('f3_5').textContent = 'Priority processing & executive reports';
+    document.getElementById('btn3').textContent = ' Subscribe to Growth (20 OMR)';
+   }
+  }
+
+  function subscribePlan(planName, price) {
+   const msg = isAr ? `جاري الانتقال لبوابة الدفع للاشتراك في ${planName} (${price})...` : `Redirecting to payment gateway for ${planName} (${price})...`;
+   if (typeof showToast === 'function') {
+    showToast(msg);
+   } else {
+    alert(msg);
+   }
+  }
+
+  applyLocale();
+ </script>
+</body>
+</html>

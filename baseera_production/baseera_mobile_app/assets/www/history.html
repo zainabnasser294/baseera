@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+ <title>History | سجل العمليات والاستفسارات</title>
+ <link rel="stylesheet" href="styles.css">
+ <script>
+  (function () {
+   var t = localStorage.getItem("baseera-theme") || "light";
+   document.documentElement.setAttribute("data-theme", t);
+   var l = localStorage.getItem("baseera-lang") || "ar";
+   document.documentElement.setAttribute("lang", l);
+   document.documentElement.setAttribute("dir", l === "ar" ? "rtl" : "ltr");
+  })();
+ </script>
+ <link rel="icon" type="image/x-icon" href="images/logo-cropped.png">
+ <style>
+  .history-card {
+   background: rgba(255, 255, 255, 0.95);
+   backdrop-filter: blur(16px);
+   border: 1px solid rgba(226, 232, 240, 0.8);
+   border-radius: 1.25rem;
+   padding: 14px;
+   margin-bottom: 12px;
+   box-shadow: 0 4px 15px rgba(27, 20, 75, 0.04);
+   transition: transform 0.15s ease, box-shadow 0.15s ease;
+   cursor: pointer;
+  }
+  .history-card:hover {
+   transform: translateY(-2px);
+   box-shadow: 0 8px 25px rgba(27, 20, 75, 0.08);
+  }
+  .filter-chip {
+   padding: 6px 14px;
+   border-radius: 20px;
+   border: 1px solid #e2e8f0;
+   background: #f8fafc;
+   color: #64748b;
+   font-size: 12px;
+   font-weight: 700;
+   cursor: pointer;
+   white-space: nowrap;
+   transition: all 0.2s ease;
+  }
+  .filter-chip.active {
+   background: #2b2470;
+   color: #ffffff;
+   border-color: #2b2470;
+   box-shadow: 0 4px 12px rgba(43, 36, 112, 0.25);
+  }
+  .type-badge {
+   font-size: 10px;
+   font-weight: 800;
+   padding: 3px 8px;
+   border-radius: 8px;
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+  }
+  .type-badge.chat {
+   background: rgba(99, 102, 241, 0.12);
+   color: #4f46e5;
+  }
+  .type-badge.file {
+   background: rgba(16, 185, 129, 0.12);
+   color: #059669;
+  }
+  .modal-overlay {
+   display: none;
+   position: fixed;
+   inset: 0;
+   background: rgba(15, 23, 42, 0.45);
+   backdrop-filter: blur(6px);
+   z-index: 9999;
+   align-items: center;
+   justify-content: center;
+   padding: 20px;
+  }
+  .modal-overlay.open {
+   display: flex;
+  }
+  .modal-content {
+   background: #ffffff;
+   border-radius: 1.5rem;
+   max-width: 420px;
+   width: 100%;
+   max-height: 80vh;
+   overflow-y: auto;
+   padding: 20px;
+   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.3);
+   animation: popInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes popInModal {
+   from { opacity: 0; transform: scale(0.92) translateY(15px); }
+   to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+ </style>
+</head>
+<body class="page-enter">
+
+ <div class="app-shell">
+
+  <!-- Header -->
+  <div class="chat-header"
+   style="background: rgba(255,255,255,0.7); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,0.4); box-shadow: 0 4px 15px rgba(27,20,75,0.05); border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px;">
+   <div style="display: flex; align-items: center; gap: 12px;">
+    <button class="icon-back-btn" onclick="window.history.back()" title="Back">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </button>
+    <div>
+     <div style="font-size: 17px; font-weight: 900; color: #1e293b;" id="headerTitleText">سجل النشاط والاستفسارات</div>
+     <div style="font-size: 11px; color: #64748b;" id="headerSubtitleText">جميع استفسارات الذكاء الاصطناعي والملفات المرفوعة</div>
+    </div>
+   </div>
+   <button onclick="clearHistoryLogs()" id="clearBtnText" title="مسح السجل" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; border-radius: 10px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer;">
+    مسح
+   </button>
+  </div>
+
+  <!-- Main Content Container -->
+  <div style="padding: 16px 14px 90px 14px; overflow-y: auto; flex: 1;">
+
+   <!-- Search Input -->
+   <div style="position: relative; margin-bottom: 12px;">
+    <input type="text" id="history-search" oninput="filterHistory()" placeholder="ابحث في الأسئلة، الإجابات، أو أسماء الملفات..."
+     style="width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.9); border: 1px solid #e2e8f0; border-radius: 1rem; padding: 10px 38px 10px 14px; font-size: 13px; outline: none; font-family: inherit; color: #1e293b;" />
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+     style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+     <circle cx="11" cy="11" r="8"></circle>
+     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+   </div>
+
+   <!-- Filter Chips -->
+   <div style="display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;">
+    <button class="filter-chip active" id="filter-all-btn" onclick="setHistoryFilter('all', this)">الكل (<span id="count-all">0</span>)</button>
+    <button class="filter-chip" id="filter-chat-btn" onclick="setHistoryFilter('chat', this)"> استفسارات AI (<span id="count-chat">0</span>)</button>
+    <button class="filter-chip" id="filter-file-btn" onclick="setHistoryFilter('file', this)"> الملفات المرفوعة (<span id="count-file">0</span>)</button>
+   </div>
+
+   <!-- History List -->
+   <div id="history-list-container">
+    <!-- Rendered dynamically -->
+   </div>
+
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" id="historyDetailModal" onclick="closeDetailModal(event)">
+   <div class="modal-content" onclick="event.stopPropagation()">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 14px;">
+     <div id="modalHeaderBadge" class="type-badge chat"> استفسار AI</div>
+     <button onclick="document.getElementById('historyDetailModal').classList.remove('open')" style="background: #f1f5f9; border: none; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b;">✕</button>
+    </div>
+    <div id="modalDateTime" style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;"></div>
+    <div id="modalTitle" style="font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 12px; line-height: 1.4;"></div>
+    <div id="modalBody" style="font-size: 13px; color: #475569; line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;"></div>
+    <div style="margin-top: 16px; display: flex; gap: 8px;">
+     <button id="modalActionBtn" onclick="openItemContext()" style="flex: 1; padding: 10px; background: #2b2470; color: white; border: none; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer;">
+      المتابعة في اسأل بصيرة 
+     </button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+   <a href="dashboard.html" class="" title="الرئيسية">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+   </a>
+   <a href="insights.html" class="" title="التحليلات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+   </a>
+   <a href="chat.html" class="" title="اسأل بصيرة" style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z"/></svg>
+   </a>
+   <a href="datasets.html" class="" title="البيانات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+   </a>
+   <a href="reports.html" class="" title="التقارير">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+   </a>
+  </nav>
+
+ </div>
+
+ <script src="app.js"></script>
+ <script>
+  let currentFilter = 'all';
+  let selectedModalItem = null;
+  const isAr = (localStorage.getItem('baseera-lang') || document.documentElement.getAttribute('lang') || 'en') === 'ar';
+
+  // Apply bilingual text on load
+  function applyHistoryLocale() {
+   if (!isAr) {
+    document.documentElement.style.setProperty('--icon-scale', '1');
+    document.getElementById('headerTitleText').textContent = 'History';
+    document.getElementById('headerSubtitleText').textContent = 'All AI Queries, Chats & Uploaded Files';
+    document.getElementById('clearBtnText').textContent = 'Clear';
+    document.getElementById('history-search').placeholder = 'Search queries, replies, or file names...';
+    document.getElementById('filter-all-btn').innerHTML = 'All (<span id="count-all">0</span>)';
+    document.getElementById('filter-chat-btn').innerHTML = ' AI Queries (<span id="count-chat">0</span>)';
+    document.getElementById('filter-file-btn').innerHTML = ' Uploaded Files (<span id="count-file">0</span>)';
+   }
+  }
+
+  let fetchedHistoryData = [];
+
+  async function getHistory() {
+   try {
+    const token = localStorage.getItem('basira_token');
+    if (!token) return fetchedHistoryData;
+    
+    const response = await fetch('http://127.0.0.1:8000/api/mobile/chat-history', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.status === 'success' && data.history) {
+        fetchedHistoryData = data.history.map(item => ({
+          id: item.id,
+          type: 'chat',
+          agent: item.agent_id,
+          agentName: item.agent_id === 'financial' ? (isAr ? 'الوكيل المالي (CFO)' : 'Financial Agent (CFO)') : 
+                     item.agent_id === 'supply_chain' ? (isAr ? 'وكيل الإمداد (COO)' : 'Supply Chain Agent (COO)') : 
+                     (isAr ? 'المساعد العام' : 'General Agent'),
+          title: item.query.substring(0, 40) + '...',
+          preview: item.response.substring(0, 100) + '...',
+          date: item.created_at.split(' ')[0],
+          time: item.created_at.split(' ')[1] + ' ' + item.created_at.split(' ')[2]
+        }));
+      }
+    }
+   } catch(e) {
+    console.error('Failed to fetch history:', e);
+   }
+   return fetchedHistoryData;
+  }
+
+  async function renderHistory(forceFetch = false) {
+   let list = fetchedHistoryData;
+   if (forceFetch || list.length === 0) {
+     list = await getHistory();
+   }
+   
+   const searchTerm = (document.getElementById('history-search').value || '').toLowerCase().trim();
+   const container = document.getElementById('history-list-container');
+   
+   const filtered = list.filter(item => {
+    if (currentFilter !== 'all' && item.type !== currentFilter) return false;
+    if (!searchTerm) return true;
+    const text = (item.title + ' ' + (item.preview || '') + ' ' + (item.fileName || '') + ' ' + (item.agentName || '')).toLowerCase();
+    return text.includes(searchTerm);
+   });
+
+   // Update counters
+   const elAll = document.getElementById('count-all');
+   const elChat = document.getElementById('count-chat');
+   const elFile = document.getElementById('count-file');
+   if (elAll) elAll.textContent = list.length;
+   if (elChat) elChat.textContent = list.filter(i => i.type === 'chat').length;
+   if (elFile) elFile.textContent = list.filter(i => i.type === 'file').length;
+
+   if (filtered.length === 0) {
+    container.innerHTML = `
+     <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
+      <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5;">
+       <circle cx="12" cy="12" r="10"></circle>
+       <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      <div style="font-weight: 700; font-size: 14px; color: #64748b;">${isAr ? 'لا توجد سجلات تطابق البحث' : 'No matching history records'}</div>
+      <div style="font-size: 11px; margin-top: 4px;">${isAr ? 'جرب تغيير كلمة البحث أو نوع الفلتر' : 'Try adjusting your search keyword or active filter'}</div>
+     </div>
+    `;
+    return;
+   }
+
+   container.innerHTML = filtered.map(item => {
+    const isChat = item.type === 'chat';
+    return `
+     <div class="history-card" onclick="openHistoryItem('${item.id}')">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+       <span class="type-badge ${isChat ? 'chat' : 'file'}">
+        ${isChat ? (isAr ? ' استفسار AI' : ' AI Query') : (isAr ? ' ملف مرفوع' : ' Uploaded File')}
+        ${item.agentName ? ' • ' + item.agentName : ''}
+        ${item.fileSize ? ' • ' + item.fileSize : ''}
+       </span>
+       <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">
+        ${item.date} • ${item.time}
+       </span>
+      </div>
+      <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 6px; line-height: 1.3;">
+       ${item.title}
+      </div>
+      <div style="font-size: 12px; color: #64748b; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+       ${item.preview}
+      </div>
+     </div>
+    `;
+   }).join('');
+  }
+
+  function setHistoryFilter(filter, el) {
+   currentFilter = filter;
+   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+   if (el) el.classList.add('active');
+   renderHistory();
+  }
+
+  function filterHistory() {
+   renderHistory();
+  }
+
+  function openHistoryItem(id) {
+   const list = fetchedHistoryData;
+   const item = list.find(i => i.id === id);
+   if (!item) return;
+
+   selectedModalItem = item;
+   const modal = document.getElementById('historyDetailModal');
+   const badge = document.getElementById('modalHeaderBadge');
+   const dt = document.getElementById('modalDateTime');
+   const title = document.getElementById('modalTitle');
+   const body = document.getElementById('modalBody');
+   const actionBtn = document.getElementById('modalActionBtn');
+
+   badge.className = 'type-badge ' + (item.type === 'chat' ? 'chat' : 'file');
+   badge.textContent = item.type === 'chat' ? (item.agentName || (isAr ? ' استفسار AI' : ' AI Query')) : ((isAr ? ' ملف: ' : ' File: ') + (item.fileName || ''));
+   dt.textContent = (isAr ? '📅 التاريخ والوقت: ' : '📅 Date & Time: ') + item.date + ' • ' + item.time;
+   title.textContent = item.title;
+   body.textContent = item.preview;
+   actionBtn.textContent = item.type === 'chat' ? (isAr ? 'متابعة الحوار في اسأل بصيرة ' : 'Continue in Ask Baseera ') : (isAr ? 'عرض وتحليل الملف في بصيرة ' : 'View & Analyze in Datasets ');
+
+   modal.classList.add('open');
+  }
+
+  function closeDetailModal(e) {
+   document.getElementById('historyDetailModal').classList.remove('open');
+  }
+
+  function openItemContext() {
+   if (selectedModalItem && selectedModalItem.type === 'chat') {
+    window.location.href = 'chat.html';
+   } else {
+    window.location.href = 'datasets.html';
+   }
+  }
+
+  function clearHistoryLogs() {
+   const confirmMsg = isAr ? 'هل أنت متأكد من مسح جميع سجلات الاستفسارات والملفات؟' : 'Are you sure you want to clear all history records?';
+   if (confirm(confirmMsg)) {
+    localStorage.setItem('baseera_history_logs', JSON.stringify([]));
+    fetchedHistoryData = [];
+    renderHistory();
+   }
+  }
+
+  // Init
+  applyHistoryLocale();
+  renderHistory(true);
+ </script>
+</body>
+</html>

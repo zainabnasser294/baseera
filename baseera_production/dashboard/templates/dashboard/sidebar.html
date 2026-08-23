@@ -1,0 +1,165 @@
+{% load static %}
+<style>
+  .sidebar-glass {
+    background: linear-gradient(180deg, #4a3f8a 0%, #372f6e 60%, #2b2470 100%);
+    box-shadow: 0 4px 30px rgba(27, 20, 75, 0.25);
+  }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-thumb { background: rgba(124,108,240,0.35); border-radius: 999px; }
+  .nav-item { transition: all 0.2s ease-in-out; }
+  .nav-item:hover { 
+      background: rgba(255,255,255,0.08); 
+      transform: scale(1.01);
+  }
+  .nav-item.active { 
+      background: rgba(255,255,255,0.14); 
+      box-shadow: inset 4px 0 0 #7c6cf0;
+  }
+  [dir="rtl"] .nav-item.active {
+      box-shadow: inset -4px 0 0 #7c6cf0;
+  }
+</style>
+
+<aside class="sidebar-glass w-64 shrink-0 rounded-3xl flex flex-col p-3.5 text-white/90 text-{{ trans.align }} sticky top-3 h-[calc(100vh-1.5rem)] overflow-y-auto">
+    <!-- Brand / Home Link -->
+    <a 
+        href="{% url 'welcome' %}" 
+        class="flex items-center justify-start gap-3 px-2 py-1.5 mb-2 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 ease-out"
+        {% if trans.lang_code == 'ar' %}dir="rtl"{% endif %}
+    >
+        <img 
+            src="{% static 'dashboard/img/logo.png' %}" 
+            alt="Basira Logo" 
+            class="h-10 w-10 shrink-0 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
+        >
+        <span class="text-xl font-black tracking-tight leading-none select-none bg-gradient-to-r from-white via-indigo-100 to-indigo-300 bg-clip-text text-transparent" style="font-family: 'Cairo', sans-serif; font-weight: 900; letter-spacing: -0.01em;">
+            {% if trans.lang_code == 'ar' %}بصيرة{% else %}Baseera{% endif %}
+        </span>
+    </a>
+
+    <!-- WORKSPACE SECTION -->
+    <div class="mb-1 px-2 text-[10px] font-semibold tracking-wider text-white/40 uppercase">
+        {% if trans.lang_code == 'ar' %}مساحة العمل{% else %}WORKSPACE{% endif %}
+    </div>
+    <nav class="flex flex-col gap-0.5 mb-2">
+        <!-- Dashboard (Tenant only) -->
+        {% if not user.is_staff and not user.is_superuser and user.username != 'admin' %}
+        <a href="{% url 'dashboard' %}" class="nav-item {% if active_page == 'dashboard' %}active{% endif %} flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium {% if active_page == 'dashboard' %}text-white{% else %}text-white/70{% endif %}">
+            <i data-lucide="layout-dashboard" class="h-4 w-4 text-sky-400"></i> 
+            <span>{% if trans.lang_code == 'ar' %}منصة القرارات{% else %}Decision Platform{% endif %}</span>
+        </a>
+        {% endif %}
+        
+        <!-- Ask Basira (اسأل بصيرة) -->
+        <a href="{% url 'ask_basira' %}" class="nav-item {% if active_page == 'ask' %}active{% endif %} flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium {% if active_page == 'ask' %}text-white{% else %}text-white/70{% endif %}">
+            <i data-lucide="message-square" class="h-4 w-4 text-sky-400"></i> 
+            <span>{% if trans.lang_code == 'ar' %}اسأل بصيرة{% else %}Ask Basira{% endif %}</span>
+        </a>
+
+        <!-- LIBRARY SECTION (Compact Gap) -->
+        <div class="mt-2 mb-1 px-2 text-[10px] font-semibold tracking-wider text-white/40 uppercase">
+            {% if trans.lang_code == 'ar' %}المكتبة{% else %}LIBRARY{% endif %}
+        </div>
+
+        <a href="{% url 'datasets' %}" class="nav-item {% if active_page == 'datasets' %}active{% endif %} flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium {% if active_page == 'datasets' %}text-white{% else %}text-white/70{% endif %}">
+            <i data-lucide="file-text" class="h-4 w-4 text-sky-400"></i>
+            <span>{% if trans.lang_code == 'ar' %}المستندات{% else %}Documents{% endif %}</span>
+        </a>
+
+        <a href="{% url 'reports' %}" class="nav-item {% if active_page == 'reports' %}active{% endif %} flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium {% if active_page == 'reports' %}text-white{% else %}text-white/70{% endif %}">
+            <i data-lucide="bar-chart-3" class="h-4 w-4 text-sky-400"></i>
+            <span>{% if trans.lang_code == 'ar' %}التقارير{% else %}Reports{% endif %}</span>
+        </a>
+
+        <a href="{% url 'chat_history' %}" class="nav-item {% if active_page == 'chat_history' %}active{% endif %} flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium {% if active_page == 'chat_history' %}text-white{% else %}text-white/70{% endif %}">
+            <i data-lucide="history" class="h-4 w-4 text-sky-400"></i>
+            <span>{% if trans.lang_code == 'ar' %}سجل المحادثات{% else %}Chat History{% endif %}</span>
+        </a>
+
+        <!-- Super Admin (Only for Admin User) -->
+        {% if user.is_staff or user.is_superuser or user.username == 'admin' %}
+        <div class="mt-2 mb-1 px-2 text-[10px] font-semibold tracking-wider text-white/40 uppercase">
+            {% if trans.lang_code == 'ar' %}الإدارة (ADMIN){% else %}ADMIN{% endif %}
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="nav-item {% if active_page == 'admin' %}active{% endif %} flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium {% if active_page == 'admin' %}text-white{% else %}text-white/70{% endif %}">
+            <i data-lucide="shield-check" class="h-4 w-4 text-sky-400"></i> 
+            <span>{% if trans.lang_code == 'ar' %}لوحة الإشراف (Super Admin){% else %}Super Admin{% endif %}</span>
+        </a>
+        {% endif %}
+    </nav>
+
+    <!-- Footer: Settings, Feedback & Upgrade (Compact Alignment) -->
+    <div class="mt-auto pt-1 flex flex-col gap-0.5">
+        <!-- Data Templates & Feedback (Tenant only) -->
+        {% if not user.is_staff and not user.is_superuser and user.username != 'admin' %}
+        <a href="{% url 'templates_feedback' %}" class="nav-item {% if active_page == 'templates_feedback' %}active{% endif %} flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium {% if active_page == 'templates_feedback' %}text-white{% else %}text-white/70{% endif %}">
+            <i data-lucide="message-square-heart" class="h-4 w-4 text-sky-400"></i> 
+            <span>{% if trans.lang_code == 'ar' %}تقييمات{% else %}Feedback{% endif %}</span>
+        </a>
+        {% endif %}
+        <!-- Settings -->
+        <a href="{% url 'settings' %}" class="nav-item {% if active_page == 'settings' %}active{% endif %} flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium {% if active_page == 'settings' %}text-white{% else %}text-white/70{% endif %}">
+            <i data-lucide="settings" class="h-4 w-4 text-sky-400"></i> 
+            <span>{% if trans.lang_code == 'ar' %}إعدادات{% else %}Settings{% endif %}</span>
+        </a>
+
+        {% if not user.is_staff and not user.is_superuser and user.username != 'admin' %}
+        <!-- Dynamic Upgrade & Trial Box -->
+        <div id="upgradeBox" class="rounded-2xl bg-white/10 p-3 mt-1.5 mb-0 transition-all duration-300 border border-white/10">
+            {% if trial_info.is_subscribed %}
+            <div class="flex items-center justify-between text-xs text-white/90 font-bold mb-1.5">
+                <span class="flex items-center gap-1.5">
+                    <i data-lucide="shield-check" class="h-3.5 w-3.5 text-emerald-400"></i>
+                    {% if trans.lang_code == 'ar' %}اشتراك نشط{% else %}Active Plan{% endif %}
+                </span>
+                <span class="text-emerald-300 font-extrabold text-[9px] bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-400/30">
+                    {{ trial_info.plan }}
+                </span>
+            </div>
+            <p class="text-[10px] text-white/70 mb-2 leading-tight">
+                {% if trans.lang_code == 'ar' %}تم تفعيل كافة وكلاء بصيرة.{% else %}Full features active.{% endif %}
+            </p>
+            <a href="{% url 'pricing' %}" class="block text-center w-full rounded-full bg-white/15 hover:bg-white/25 py-1.5 text-xs font-bold text-white transition border border-white/20">
+                {% if trans.lang_code == 'ar' %}إدارة الباقة{% else %}Manage Plan{% endif %}
+            </a>
+
+            {% elif trial_info.is_expired %}
+            <div class="flex items-center justify-between text-xs text-rose-200 font-bold mb-1.5">
+                <span class="flex items-center gap-1.5">
+                    <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-rose-400 animate-pulse"></i>
+                    {% if trans.lang_code == 'ar' %}انتهت التجربة{% else %}Trial Expired{% endif %}
+                </span>
+                <span class="text-rose-300 font-extrabold text-[9px] bg-rose-500/20 px-2 py-0.5 rounded-full border border-rose-400/30">0/14</span>
+            </div>
+            <div class="h-1.5 w-full rounded-full bg-white/15 overflow-hidden mb-2">
+                <div class="h-full w-full rounded-full bg-rose-500"></div>
+            </div>
+            <a href="{% url 'pricing' %}" class="block text-center w-full rounded-full bg-gradient-to-r from-amber-500 to-rose-600 py-1.5 text-xs font-black text-white shadow-md hover:scale-[1.02] transition animate-pulse">
+                {% if trans.lang_code == 'ar' %}ترقية الحساب الآن ⚡{% else %}Upgrade Now ⚡{% endif %}
+            </a>
+
+            {% else %}
+            <div class="flex items-center justify-between text-xs text-white/80 font-bold mb-1.5">
+                <span class="flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="h-3.5 w-3.5 text-sky-400"></i>
+                    {% if trans.lang_code == 'ar' %}فترة تجريبية{% else %}Free Trial{% endif %}
+                </span>
+                <span class="text-sky-300 font-extrabold text-xs">
+                    {% if trans.lang_code == 'ar' %}
+                        {{ trial_info.days_remaining }} يوماً
+                    {% else %}
+                        {{ trial_info.days_remaining }} Days
+                    {% endif %}
+                </span>
+            </div>
+            <div class="h-1.5 w-full rounded-full bg-white/15 overflow-hidden mb-2" title="{{ trial_info.days_remaining }} days remaining out of 14">
+                <div id="usageBar" class="h-full rounded-full bg-gradient-to-r from-sky-400 via-indigo-400 to-emerald-400 transition-all duration-700" style="width: {{ trial_info.percentage_remaining }}%;"></div>
+            </div>
+            <a href="{% url 'pricing' %}" class="block text-center w-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 py-1.5 text-xs font-bold text-white shadow-md hover:brightness-110 transition">
+                {% if trans.lang_code == 'ar' %}ترقية الحساب{% else %}Upgrade{% endif %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</aside>

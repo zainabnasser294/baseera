@@ -1,0 +1,220 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{% if trans.lang_code == 'ar' %}التحليلات والتقارير{% else %}Reports{% endif %}{% endblock %}
+
+{% block content %}
+<!-- SheetJS XLSX Library for Excel Generation -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<div class="flex min-h-screen p-3 gap-3">
+    {% include 'dashboard/sidebar.html' with active_page='reports' %}
+
+    <main class="flex-1 flex flex-col gap-3 min-w-0 text-{{ trans.align }}">
+        {% include 'dashboard/topbar.html' %}
+
+        <!-- Page Header -->
+        <section class="rounded-3xl glass px-6 py-5 flex items-center justify-between flex-wrap gap-4 animate-fade-up">
+            <div class="flex items-center gap-3">
+                <div class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[var(--lavender)] to-[var(--glow)] text-white shadow-lg shadow-indigo-500/20">
+                    <i data-lucide="file-text" class="h-5 w-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-ink">{% if trans.lang_code == 'ar' %}التحليلات والتقارير{% else %}Reports{% endif %}</h1>
+                    <p class="text-sm text-gray-500">{% if trans.lang_code == 'ar' %}تقارير وتحليلات منشأة تلقائياً بصيغة إكسل (.xlsx) أو ملفات نصية (.txt).{% else %}Auto-generated insights available in Excel (.xlsx) and Text Note (.txt) formats.{% endif %}</p>
+                </div>
+            </div>
+            <button onclick="openExportAllModal()" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--nile)] to-[var(--glow)] px-5 py-2.5 text-sm font-bold text-white shadow-md hover:opacity-90 transition">
+                <i data-lucide="download" class="h-4 w-4"></i> {% if trans.lang_code == 'ar' %}تصدير التقرير الشامل{% else %}Export All Reports{% endif %}
+            </button>
+        </section>
+
+        <!-- Reports Grid -->
+        <section class="flex-1 rounded-3xl glass-strong p-6 animate-fade-up" style="animation-delay: 100ms;">
+            
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 text-{{ trans.align }}">
+                {% if files %}
+                    {% for file in files %}
+                    <div class="card rounded-2xl p-5 border border-white/80 glass-strong hover:-translate-y-0.5 transition shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-[var(--nile)]/10 to-[var(--lavender)]/20 grid place-items-center">
+                                    <i data-lucide="bar-chart-3" class="h-5 w-5 text-[var(--glow)]"></i>
+                                </div>
+                                <span class="text-[10px] uppercase tracking-wider font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">{% if trans.lang_code == 'ar' %}جاهز للتنزيل{% else %}Ready{% endif %}</span>
+                            </div>
+                            <h3 class="text-sm font-extrabold mb-1 truncate text-ink">{{ file.excel_file.name }}</h3>
+                            <p class="text-xs text-gray-400 mb-4">{% if trans.lang_code == 'ar' %}تم إنشاؤه{% else %}Generated{% endif %} {{ file.uploaded_at|date:"M d, Y" }}</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <!-- Download Excel Button -->
+                            <button onclick="downloadExcelReport('{{ file.excel_file.name }}', '{{ file.id }}')" class="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-3 text-xs font-bold transition shadow-sm">
+                                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنزيل تقرير بصيرة (.xlsx){% else %}Download Baseera Report (.xlsx){% endif %}</span>
+                            </button>
+
+                            <!-- Download Note Button -->
+                            <button onclick="downloadNoteReport('{{ file.excel_file.name }}', '{{ file.id }}')" class="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/70 hover:bg-white text-slate-700 py-2 px-3 text-xs font-bold transition">
+                                <i data-lucide="file-text" class="h-4 w-4 text-indigo-600"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنزيل نوت نصي (.txt){% else %}Download Text Note (.txt){% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Sample Reports for immediate demonstration -->
+                    <!-- Card 1: Main Sales Report -->
+                    <div class="card rounded-2xl p-5 border border-white/80 glass-strong hover:-translate-y-0.5 transition shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-[var(--nile)]/10 to-[var(--lavender)]/20 grid place-items-center">
+                                    <i data-lucide="bar-chart-3" class="h-5 w-5 text-[var(--glow)]"></i>
+                                </div>
+                                <span class="text-[10px] uppercase tracking-wider font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">{% if trans.lang_code == 'ar' %}تقرير شامل{% else %}Full Report{% endif %}</span>
+                            </div>
+                            <h3 class="text-sm font-extrabold mb-1 truncate text-ink">{% if trans.lang_code == 'ar' %}تقرير المبيعات الإجمالي والربحية 2026{% else %}Total Revenue & Profitability 2026{% endif %}</h3>
+                            <p class="text-xs text-gray-400 mb-4">{% if trans.lang_code == 'ar' %}تحليل تفصيلي لمبيعات المطعم والأصناف والمؤشرات{% else %}Detailed sales, item trends and KPI analysis{% endif %}</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <!-- Download Excel Button -->
+                            <button onclick="downloadExcelReport('تقرير_المبيعات_الإجمالي_2026')" class="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-3 text-xs font-bold transition shadow-sm">
+                                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنزيل تقرير بصيرة (.xlsx){% else %}Download Baseera Report (.xlsx){% endif %}</span>
+                            </button>
+
+                            <!-- Download Note Button -->
+                            <button onclick="downloadNoteReport('تقرير_المبيعات_الإجمالي_2026')" class="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/70 hover:bg-white text-slate-700 py-2.5 px-3 text-xs font-bold transition">
+                                <i data-lucide="file-text" class="h-4 w-4 text-indigo-600"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنزيل نوت نصي (.txt){% else %}Download Text Note (.txt){% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Product & Category Analysis -->
+                    <div class="card rounded-2xl p-5 border border-white/80 glass-strong hover:-translate-y-0.5 transition shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-[var(--nile)]/10 to-[var(--lavender)]/20 grid place-items-center">
+                                    <i data-lucide="pie-chart" class="h-5 w-5 text-indigo-600"></i>
+                                </div>
+                                <span class="text-[10px] uppercase tracking-wider font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">{% if trans.lang_code == 'ar' %}أداء الأصناف{% else %}Item Analysis{% endif %}</span>
+                            </div>
+                            <h3 class="text-sm font-extrabold mb-1 truncate text-ink">{% if trans.lang_code == 'ar' %}تحليل أداء الأصناف والأعلى مبيعاً{% else %}Top Products & Category Performance{% endif %}</h3>
+                            <p class="text-xs text-gray-400 mb-4">{% if trans.lang_code == 'ar' %}جدول الأصناف الأكثر ربحية وتوزّع المبيعات{% else %}Profitability by item and product line distribution{% endif %}</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <!-- Download Excel Button -->
+                            <button onclick="downloadExcelReport('تحليل_أداء_الأصناف')" class="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-3 text-xs font-bold transition shadow-sm">
+                                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنزيل تقرير بصيرة (.xlsx){% else %}Download Baseera Report (.xlsx){% endif %}</span>
+                            </button>
+
+                            <!-- Download Note Button -->
+                            <button onclick="downloadNoteReport('تحليل_أداء_الأصناف')" class="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/70 hover:bg-white text-slate-700 py-2.5 px-3 text-xs font-bold transition">
+                                <i data-lucide="file-text" class="h-4 w-4 text-indigo-600"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنزيل نوت نصي (.txt){% else %}Download Text Note (.txt){% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: AI Recommendations & Insights -->
+                    <div class="card rounded-2xl p-5 border border-white/80 glass-strong hover:-translate-y-0.5 transition shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-[var(--nile)]/10 to-[var(--lavender)]/20 grid place-items-center">
+                                    <i data-lucide="sparkles" class="h-5 w-5 text-amber-500"></i>
+                                </div>
+                                <span class="text-[10px] uppercase tracking-wider font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">{% if trans.lang_code == 'ar' %}توصيات بصيرة{% else %}AI Recommendations{% endif %}</span>
+                            </div>
+                            <h3 class="text-sm font-extrabold mb-1 truncate text-ink">{% if trans.lang_code == 'ar' %}تقرير التوصيات والرؤى الإستراتيجية{% else %}Strategic AI Insights & Action Plan{% endif %}</h3>
+                            <p class="text-xs text-gray-400 mb-4">{% if trans.lang_code == 'ar' %}فرص تقليل التكاليف وزيادة أرباح المبيعات{% else %}Cost-saving actions & revenue growth strategy{% endif %}</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <!-- Download Excel Button -->
+                            <button onclick="downloadExcelReport('تقرير_التوصيات_الإستراتيجية')" class="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-3 text-xs font-bold transition shadow-sm">
+                                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنزيل تقرير بصيرة (.xlsx){% else %}Download Baseera Report (.xlsx){% endif %}</span>
+                            </button>
+
+                            <!-- Download Note Button -->
+                            <button onclick="downloadNoteReport('تقرير_التوصيات_الإستراتيجية')" class="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/70 hover:bg-white text-slate-700 py-2.5 px-3 text-xs font-bold transition">
+                                <i data-lucide="file-text" class="h-4 w-4 text-indigo-600"></i>
+                                <span>{% if trans.lang_code == 'ar' %}تنزيل نوت نصي (.txt){% else %}Download Text Note (.txt){% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Modal Dialog for Export Choice -->
+<div id="exportModal" class="hidden fixed inset-0 z-[999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-lg shadow-2xl border border-white/40 animate-fade-up text-{{ trans.align }}">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-slate-700 pb-3">
+            <h3 class="text-lg font-bold text-ink dark:text-white">{% if trans.lang_code == 'ar' %}اختيار صيغة تصدير التقرير{% else %}Choose Export Format{% endif %}</h3>
+            <button onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600 text-lg font-bold">✕</button>
+        </div>
+
+        <p class="text-sm text-gray-500 mb-6">{% if trans.lang_code == 'ar' %}يرجى تحديد الصيغة المناسبة لتنزيل تقارير بصيرة التحليلية:{% else %}Please select your preferred report export format:{% endif %}</p>
+
+        <div class="grid gap-3 mb-4">
+            <!-- Option Excel -->
+            <button onclick="downloadExcelReport('تقرير_بصيرة_الكامل'); closeExportModal();" class="flex items-center gap-4 p-4 rounded-2xl border-2 border-emerald-500/30 bg-emerald-50/50 hover:bg-emerald-100/60 transition text-{{ trans.align }}">
+                <div class="h-12 w-12 rounded-xl bg-emerald-600 text-white grid place-items-center text-xl shrink-0 shadow-md">
+                    
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-sm text-emerald-950">{% if trans.lang_code == 'ar' %}تقرير بصيرة تفصيلي ومصنف (.xlsx){% else %}Baseera Report (.xlsx){% endif %}</h4>
+                    <p class="text-xs text-emerald-800/80 mt-0.5">{% if trans.lang_code == 'ar' %}يتضمن جداول المؤشرات، مبيعات الأصناف، الرؤى الذكية والتوصيات في أوراق متعددة.{% else %}Includes KPIs, Product Breakdowns, AI Insights & Strategy sheets.{% endif %}</p>
+                </div>
+            </button>
+
+            <!-- Option Text Note -->
+            <button onclick="downloadNoteReport('تقرير_بصيرة_الملخص'); closeExportModal();" class="flex items-center gap-4 p-4 rounded-2xl border-2 border-indigo-500/30 bg-indigo-50/50 hover:bg-indigo-100/60 transition text-{{ trans.align }}">
+                <div class="h-12 w-12 rounded-xl bg-indigo-600 text-white grid place-items-center text-xl shrink-0 shadow-md">
+                    
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-sm text-indigo-950">{% if trans.lang_code == 'ar' %}تقرير الملاحظات النصي السريع (.txt Note){% else %}Text Summary Note (.txt){% endif %}</h4>
+                    <p class="text-xs text-indigo-800/80 mt-0.5">{% if trans.lang_code == 'ar' %}ملف نصي خفيف يحتوي على الملخص التنفيذي ورسالة بصيرة.{% else %}Lightweight text file with key findings and Basira note.{% endif %}</p>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openExportAllModal() {
+    document.getElementById('exportModal').classList.remove('hidden');
+}
+
+function closeExportModal() {
+    document.getElementById('exportModal').classList.add('hidden');
+}
+
+// Function 1: Download Dynamic OpenPyXL Multi-Sheet Excel (.xlsx)
+function downloadExcelReport(fileName, fileId) {
+    const safeName = encodeURIComponent(fileName);
+    let url = `/export-excel/?filename=${safeName}`;
+    if (fileId) {
+        url += `&file_id=${fileId}`;
+    }
+    window.location.href = url;
+}
+
+// Function 2: Generate & Download Text Note (.txt)
+function downloadNoteReport(fileName, fileId) {
+    const safeName = encodeURIComponent(fileName);
+    let url = `/export-note/?filename=${safeName}`;
+    if (fileId) {
+        url += `&file_id=${fileId}`;
+    }
+    window.location.href = url;
+}
+</script>
+{% endblock %}

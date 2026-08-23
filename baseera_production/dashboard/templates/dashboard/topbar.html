@@ -1,0 +1,309 @@
+{% load custom_filters %}
+<header class="flex items-center gap-3 rounded-3xl px-4 py-3 glass relative z-[60]">
+    <!-- Spacer to push items to the end -->
+    <div class="flex-1"></div>
+
+    <!-- Global Language Switcher Button -->
+    <a href="?lang={{ trans.other_lang }}"
+        class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200/90 dark:border-slate-700 bg-white/90 dark:bg-slate-800 text-[#2b2470] dark:text-slate-100 text-xs font-black shadow-xs hover:border-[#7c6cf0]/50 hover:bg-[#7c6cf0]/10 transition-all group"
+        title="{% if trans.lang_code == 'ar' %}Switch to English (ENG){% else %}التغيير إلى العربية (AR){% endif %}">
+        <i data-lucide="globe" class="h-4 w-4 text-[#7c6cf0] group-hover:rotate-12 transition-transform"></i>
+        <span class="tracking-wider uppercase font-black text-xs">{{ trans.other_lang_name }}</span>
+    </a>
+
+    <!-- Theme Toggle Button -->
+    <button id="themeToggleBtn" type="button"
+        class="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm hover:bg-slate-50 transition dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700 cursor-pointer">
+        <i data-lucide="moon" class="h-5 w-5 dark:hidden"></i>
+        <i data-lucide="sun" class="h-5 w-5 hidden dark:block text-yellow-400"></i>
+    </button>
+
+    <!-- Sensitive Data Mask Toggle Button -->
+    <button id="maskToggleBtn" type="button" onclick="toggleSensitiveMask()"
+        class="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm hover:bg-slate-50 transition dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+        title="{% if trans.lang_code == 'ar' %}إظهار / إخفاء البيانات الحساسة{% else %}Toggle Sensitive Numbers Visibility{% endif %}">
+        <i data-lucide="eye-off" id="maskToggleIconOff" class="h-5 w-5 text-slate-700 dark:text-slate-300"></i>
+        <i data-lucide="eye" id="maskToggleIconOn" class="h-5 w-5 text-slate-700 dark:text-slate-300 hidden"></i>
+    </button>
+
+    <!-- Notifications Bell & Dropdown Wrapper -->
+    <div class="relative z-[70]">
+        <!-- Notifications Bell Button -->
+        <button id="notifButton" type="button"
+            class="relative grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-sm hover:bg-slate-50 transition dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700 cursor-pointer">
+            <i data-lucide="bell" class="h-5 w-5 text-slate-700 dark:text-slate-300"></i>
+            {% if unread_notifications_count > 0 %}
+            <!-- Unread notification indicator dot -->
+            <span id="notifBadgeDot" class="absolute top-[2px] right-[2px] flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span
+                    class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white dark:border-slate-800"></span>
+            </span>
+            {% endif %}
+        </button>
+
+        <!-- Notification Dropdown Menu -->
+        <div id="notifDropdown"
+            class="hidden absolute top-12 {% if trans.lang_code == 'ar' %}left-0{% else %}right-0{% endif %} w-80 sm:w-96 rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200/80 dark:border-slate-800 p-4 z-[9999] animate-fade-up text-{{ trans.align }}">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="h-7 w-7 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black">
+                        <i data-lucide="bell-ring" class="h-3.5 w-3.5"></i>
+                    </div>
+                    <span class="text-xs font-black text-slate-900 dark:text-white">
+                        {% if trans.lang_code == 'ar' %}الإشعارات والتنبيهات{% else %}Notifications & Alerts{% endif %}
+                    </span>
+                </div>
+                {% if unread_notifications_count > 0 %}
+                <span
+                    class="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-900">
+                    {{ unread_notifications_count }} {% if trans.lang_code == 'ar' %}جديد{% else %}new{% endif %}
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- List Container -->
+            <div class="max-h-80 overflow-y-auto space-y-2.5 pr-1">
+                <!-- Anomaly Alerts (High Priority) -->
+                {% for alert in anomaly_alerts %}
+                <div id="alert-card-{{ alert.id }}"
+                    class="p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 flex items-start justify-between gap-2.5 transition">
+                    <div class="flex items-start gap-2.5">
+                        <div
+                            class="h-7 w-7 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                            <i data-lucide="alert-triangle" class="h-3.5 w-3.5"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-extrabold text-amber-950 dark:text-amber-200 leading-tight">
+                                {% if trans.lang_code == 'en' %}{{ alert.title|translate_digest:trans.lang_code }}{% else %}{{ alert.title }}{% endif %}
+                            </p>
+                            <p class="text-[11px] text-amber-900/80 dark:text-amber-300/80 mt-0.5 leading-snug">
+                                {% if trans.lang_code == 'en' %}{{ alert.description|translate_digest:trans.lang_code }}{% else %}{{ alert.description }}{% endif %}
+                            </p>
+                            <span class="text-[9px] font-semibold text-amber-600/70 dark:text-amber-400/70 mt-1 block">
+                                {{ alert.created_at|timesince }} {% if trans.lang_code == 'ar' %}منذ{% else %}ago{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <button onclick="dismissAnomaly({{ alert.id }})" title="Dismiss"
+                        class="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 p-1 rounded-lg hover:bg-amber-200/50 transition cursor-pointer">
+                        <i data-lucide="x" class="h-3.5 w-3.5"></i>
+                    </button>
+                </div>
+                {% endfor %}
+
+                <!-- Standard Notifications -->
+                {% for notif in recent_notifications %}
+                <div id="notif-card-{{ notif.id }}"
+                    class="p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700 flex items-start justify-between gap-2.5 transition hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <div class="flex items-start gap-2.5 flex-1 min-w-0">
+                        <div
+                            class="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
+                            {% if notif.type == 'warning' %}
+                            <i data-lucide="alert-circle" class="h-3.5 w-3.5 text-rose-500"></i>
+                            {% elif notif.type == 'success' %}
+                            <i data-lucide="check-circle-2" class="h-3.5 w-3.5 text-emerald-500"></i>
+                            {% else %}
+                            <i data-lucide="sparkles" class="h-3.5 w-3.5 text-indigo-500"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-extrabold text-slate-800 dark:text-slate-100 leading-tight">
+                                {% if trans.lang_code == 'en' %}{{ notif.title|translate_digest:trans.lang_code }}{% else %}{{ notif.title }}{% endif %}
+                            </p>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                                {% if trans.lang_code == 'en' %}{{ notif.message|translate_digest:trans.lang_code }}{% else %}{{ notif.message }}{% endif %}
+                            </p>
+                            <span class="text-[9px] font-semibold text-slate-400 mt-1 block">
+                                {{ notif.created_at|timesince }} {% if trans.lang_code == 'ar' %}منذ{% else %}ago{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <button onclick="deleteNotification({{ notif.id }})"
+                        title="{% if trans.lang_code == 'ar' %}حذف الإشعار{% else %}Delete Notification{% endif %}"
+                        class="text-slate-400 hover:text-rose-500 p-1 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-700 transition cursor-pointer shrink-0">
+                        <i data-lucide="x" class="h-3.5 w-3.5"></i>
+                    </button>
+                </div>
+                {% endfor %}
+
+                {% if not recent_notifications and not anomaly_alerts %}
+                <div class="py-6 text-center text-slate-400 dark:text-slate-500">
+                    <i data-lucide="bell-off" class="h-8 w-8 mx-auto mb-2 opacity-50"></i>
+                    <p class="text-xs font-bold">{% if trans.lang_code == 'ar' %}لا توجد إشعارات جديدة{% else %}No new
+                        notifications{% endif %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Dropdown Wrapper -->
+    <div class="relative z-[70]">
+        <!-- User Profile Dropdown Icon -->
+        <button id="profileButton" type="button"
+            class="h-9 w-9 rounded-full bg-gradient-to-br from-[var(--nile)] to-[var(--lavender)] grid place-items-center text-white font-bold text-sm shadow-sm hover:opacity-90 transition cursor-pointer">
+            {% if user.is_authenticated %}{{ user.username.0|upper }}{% else %}A{% endif %}
+        </button>
+
+        <!-- Dropdown Card -->
+        <div id="profileDropdown"
+            class="hidden absolute top-12 {% if trans.lang_code == 'ar' %}left-0{% else %}right-0{% endif %} w-48 rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-gray-100 dark:border-slate-700 py-2 z-[9999] animate-fade-up text-{{ trans.align }}">
+            <a href="{% url 'settings' %}"
+                class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                <i data-lucide="user" class="h-4 w-4"></i>
+                {% if trans.lang_code == 'ar' %}الملف الشخصي{% else %}Profile{% endif %}
+            </a>
+            <div class="my-1 border-t border-gray-100 dark:border-slate-700"></div>
+            <a href="{% url 'logout' %}"
+                class="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
+                <i data-lucide="log-out" class="h-4 w-4"></i>
+                {% if trans.lang_code == 'ar' %}تسجيل الخروج{% else %}Logout{% endif %}
+            </a>
+        </div>
+    </div>
+</header>
+
+<script>
+    async function dismissAnomaly(alertId) {
+        try {
+            const res = await fetch(`/api/anomalies/${alertId}/dismiss/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                const el = document.getElementById(`alert-card-${alertId}`);
+                if (el) {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(-10px)';
+                    setTimeout(() => el.remove(), 300);
+                }
+            }
+        } catch (e) {
+            console.error('Error dismissing anomaly:', e);
+        }
+    }
+
+    async function deleteNotification(notifId) {
+        try {
+            const res = await fetch(`/api/notifications/${notifId}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                const el = document.getElementById(`notif-card-${notifId}`);
+                if (el) {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(-10px)';
+                    setTimeout(() => el.remove(), 300);
+                }
+            }
+        } catch (e) {
+            console.error('Error deleting notification:', e);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const profileBtn = document.getElementById('profileButton');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const notifBtn = document.getElementById('notifButton');
+        const notifDropdown = document.getElementById('notifDropdown');
+
+        if (notifBtn && notifDropdown) {
+            notifBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (profileDropdown) profileDropdown.classList.add('hidden');
+                const isOpening = notifDropdown.classList.contains('hidden');
+                notifDropdown.classList.toggle('hidden');
+
+                if (isOpening) {
+                    const dot = document.getElementById('notifBadgeDot');
+                    if (dot) dot.style.display = 'none';
+                    fetch('/api/notifications/mark-read/', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                    }).catch(err => console.error('Error marking notifications read:', err));
+                }
+
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
+        }
+
+        if (profileBtn && profileDropdown) {
+            profileBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (notifDropdown) notifDropdown.classList.add('hidden');
+                profileDropdown.classList.toggle('hidden');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            if (profileDropdown && !profileDropdown.contains(e.target) && e.target !== profileBtn) {
+                profileDropdown.classList.add('hidden');
+            }
+            if (notifDropdown && !notifDropdown.contains(e.target) && e.target !== notifBtn) {
+                notifDropdown.classList.add('hidden');
+            }
+        });
+
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function () {
+                document.documentElement.classList.toggle('dark');
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        }
+
+        // Sensitive Data Masking Initialization
+        window.applySensitiveMask();
+    });
+
+    // Global Sensitive Data Masking Functions
+    if (typeof window.isSensitiveMasked === 'undefined') {
+        window.isSensitiveMasked = true; // Default: masked on load
+    }
+
+    window.toggleSensitiveMask = function() {
+        window.isSensitiveMasked = !window.isSensitiveMasked;
+        window.applySensitiveMask();
+    };
+
+    window.applySensitiveMask = function() {
+        const isMasked = window.isSensitiveMasked;
+        const offIcon = document.getElementById('maskToggleIconOff');
+        const onIcon = document.getElementById('maskToggleIconOn');
+
+        if (offIcon && onIcon) {
+            if (isMasked) {
+                offIcon.classList.remove('hidden');
+                onIcon.classList.add('hidden');
+            } else {
+                offIcon.classList.add('hidden');
+                onIcon.classList.remove('hidden');
+            }
+        }
+
+        if (isMasked) {
+            document.documentElement.classList.add('is-masked');
+        } else {
+            document.documentElement.classList.remove('is-masked');
+        }
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        if (typeof window.onMaskStateChanged === 'function') {
+            window.onMaskStateChanged(isMasked);
+        }
+    };
+</script>

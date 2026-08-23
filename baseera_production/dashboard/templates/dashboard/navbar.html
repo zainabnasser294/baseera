@@ -1,0 +1,64 @@
+{% load static %}
+<header class="fixed top-0 inset-x-0 z-50 px-4 py-3 w-full flex justify-center pointer-events-none">
+  <div class="glass pointer-events-auto flex w-[min(1200px,100%)] items-center justify-between rounded-full px-6 py-2.5 border border-white/60 dark:border-slate-800 shadow-xl shadow-indigo-500/5 backdrop-blur-xl bg-white/70 dark:bg-slate-900/80">
+    <!-- Brand Logo / Name (Left aligned) -->
+    <div class="flex flex-1 items-center justify-start">
+      <a href="{% url 'welcome' %}" class="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+        <img src="{% static 'dashboard/img/logo.png' %}" alt="Basira Logo" class="h-9 md:h-11 w-auto object-contain hover:scale-105 transition-transform duration-300 shrink-0 filter drop-shadow-md">
+        <span class="text-xl md:text-2xl font-black tracking-tight leading-none bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 dark:from-white dark:via-indigo-200 dark:to-indigo-400 bg-clip-text text-transparent" style="font-family: 'Cairo', sans-serif; font-weight: 900;">{{ trans.brand }}</span>
+      </a>
+    </div>
+    
+    <!-- Navigation Links (Center aligned) -->
+    <nav class="hidden md:flex flex-1 items-center justify-center gap-7 text-sm font-extrabold text-slate-700 dark:text-slate-200">
+      <a href="{% url 'welcome' %}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{{ trans.home }}</a>
+      <a href="{% url 'about' %}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{{ trans.about }}</a>
+      <a href="{% url 'all_agents_gallery' %}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1.5">
+        <span>{{ trans.agents_nav }}</span>
+      </a>
+      <a href="{% url 'contact' %}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{{ trans.contact }}</a>
+    </nav>
+
+    <!-- Language Switcher & Authentication Buttons (Right aligned) -->
+    <div class="flex flex-1 items-center justify-end gap-3">
+      <!-- Theme Toggle Button -->
+      <button id="navThemeToggleBtn" class="grid h-9 w-9 place-items-center rounded-full border border-slate-200/80 bg-white/80 text-slate-800 shadow-xs hover:bg-white transition dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700">
+          <i data-lucide="moon" class="h-4 w-4 dark:hidden"></i>
+          <i data-lucide="sun" class="h-4 w-4 hidden dark:block text-amber-400"></i>
+      </button>
+
+      <!-- Language Switcher Button -->
+      <a href="?lang={{ trans.other_lang }}" class="flex items-center gap-1.5 text-xs font-black px-3.5 py-1.5 rounded-full border border-slate-200/80 bg-white/80 hover:bg-white transition-all shadow-xs dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700">
+        <i data-lucide="globe" class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400"></i>
+        <span class="tracking-wider uppercase">{{ trans.other_lang_name }}</span>
+      </a>
+
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-xs md:text-sm font-bold text-white transition-all hover:brightness-110 shadow-md shadow-indigo-500/25 transform hover:-translate-y-0.5">
+          {{ trans.dashboard_link }}
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="hidden md:block text-sm font-extrabold hover:text-indigo-600 dark:hover:text-indigo-400 px-2 transition-colors">{{ trans.login_link }}</a>
+        <a href="{% url 'register' %}" class="rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 px-5 py-2 text-xs md:text-sm font-bold text-white transition-all hover:brightness-110 shadow-md shadow-indigo-500/30 transform hover:-translate-y-0.5">
+          {{ trans.register_link }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const navThemeToggleBtn = document.getElementById('navThemeToggleBtn');
+    if (navThemeToggleBtn) {
+        navThemeToggleBtn.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    }
+});
+</script>

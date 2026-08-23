@@ -1,0 +1,240 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{{ trans.register_link }} — {{ trans.brand }}{% endblock %}
+
+{% block content %}
+<style>
+    .register-page .register-copy { color: #334155; }
+    .register-page .register-muted { color: #64748b; }
+    .register-page .register-option { color: #1e293b; background: #ffffff; }
+    .dark .register-page .register-copy { color: #cbd5e1; }
+    .dark .register-page .register-muted { color: #94a3b8; }
+    .dark .register-page .register-option { color: #e2e8f0; background: #1e293b; }
+</style>
+<div class="register-page relative flex min-h-screen items-center justify-center px-4 py-14 text-{{ trans.align }} bg-[radial-gradient(circle_at_50%_30%,_#e2e1f5_0%,_#D0CFEC_100%)] dark:bg-[radial-gradient(circle_at_50%_30%,_#0f172a_0%,_#020617_100%)]">
+    <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div class="absolute -left-24 bottom-10 h-96 w-96 rounded-full bg-[#181C80]/15 blur-3xl"></div>
+        <div class="absolute -right-24 top-10 h-[28rem] w-[28rem] rounded-full bg-[#181C80]/20 blur-3xl"></div>
+    </div>
+
+    <div class="grid w-full max-w-4xl gap-6 md:grid-cols-[1fr_1.1fr]">
+        <!-- Left Panel — Info -->
+        <div class="hidden animate-fade-up flex-col justify-between rounded-3xl p-8 backdrop-blur-2xl border transition-all duration-300 md:flex bg-white/65 dark:bg-slate-900/60 border-white/80 dark:border-slate-700/50 shadow-[0_20px_50px_rgba(24,28,128,0.08)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+            <a href="{% url 'welcome' %}" class="flex items-center gap-3">
+                <img src="{% static 'dashboard/img/logo.png' %}" alt="Basira Logo" class="h-10 w-auto object-contain hover:scale-105 transition-transform duration-300">
+                <span class="text-2xl font-bold translate-y-0.5 text-[#181C80] dark:text-white">{{ trans.brand }}</span>
+            </a>
+            <div>
+                <h2 class="text-3xl font-bold leading-tight text-[#181C80] dark:text-white">
+                    {% if trans.lang_code == 'ar' %}بيانات مشروعك،<br>مفهومة وبسيطة.{% else %}Your data,<br>clearly understood.{% endif %}
+                </h2>
+                <ul class="register-copy mt-6 space-y-3 text-sm">
+                    <li class="flex items-center gap-2">
+                        <svg class="h-4 w-4 text-[#181C80] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> {% if trans.lang_code == 'ar' %}ارفع ملفات الإكسيل والـ CSV في ثوانٍ{% else %}Upload Excel & CSV in seconds{% endif %}
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <svg class="h-4 w-4 text-[#181C80] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> {% if trans.lang_code == 'ar' %}لوحات تحكم منشأة تلقائياً{% else %}Auto-generated dashboards{% endif %}
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <svg class="h-4 w-4 text-[#181C80] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> {% if trans.lang_code == 'ar' %}تحدث مع بياناتك باللغة العربية أو الإنجليزية{% else %}Chat with your data — Arabic or English{% endif %}
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <svg class="h-4 w-4 text-[#181C80] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> {% if trans.lang_code == 'ar' %}خصوصية تامة، مشفر بالكامل ومستضاف محلياً{% else %}Private, encrypted, regionally hosted{% endif %}
+                    </li>
+                </ul>
+            </div>
+            <div class="register-muted text-xs font-medium">
+                {% if trans.lang_code == 'ar' %}الخطة المجانية مفعلة. لا يلزم بطاقة ائتمانية.{% else %}Free tier included. No credit card required.{% endif %}
+            </div>
+        </div>
+
+        <!-- Right Panel — Form -->
+        <div class="animate-fade-up rounded-3xl p-8 backdrop-blur-2xl border transition-all duration-300 bg-white/75 dark:bg-slate-900/80 border-white/80 dark:border-slate-700/50 shadow-[0_20px_50px_rgba(24,28,128,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <h1 class="text-3xl font-extrabold tracking-tight text-[#181C80] dark:text-white">{{ trans.reg_title }}</h1>
+            <p class="register-muted mt-1 text-sm">{{ trans.reg_desc }}</p>
+
+            <form method="POST" class="mt-6 space-y-4">
+                {% csrf_token %}
+
+                <!-- Username (Login ID) -->
+                <div class="relative group">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <input type="text" name="username" required placeholder="{{ trans.username_placeholder }}" autocomplete="username" pattern="[A-Za-z0-9_.\-]+" title="{% if trans.lang_code == 'ar' %}اسم المستخدم بالإنجليزية بدون مسافات (أحرف، أرقام، شرطة سفلية){% else %}English username without spaces (letters, numbers, underscore){% endif %}"
+                        class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-4 text-right{% else %}pl-12 pr-4 text-left{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-[#181C80] focus:ring-4 focus:ring-[#181C80]/20" />
+                </div>
+
+                <!-- Account Owner Full Name -->
+                <div class="relative group">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <input type="text" name="full_name" placeholder="{{ trans.full_name_placeholder }}" autocomplete="name"
+                        class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-4 text-right{% else %}pl-12 pr-4 text-left{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-[#181C80] focus:ring-4 focus:ring-[#181C80]/20" />
+                </div>
+
+                <!-- Company / Organization Name -->
+                <div class="relative group">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="9" y1="6" x2="9" y2="6.01"></line><line x1="15" y1="6" x2="15" y2="6.01"></line><line x1="9" y1="10" x2="9" y2="10.01"></line><line x1="15" y1="10" x2="15" y2="10.01"></line><line x1="9" y1="14" x2="9" y2="14.01"></line><line x1="15" y1="14" x2="15" y2="14.01"></line></svg>
+                    <input type="text" name="company_name" required placeholder="{{ trans.company_placeholder }}" autocomplete="organization"
+                        class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-4 text-right{% else %}pl-12 pr-4 text-left{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-[#181C80] focus:ring-4 focus:ring-[#181C80]/20" />
+                </div>
+
+                <!-- CR number -->
+                <div class="relative group">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    <input type="text" name="cr_number" required placeholder="{{ trans.cr_number }}" inputmode="numeric"
+                        class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-4 text-right{% else %}pl-12 pr-4 text-left{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-[#181C80] focus:ring-4 focus:ring-[#181C80]/20" />
+                </div>
+
+                <!-- Project Type / Sector Dropdown -->
+                <div class="relative group">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    <select name="project_type" required
+                        class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-12 text-right{% else %}pl-12 pr-12 text-left{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-[#181C80] focus:ring-4 focus:ring-[#181C80]/20 appearance-none cursor-pointer">
+                        <option value="" disabled selected>{% if trans.lang_code == 'ar' %}اختر قطاع نشاطك التجاري...{% else %}Select your business sector...{% endif %}</option>
+                        <option value="pharmacy" class="register-option">{% if trans.lang_code == 'ar' %}صيدلية (Pharmacy){% else %}Pharmacy{% endif %}</option>
+                        <option value="real_estate" class="register-option">{% if trans.lang_code == 'ar' %}عقارات (Real Estate){% else %}Real Estate{% endif %}</option>
+                        <option value="retail" class="register-option">{% if trans.lang_code == 'ar' %}تجارة التجزئة (Retail){% else %}Retail{% endif %}</option>
+                        <option value="fnb" class="register-option">{% if trans.lang_code == 'ar' %}مطاعم ومقاهي (F&B){% else %}Food & Beverage (F&B){% endif %}</option>
+                        <option value="other" class="register-option">{% if trans.lang_code == 'ar' %}أخرى (Other){% else %}Other{% endif %}</option>
+                    </select>
+                    <!-- Trailing Chevron Dropdown Icon -->
+                    <svg class="field-icon field-icon-trailing" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+
+                <!-- Phone number -->
+                <div class="relative group">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    <input type="tel" name="phone" required placeholder="{{ trans.phone }}" autocomplete="tel"
+                        class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-4 text-right{% else %}pl-12 pr-4 text-left{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-[#181C80] focus:ring-4 focus:ring-[#181C80]/20" />
+                </div>
+
+                <!-- Email -->
+                <div class="relative group">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                    <input type="email" name="email" required placeholder="{{ trans.email }}" autocomplete="email"
+                        class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-4 text-right{% else %}pl-12 pr-4 text-left{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-[#181C80] focus:ring-4 focus:ring-[#181C80]/20" />
+                </div>
+
+                <!-- Password with Strength Indicator -->
+                <div class="space-y-2">
+                    <div class="relative group">
+                        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                        <input type="password" id="regPassword" name="password" required placeholder="{{ trans.create_password }}" autocomplete="new-password" oninput="evalPasswordStrength(this.value)"
+                            class="w-full rounded-2xl border border-slate-300/80 dark:border-white/10 bg-white/80 dark:bg-slate-800/80 py-3.5 {% if trans.lang_code == 'ar' %}pr-12 pl-12 text-right{% else %}pl-12 pr-12 text-left{% endif %} text-sm outline-none backdrop-blur transition placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-[#181C80] focus:ring-4 focus:ring-[#181C80]/20" />
+                        <button type="button" onclick="toggleRegPassword()" class="field-icon-btn">
+                            <svg id="regEyeIcon" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Password Strength Indicator Bar -->
+                    <div id="strengthContainer" class="px-1 pt-1">
+                        <div class="flex items-center justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-600 dark:text-slate-300">{% if trans.lang_code == 'ar' %}قوة كلمة المرور:{% else %}Password strength:{% endif %}</span>
+                            <span id="strengthText" class="font-bold text-slate-400 dark:text-slate-500">{% if trans.lang_code == 'ar' %}غير مكتملة{% else %}Incomplete{% endif %}</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1.5 h-2 w-full rounded-full bg-slate-200/90 dark:bg-slate-700/80 p-0.5 border border-slate-300/50 dark:border-slate-600/50">
+                            <div id="strBar1" class="h-full rounded-full bg-slate-300 dark:bg-slate-600 transition-all duration-300"></div>
+                            <div id="strBar2" class="h-full rounded-full bg-slate-300 dark:bg-slate-600 transition-all duration-300"></div>
+                            <div id="strBar3" class="h-full rounded-full bg-slate-300 dark:bg-slate-600 transition-all duration-300"></div>
+                            <div id="strBar4" class="h-full rounded-full bg-slate-300 dark:bg-slate-600 transition-all duration-300"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms -->
+                <label class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer pt-1">
+                    <input type="checkbox" required class="mt-1 h-3.5 w-3.5 accent-[#181C80] cursor-pointer" />
+                    {{ trans.terms_agree }}
+                </label>
+
+                <!-- Submit -->
+                <button type="submit" style="background: #181C80;"
+                    class="group inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-[#181C80]/30 transition-all hover:bg-[#121564]">
+                    {{ trans.confirm_register }}
+                    {% if trans.lang_code == 'ar' %}
+                    <svg class="h-4 w-4 transition group-hover:-translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    {% else %}
+                    <svg class="h-4 w-4 transition group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    {% endif %}
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
+                {{ trans.already_registered }} <a href="{% url 'login' %}" class="font-bold text-[#181C80] dark:text-indigo-400 hover:underline">{{ trans.secure_login }}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleRegPassword() {
+        const input = document.getElementById('regPassword');
+        const icon = document.getElementById('regEyeIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+        } else {
+            input.type = 'password';
+            icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+        }
+    }
+
+    function evalPasswordStrength(val) {
+        const textEl = document.getElementById('strengthText');
+        const b1 = document.getElementById('strBar1');
+        const b2 = document.getElementById('strBar2');
+        const b3 = document.getElementById('strBar3');
+        const b4 = document.getElementById('strBar4');
+
+        const defaultClass = "h-full rounded-full bg-slate-300 dark:bg-slate-600 transition-all duration-300";
+        
+        let score = 0;
+        if (val.length >= 6) score++;
+        if (val.length >= 8 && /[A-Z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        const isAr = "{{ trans.lang_code }}" === "ar";
+        
+        b1.className = defaultClass;
+        b2.className = defaultClass;
+        b3.className = defaultClass;
+        b4.className = defaultClass;
+
+        if (!val) {
+            textEl.innerText = isAr ? "غير مكتملة" : "Incomplete";
+            textEl.className = "font-bold text-slate-400 dark:text-slate-500";
+            return;
+        }
+
+        if (score <= 1) {
+            textEl.innerText = isAr ? "ضعيفة" : "Weak";
+            textEl.className = "font-bold text-rose-500 dark:text-rose-400";
+            b1.className = "h-full rounded-full bg-rose-500 transition-all duration-300";
+        } else if (score === 2) {
+            textEl.innerText = isAr ? "مقبولة" : "Fair";
+            textEl.className = "font-bold text-amber-500 dark:text-amber-400";
+            b1.className = "h-full rounded-full bg-amber-500 transition-all duration-300";
+            b2.className = "h-full rounded-full bg-amber-500 transition-all duration-300";
+        } else if (score === 3) {
+            textEl.innerText = isAr ? "جيدة" : "Good";
+            textEl.className = "font-bold text-blue-500 dark:text-blue-400";
+            b1.className = "h-full rounded-full bg-blue-500 transition-all duration-300";
+            b2.className = "h-full rounded-full bg-blue-500 transition-all duration-300";
+            b3.className = "h-full rounded-full bg-blue-500 transition-all duration-300";
+        } else {
+            textEl.innerText = isAr ? "قوية جداً" : "Strong";
+            textEl.className = "font-bold text-emerald-500 dark:text-emerald-400";
+            b1.className = "h-full rounded-full bg-emerald-500 transition-all duration-300";
+            b2.className = "h-full rounded-full bg-emerald-500 transition-all duration-300";
+            b3.className = "h-full rounded-full bg-emerald-500 transition-all duration-300";
+            b4.className = "h-full rounded-full bg-emerald-500 transition-all duration-300";
+        }
+    }
+</script>
+{% endblock %}

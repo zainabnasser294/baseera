@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Baseera - Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body {
+    background: #f8fafc;
+    margin: 0;
+    padding: 0;
+  }
+  html[data-theme="dark"] body {
+    background: #111827;
+    color: #f8fafc;
+  }
+  .clean-menu-container {
+    padding: 1.5rem 1.25rem 5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .clean-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 1.5rem;
+  }
+  .clean-menu-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #0f172a;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+  }
+  html[data-theme="dark"] .clean-menu-close {
+    color: #f8fafc;
+  }
+  .clean-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .clean-menu-item {
+    display: block;
+    padding: 0.75rem 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e293b;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: color 0.2s, background-color 0.15s;
+  }
+  .clean-menu-item:hover {
+    color: #542DFF;
+    background-color: rgba(84, 45, 255, 0.05);
+  }
+  html[data-theme="dark"] .clean-menu-item {
+    color: #f1f5f9;
+  }
+  html[data-theme="dark"] .clean-menu-item:hover {
+    color: #a78bfa;
+    background-color: rgba(167, 139, 250, 0.08);
+  }
+  .clean-menu-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.06);
+    margin: 1.5rem 0.5rem 1rem 0.5rem;
+  }
+  html[data-theme="dark"] .clean-menu-divider {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .clean-menu-sublist {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding-top: 1rem;
+  }
+  .clean-menu-subitem {
+    display: block;
+    padding: 0.65rem 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: color 0.2s, background-color 0.15s;
+  }
+  .clean-menu-subitem:hover {
+    color: #0f172a;
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  html[data-theme="dark"] .clean-menu-subitem {
+    color: #94a3b8;
+  }
+  html[data-theme="dark"] .clean-menu-subitem:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+ <div class="clean-menu-container">
+  <div class="clean-menu-header">
+   <button class="clean-menu-close" onclick="window.history.back()" title="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+     <line x1="18" y1="6" x2="6" y2="18"></line>
+     <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+   </button>
+  </div>
+
+    <div class="clean-menu-list">
+   <a href="chat.html" class="clean-menu-item" data-i18n="btnChat">Ask Baseera</a>
+
+    <a href="agents.html" class="clean-menu-item" data-i18n="knowAgentsTitle" style="padding: 0.45rem 0.35rem; font-size: 0.88rem; font-weight: 700; color: #1e293b; text-decoration: none; display: block;">Know Baseera Agents</a>
+    </div>
+
+   <a href="datasets.html" class="clean-menu-item" data-i18n="datasetsItem">Datasets</a>
+   <a href="reports.html" class="clean-menu-item" data-i18n="reportsItem">Reports</a>
+   <a href="insights.html" class="clean-menu-item" data-i18n="insightsItem">Insights & Analytics</a>
+   <a href="history.html" class="clean-menu-item" data-i18n="historyItem">History</a>
+   <a href="templates_feedback.html" class="clean-menu-item" data-i18n="formsItem">Feedback</a>
+   <a href="history.html" class="clean-menu-item" data-i18n="historyItem">History</a>
+  </div>
+
+  <div class="clean-menu-sublist">
+   <div class="clean-menu-divider"></div>
+     <!-- Free Trial Countdown Widget -->
+  <div id="trial-countdown-card" style="margin: 0.6rem 0.35rem 0.4rem 0.35rem; padding: 10px 12px; background: rgba(43, 36, 112, 0.06); border: 1px solid rgba(124, 108, 240, 0.2); border-radius: 14px;">
+   <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 11.5px; color: #2b2470; margin-bottom: 6px;">
+    <span style="display: flex; align-items: center; gap: 4px;">
+     <span></span>
+     <span data-i18n="trialHeader">Free Trial</span>
+    </span>
+    <span style="background: rgba(16, 185, 129, 0.15); color: #059669; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 800;" id="trial-badge-text" data-i18n="trialBadge">14 Days</span>
+   </div>
+   <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.08); border-radius: 10px; overflow: hidden; margin-bottom: 6px;">
+    <div id="trial-progress-bar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #2b2470 0%, #7c6cf0 100%); border-radius: 10px; transition: width 0.3s ease;"></div>
+   </div>
+   <div style="font-size: 9.5px; color: #64748b; font-weight: 600; text-align: start;" id="trial-sub-text" data-i18n="trialSubText">14 days remaining on free trial</div>
+  </div>
+   <a href="pricing.html" class="clean-menu-subitem" data-i18n="upgradeAccountBtn" style="font-weight: 800; color: #4f46e5;">Upgrade Account</a>
+   <a href="settings.html" class="clean-menu-subitem" data-i18n="settingsItem">Settings</a>
+   <a href="welcome.html" class="clean-menu-subitem" style="color: #ef4444;" data-i18n="logoutBtn">Log Out</a>
+  </div>
+ </div>
+
+ <nav class="bottom-nav">
+   <a href="dashboard.html" class="" title="الرئيسية">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+   </a>
+   <a href="insights.html" class="" title="التحليلات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+   </a>
+   <a href="chat.html" class="" title="اسأل بصيرة" style="position: relative; top: -5px; background: linear-gradient(135deg, #2b2470 0%, #7c6cf0 100%); color: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(124,108,240,0.4);">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4 4h16a1 1 0 011 1v11a1 1 0 01-1 1H8l-4 4V5a1 1 0 011-1z"/></svg>
+   </a>
+   <a href="datasets.html" class="" title="البيانات">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+   </a>
+   <a href="reports.html" class="" title="التقارير">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+   </a>
+  </nav>
+</div>
+
+<script src="translations.js"></script>
+<script src="theme.js"></script>
+</body>
+</html>
