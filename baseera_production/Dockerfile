@@ -1,18 +1,7 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-
-COPY ["baseera_production/backend/BaseeraAPI.csproj", "baseera_production/backend/"]
-RUN dotnet restore "baseera_production/backend/BaseeraAPI.csproj"
-
-COPY . .
-WORKDIR "/src/baseera_production/backend"
-RUN dotnet publish "BaseeraAPI.csproj" -c Release -o /app/publish
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM python:3.10-slim
 WORKDIR /app
-COPY --from=build /app/publish .
-
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
-
-ENTRYPOINT ["dotnet", "BaseeraAPI.dll"]
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt gunicorn whitenoise
+COPY . .
+RUN python manage.py collectstatic --noinput
+CMD ["gunicorn", "baseera_web.wsgi:application", "--bind", "0.0.0.0:10000"]
