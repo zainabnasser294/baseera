@@ -444,6 +444,7 @@ def dashboard(request):
     files = ProjectFile.objects.filter(user=request.user).order_by("-uploaded_at")
 
     latest_file_json = None
+    df = None
     if files.exists():
         latest = files.first()
         file_id = request.GET.get("file_id")
@@ -479,16 +480,41 @@ def dashboard(request):
         except Exception as e:
             print(f"Error parsing cumulative data: {e}")
 
-    dynamic_count = files.count()
-    if dynamic_count > 0:
+       dynamic_count = files.count()
+    if dynamic_count > 0 and df is not None and not df.empty:
+        try:
+            total_sales = pd.to_numeric(df.get("Gross_Sales_OMR"), errors="coerce").sum() if "Gross_Sales_OMR" in df.columns else 0
+            total_profit = pd.to_numeric(df.get("Profit_OMR"), errors="coerce").sum() if "Profit_OMR" in df.columns else 0
+            profit_margin_val = (total_profit / total_sales * 100) if total_sales else 0
+            kpis = {
+                "total_sales_ar": f"{total_sales:,.0f} ر.ع.",
+                "total_sales_en": f"{total_sales:,.0f} OMR",
+                "profit_margin": f"{profit_margin_val:.1f}%",
+                "warnings_count_ar": "0 تنبيهات",
+                "warnings_count_en": "0 Alerts",
+                "predicted_growth_ar": "بيانات غير كافية للتنبؤ",
+                "predicted_growth_en": "Not enough data yet",
+            }
+        except Exception as e:
+            print(f"Error computing KPIs: {e}")
+            kpis = {
+                "total_sales_ar": "تعذر الحساب",
+                "total_sales_en": "Calculation failed",
+                "profit_margin": "-",
+                "warnings_count_ar": "0 تنبيهات",
+                "warnings_count_en": "0 Alerts",
+                "predicted_growth_ar": "-",
+                "predicted_growth_en": "-",
+            }
+    elif dynamic_count > 0:
         kpis = {
-            "total_sales_ar": "يتم الحساب...",
-            "total_sales_en": "Calculating...",
-            "profit_margin": "...",
+            "total_sales_ar": "لا توجد أعمدة أرقام مطابقة",
+            "total_sales_en": "No matching numeric columns",
+            "profit_margin": "-",
             "warnings_count_ar": "0 تنبيهات",
             "warnings_count_en": "0 Alerts",
-            "predicted_growth_ar": "يتم الحساب...",
-            "predicted_growth_en": "Calculating...",
+            "predicted_growth_ar": "-",
+            "predicted_growth_en": "-",
         }
     else:
         # Fallback to mock KPIs if no data
