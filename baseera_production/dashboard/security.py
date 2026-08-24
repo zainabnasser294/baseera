@@ -60,7 +60,7 @@ def validate_uploaded_file(uploaded_file, max_size_bytes=DEFAULT_MAX_UPLOAD_SIZE
         raise ValueError("Unsupported file type.")
 
     content_type = getattr(uploaded_file, "content_type", "") or ""
-       if content_type and content_type.startswith("application/") and "text" not in content_type and file_ext not in {".pdf", ".xlsx", ".xls", ".csv"}:
+    if content_type and content_type.startswith("application/") and "text" not in content_type and file_ext not in {".pdf", ".xlsx", ".xls", ".csv"}:
         raise ValueError("Unsupported file MIME type.")
 
     file_size = getattr(uploaded_file, "size", 0) or 0
